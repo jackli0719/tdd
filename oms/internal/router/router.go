@@ -13,8 +13,20 @@ import (
 func Setup(r *gin.Engine, db *gorm.DB) {
 	// Health check
 	r.GET("/health", func(c *gin.Context) {
+		if db == nil {
+			c.JSON(503, gin.H{"status": "database not connected"})
+			return
+		}
 		c.JSON(200, gin.H{"status": "ok"})
 	})
+
+	// Skip API routes if database is not connected
+	if db == nil {
+		r.NoRoute(func(c *gin.Context) {
+			c.JSON(503, gin.H{"code": 503, "message": "database not connected"})
+		})
+		return
+	}
 
 	// API routes
 	api := r.Group("/api")
