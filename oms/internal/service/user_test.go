@@ -178,3 +178,75 @@ func TestUserService_List(t *testing.T) {
 		t.Errorf("expected 5 users, got %d", len(users))
 	}
 }
+
+func TestUserService_Update_DuplicateUsername(t *testing.T) {
+	db := setupTestDB(t)
+	repo := repository.NewUserRepository(db)
+	svc := NewUserService(repo)
+
+	svc.Create(&model.CreateUserRequest{
+		Username: "user1",
+		Email:    "user1@example.com",
+		Phone:    "1234567890",
+	})
+	created, _ := svc.Create(&model.CreateUserRequest{
+		Username: "user2",
+		Email:    "user2@example.com",
+		Phone:    "0987654321",
+	})
+
+	_, err := svc.Update(created.ID, &model.UpdateUserRequest{
+		Username: "user1",
+	})
+	if err != ErrUserAlreadyExists {
+		t.Errorf("expected ErrUserAlreadyExists, got %v", err)
+	}
+}
+
+func TestUserService_Update_DuplicateEmail(t *testing.T) {
+	db := setupTestDB(t)
+	repo := repository.NewUserRepository(db)
+	svc := NewUserService(repo)
+
+	svc.Create(&model.CreateUserRequest{
+		Username: "user1",
+		Email:    "user1@example.com",
+		Phone:    "1234567890",
+	})
+	created, _ := svc.Create(&model.CreateUserRequest{
+		Username: "user2",
+		Email:    "user2@example.com",
+		Phone:    "0987654321",
+	})
+
+	_, err := svc.Update(created.ID, &model.UpdateUserRequest{
+		Email: "user1@example.com",
+	})
+	if err != ErrUserAlreadyExists {
+		t.Errorf("expected ErrUserAlreadyExists, got %v", err)
+	}
+}
+
+func TestUserService_Update_NotFound(t *testing.T) {
+	db := setupTestDB(t)
+	repo := repository.NewUserRepository(db)
+	svc := NewUserService(repo)
+
+	_, err := svc.Update(999, &model.UpdateUserRequest{
+		Phone: "0987654321",
+	})
+	if err != ErrUserNotFound {
+		t.Errorf("expected ErrUserNotFound, got %v", err)
+	}
+}
+
+func TestUserService_Delete_NotFound(t *testing.T) {
+	db := setupTestDB(t)
+	repo := repository.NewUserRepository(db)
+	svc := NewUserService(repo)
+
+	err := svc.Delete(999)
+	if err != ErrUserNotFound {
+		t.Errorf("expected ErrUserNotFound, got %v", err)
+	}
+}

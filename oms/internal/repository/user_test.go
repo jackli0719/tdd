@@ -159,3 +159,34 @@ func TestUserRepository_List(t *testing.T) {
 		t.Errorf("expected 5 users, got %d", len(users))
 	}
 }
+
+func TestUserRepository_GetByEmail(t *testing.T) {
+	db := setupTestDB(t)
+	repo := NewUserRepository(db)
+
+	user := &model.User{
+		Username: "testuser",
+		Email:    "test@example.com",
+		Phone:    "1234567890",
+	}
+	repo.Create(user)
+
+	found, err := repo.GetByEmail("test@example.com")
+	if err != nil {
+		t.Fatalf("failed to get user by email: %v", err)
+	}
+
+	if found.Username != user.Username {
+		t.Errorf("expected username %s, got %s", user.Username, found.Username)
+	}
+}
+
+func TestUserRepository_GetByEmail_NotFound(t *testing.T) {
+	db := setupTestDB(t)
+	repo := NewUserRepository(db)
+
+	_, err := repo.GetByEmail("notfound@example.com")
+	if err == nil {
+		t.Error("expected error for non-existent email")
+	}
+}

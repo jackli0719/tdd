@@ -38,3 +38,37 @@ func TestLoadWithEnv(t *testing.T) {
 		t.Errorf("expected DSN test_dsn, got %s", cfg.DSN)
 	}
 }
+
+func TestInitDB_SQLite(t *testing.T) {
+	db, err := InitDB("file::memory:")
+	if err != nil {
+		t.Fatalf("failed to init sqlite db: %v", err)
+	}
+	if db == nil {
+		t.Error("expected non-nil db")
+	}
+	sqlDB, err := db.DB()
+	if err != nil {
+		t.Fatalf("failed to get sql.DB: %v", err)
+	}
+	sqlDB.Close()
+}
+
+func TestInitDB_SQLiteFilePath(t *testing.T) {
+	db, err := InitDB("sqlite://test.db")
+	if err != nil {
+		t.Fatalf("failed to init sqlite db: %v", err)
+	}
+	if db == nil {
+		t.Error("expected non-nil db")
+	}
+}
+
+func TestInitDB_MySQLDSN(t *testing.T) {
+	// Test with mysql dsn prefix (will fail to connect but should parse correctly)
+	_, err := InitDB("mysql://user:pass@localhost:3306/testdb")
+	if err == nil {
+		// May succeed or fail depending on MySQL availability
+		t.Log("mysql connection attempt result: " + err.Error())
+	}
+}

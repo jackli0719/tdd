@@ -215,3 +215,51 @@ func TestProductService_DecrementStock_Insufficient(t *testing.T) {
 		t.Errorf("expected ErrInsufficientStock, got %v", err)
 	}
 }
+
+func TestProductService_Update_DuplicateName(t *testing.T) {
+	db := setupProductTestDB(t)
+	repo := repository.NewProductRepository(db)
+	svc := NewProductService(repo)
+
+	svc.Create(&model.CreateProductRequest{
+		Name:  "Product A",
+		Price: 99.99,
+		Stock: 100,
+	})
+	created, _ := svc.Create(&model.CreateProductRequest{
+		Name:  "Product B",
+		Price: 49.99,
+		Stock: 50,
+	})
+
+	_, err := svc.Update(created.ID, &model.UpdateProductRequest{
+		Name: "Product A",
+	})
+	if err != ErrProductExists {
+		t.Errorf("expected ErrProductExists, got %v", err)
+	}
+}
+
+func TestProductService_Update_NotFound(t *testing.T) {
+	db := setupProductTestDB(t)
+	repo := repository.NewProductRepository(db)
+	svc := NewProductService(repo)
+
+	_, err := svc.Update(999, &model.UpdateProductRequest{
+		Stock: 50,
+	})
+	if err != ErrProductNotFound {
+		t.Errorf("expected ErrProductNotFound, got %v", err)
+	}
+}
+
+func TestProductService_Delete_NotFound(t *testing.T) {
+	db := setupProductTestDB(t)
+	repo := repository.NewProductRepository(db)
+	svc := NewProductService(repo)
+
+	err := svc.Delete(999)
+	if err != ErrProductNotFound {
+		t.Errorf("expected ErrProductNotFound, got %v", err)
+	}
+}

@@ -186,3 +186,69 @@ func TestUserHandler_Delete(t *testing.T) {
 		t.Errorf("expected status %d, got %d", http.StatusOK, w.Code)
 	}
 }
+
+func TestUserHandler_Delete_NotFound(t *testing.T) {
+	db := setupTestDB(t)
+	repo := repository.NewUserRepository(db)
+	svc := service.NewUserService(repo)
+	r := setupRouter(svc)
+
+	req, _ := http.NewRequest("DELETE", "/api/users/999", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusNotFound {
+		t.Errorf("expected status %d, got %d", http.StatusNotFound, w.Code)
+	}
+}
+
+func TestUserHandler_Create_InvalidJSON(t *testing.T) {
+	db := setupTestDB(t)
+	repo := repository.NewUserRepository(db)
+	svc := service.NewUserService(repo)
+	r := setupRouter(svc)
+
+	body := `{invalid json}`
+	req, _ := http.NewRequest("POST", "/api/users", bytes.NewBufferString(body))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusBadRequest {
+		t.Errorf("expected status %d, got %d", http.StatusBadRequest, w.Code)
+	}
+}
+
+func TestUserHandler_Update_NotFound(t *testing.T) {
+	db := setupTestDB(t)
+	repo := repository.NewUserRepository(db)
+	svc := service.NewUserService(repo)
+	r := setupRouter(svc)
+
+	body := `{"phone":"0987654321"}`
+	req, _ := http.NewRequest("PUT", "/api/users/999", bytes.NewBufferString(body))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusNotFound {
+		t.Errorf("expected status %d, got %d", http.StatusNotFound, w.Code)
+	}
+}
+
+func TestUserHandler_Update_InvalidID(t *testing.T) {
+	db := setupTestDB(t)
+	repo := repository.NewUserRepository(db)
+	svc := service.NewUserService(repo)
+	r := setupRouter(svc)
+
+	body := `{"phone":"0987654321"}`
+	req, _ := http.NewRequest("PUT", "/api/users/invalid", bytes.NewBufferString(body))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusBadRequest {
+		t.Errorf("expected status %d, got %d", http.StatusBadRequest, w.Code)
+	}
+}

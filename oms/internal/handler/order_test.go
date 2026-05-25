@@ -191,3 +191,138 @@ func TestOrderHandler_Cancel(t *testing.T) {
 		t.Errorf("expected status %d, got %d", http.StatusOK, w.Code)
 	}
 }
+
+func TestOrderHandler_Get_NotFound(t *testing.T) {
+	db := setupOrderTestDB(t)
+	userRepo := repository.NewUserRepository(db)
+	productRepo := repository.NewProductRepository(db)
+	orderRepo := repository.NewOrderRepository(db)
+	svc := service.NewOrderService(orderRepo, userRepo, productRepo)
+	r := setupOrderRouter(svc)
+
+	req, _ := http.NewRequest("GET", "/api/orders/999", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusNotFound {
+		t.Errorf("expected status %d, got %d", http.StatusNotFound, w.Code)
+	}
+}
+
+func TestOrderHandler_Delete_NotFound(t *testing.T) {
+	db := setupOrderTestDB(t)
+	userRepo := repository.NewUserRepository(db)
+	productRepo := repository.NewProductRepository(db)
+	orderRepo := repository.NewOrderRepository(db)
+	svc := service.NewOrderService(orderRepo, userRepo, productRepo)
+	r := setupOrderRouter(svc)
+
+	req, _ := http.NewRequest("DELETE", "/api/orders/999", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusNotFound {
+		t.Errorf("expected status %d, got %d", http.StatusNotFound, w.Code)
+	}
+}
+
+func TestOrderHandler_Ship(t *testing.T) {
+	db := setupOrderTestDB(t)
+	userRepo := repository.NewUserRepository(db)
+	productRepo := repository.NewProductRepository(db)
+	orderRepo := repository.NewOrderRepository(db)
+	svc := service.NewOrderService(orderRepo, userRepo, productRepo)
+	r := setupOrderRouter(svc)
+
+	// Create user
+	userRepo.Create(&model.User{Username: "testuser", Email: "test@example.com", Phone: "1234567890"})
+
+	// Create product
+	productRepo.Create(&model.Product{Name: "Test Product", Price: 99.99, Stock: 100})
+
+	// Create and pay order
+	order, _ := svc.Create(&model.CreateOrderRequest{
+		UserID: 1,
+		Items: []model.CreateOrderItemRequest{
+			{ProductID: 1, Quantity: 2},
+		},
+	})
+	svc.Paid(order.ID)
+
+	req, _ := http.NewRequest("POST", "/api/orders/1/ship", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Errorf("expected status %d, got %d", http.StatusOK, w.Code)
+	}
+}
+
+func TestOrderHandler_Complete(t *testing.T) {
+	db := setupOrderTestDB(t)
+	userRepo := repository.NewUserRepository(db)
+	productRepo := repository.NewProductRepository(db)
+	orderRepo := repository.NewOrderRepository(db)
+	svc := service.NewOrderService(orderRepo, userRepo, productRepo)
+	r := setupOrderRouter(svc)
+
+	// Create user
+	userRepo.Create(&model.User{Username: "testuser", Email: "test@example.com", Phone: "1234567890"})
+
+	// Create product
+	productRepo.Create(&model.Product{Name: "Test Product", Price: 99.99, Stock: 100})
+
+	// Create, pay, and ship order
+	order, _ := svc.Create(&model.CreateOrderRequest{
+		UserID: 1,
+		Items: []model.CreateOrderItemRequest{
+			{ProductID: 1, Quantity: 2},
+		},
+	})
+	svc.Paid(order.ID)
+	svc.Ship(order.ID)
+
+	req, _ := http.NewRequest("POST", "/api/orders/1/complete", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Errorf("expected status %d, got %d", http.StatusOK, w.Code)
+	}
+}
+
+func TestOrderHandler_Create_InvalidJSON(t *testing.T) {
+	db := setupOrderTestDB(t)
+	userRepo := repository.NewUserRepository(db)
+	productRepo := repository.NewProductRepository(db)
+	orderRepo := repository.NewOrderRepository(db)
+	svc := service.NewOrderService(orderRepo, userRepo, productRepo)
+	r := setupOrderRouter(svc)
+
+	body := `{invalid json}`
+	req, _ := http.NewRequest("POST", "/api/orders", bytes.NewBufferString(body))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusBadRequest {
+		t.Errorf("expected status %d, got %d", http.StatusBadRequest, w.Code)
+	}
+}
+
+func TestOrderHandler_InvalidID(t *testing.T) {
+	db := setupOrderTestDB(t)
+	userRepo := repository.NewUserRepository(db)
+	productRepo := repository.NewProductRepository(db)
+	orderRepo := repository.NewOrderRepository(db)
+	svc := service.NewOrderService(orderRepo, userRepo, productRepo)
+	r := setupOrderRouter(svc)
+
+	req, _ := http.NewRequest("GET", "/api/orders/invalid", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusBadRequest {
+		t.Errorf("expected status %d, got %d", http.StatusBadRequest, w.Code)
+	}
+}

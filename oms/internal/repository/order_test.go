@@ -165,3 +165,59 @@ func TestOrderRepository_List(t *testing.T) {
 		t.Errorf("expected 5 orders, got %d", len(orders))
 	}
 }
+
+func TestOrderRepository_ListByUserID(t *testing.T) {
+	db := setupOrderTestDB(t)
+	repo := NewOrderRepository(db)
+
+	// Create orders for different users
+	repo.Create(&model.Order{
+		OrderNo:     "ORD001",
+		UserID:      1,
+		TotalAmount: 99.99,
+		Status:      model.OrderStatusPending,
+	})
+	repo.Create(&model.Order{
+		OrderNo:     "ORD002",
+		UserID:      1,
+		TotalAmount: 149.99,
+		Status:      model.OrderStatusPending,
+	})
+	repo.Create(&model.Order{
+		OrderNo:     "ORD003",
+		UserID:      2,
+		TotalAmount: 199.99,
+		Status:      model.OrderStatusPending,
+	})
+
+	orders, total, err := repo.ListByUserID(1, 0, 10)
+	if err != nil {
+		t.Fatalf("failed to list orders by user: %v", err)
+	}
+
+	if total != 2 {
+		t.Errorf("expected total 2 for user 1, got %d", total)
+	}
+
+	if len(orders) != 2 {
+		t.Errorf("expected 2 orders for user 1, got %d", len(orders))
+	}
+}
+
+func TestOrderRepository_ListByUserID_Empty(t *testing.T) {
+	db := setupOrderTestDB(t)
+	repo := NewOrderRepository(db)
+
+	orders, total, err := repo.ListByUserID(999, 0, 10)
+	if err != nil {
+		t.Fatalf("failed to list orders: %v", err)
+	}
+
+	if total != 0 {
+		t.Errorf("expected total 0, got %d", total)
+	}
+
+	if len(orders) != 0 {
+		t.Errorf("expected 0 orders, got %d", len(orders))
+	}
+}
