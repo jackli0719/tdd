@@ -1,0 +1,4 @@
+// Package response provides unified API responses
+package response
+
+// TODO: response implementation

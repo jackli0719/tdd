@@ -1,0 +1,4 @@
+// Package router handles route registration
+package router
+
+// TODO: router implementation

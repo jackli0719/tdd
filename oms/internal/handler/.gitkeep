@@ -1,0 +1,4 @@
+// Package handler handles HTTP requests
+package handler
+
+// TODO: handler implementation
