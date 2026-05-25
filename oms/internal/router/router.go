@@ -40,5 +40,15 @@ func Setup(r *gin.Engine, db *gorm.DB) {
 		api.POST("/users", userHandler.Create)
 		api.PUT("/users/:id", userHandler.Update)
 		api.DELETE("/users/:id", userHandler.Delete)
+
+		// Product routes
+		productRepo := repository.NewProductRepository(db)
+		productSvc := service.NewProductService(productRepo)
+		productHandler := handler.NewProductHandler(productSvc)
+		api.GET("/products", productHandler.List)
+		api.GET("/products/:id", productHandler.Get)
+		api.POST("/products", productHandler.Create)
+		api.PUT("/products/:id", productHandler.Update)
+		api.DELETE("/products/:id", productHandler.Delete)
 	}
 }
