@@ -447,3 +447,183 @@ curl http://localhost:8080/api/users
 curl http://localhost:8080/api/products
 curl http://localhost:8080/api/orders
 ```
+
+---
+
+## 八、数据库集成 (SQLite)
+
+> 每任务遵循：**契约先行 → 测试验证 → 实现提交**
+
+### Phase 8: 数据库集成
+
+#### 8.1 安装 SQLite 驱动
+- [ ] **契约**: `gorm.io/driver/sqlite`
+- [ ] `go get gorm.io/driver/sqlite`
+- [ ] **测试**: `go build ./...` 无报错
+- [ ] 提交
+
+#### 8.2 修改 database.go 支持 SQLite
+- [ ] **契约**: DSN 支持 `sqlite://oms.db`
+- [ ] 修改 `internal/config/database.go` 支持 sqlite driver
+- [ ] **测试**: DB 连接成功
+- [ ] 提交
+
+#### 8.3 表结构迁移
+- [ ] **契约**: AutoMigrate 所有表到 SQLite
+- [ ] users, products, orders, order_items
+- [ ] **测试**: E2E CRUD API 测试
+- [ ] 提交
+
+---
+
+## 九、前端开发 (Vue 3 + Element Plus)
+
+> 每任务遵循：**契约先行 → 测试验证 → 实现提交**
+>
+> **API 契约**: 参照本文档第四节的 API 列表
+
+### Phase 9: 前端项目初始化
+
+#### 9.1 创建 Vue 3 项目
+- [ ] **契约**: `npm create vue@latest frontend`
+- [ ] 创建项目，安装依赖
+- [ ] **测试**: `npm run dev` 启动成功
+- [ ] 提交
+
+#### 9.2 安装前端依赖
+- [ ] **契约**: Element Plus, Axios, Vue Router
+- [ ] `npm install element-plus axios vue-router`
+- [ ] **测试**: 编译无报错
+- [ ] 提交
+
+#### 9.3 配置 Vite 代理
+- [ ] **契约**: 开发环境 API 代理到 `:8080`
+- [ ] 修改 `vite.config.ts`
+- [ ] **测试**: 前端访问 `/api/*` 代理到后端
+- [ ] 提交
+
+---
+
+### Phase 10: 前端公共层
+
+#### 10.1 创建 Layout 组件
+- [ ] **契约**: 侧边栏 + 头部布局
+- [ ] `src/components/Layout.vue`
+- [ ] **测试**: 页面渲染正确
+- [ ] 提交
+
+#### 10.2 封装 API 请求
+- [ ] **契约**: 统一响应格式 `{code, message, data}`
+- [ ] `src/api/*.ts` - user, product, order, stats
+- [ ] **测试**: API 调用成功
+- [ ] 提交
+
+#### 10.3 配置路由
+- [ ] **契约**: Vue Router 配置
+- [ ] `/` - 仪表盘
+- [ ] `/users` - 用户管理
+- [ ] `/products` - 产品管理
+- [ ] `/orders` - 订单管理
+- [ ] `/stats` - 统计页面
+- [ ] **测试**: 路由跳转正常
+- [ ] 提交
+
+---
+
+### Phase 11: 用户管理页面
+
+#### 11.1 用户列表页
+- [ ] **契约**: `GET /api/users` → 列表展示
+- [ ] `src/views/user/UserList.vue`
+- [ ] **测试**: 分页、搜索正常
+- [ ] 提交
+
+#### 11.2 用户表单弹窗
+- [ ] **契约**: `POST/PUT /api/users` → 新建/编辑
+- [ ] `src/views/user/UserForm.vue`
+- [ ] **测试**: 新建、编辑、删除正常
+- [ ] 提交
+
+---
+
+### Phase 12: 产品管理页面
+
+#### 12.1 产品列表页
+- [ ] **契约**: `GET /api/products` → 列表展示
+- [ ] `src/views/product/ProductList.vue`
+- [ ] **测试**: 分页、搜索正常
+- [ ] 提交
+
+#### 12.2 产品表单弹窗
+- [ ] **契约**: `POST/PUT /api/products` → 新建/编辑
+- [ ] `src/views/product/ProductForm.vue`
+- [ ] **测试**: 新建、编辑、删除正常
+- [ ] 提交
+
+---
+
+### Phase 13: 订单管理页面
+
+#### 13.1 订单列表页
+- [ ] **契约**: `GET /api/orders` → 列表展示
+- [ ] `src/views/order/OrderList.vue`
+- [ ] **测试**: 分页、状态筛选正常
+- [ ] 提交
+
+#### 13.2 订单状态操作
+- [ ] **契约**: `POST /api/orders/:id/{paid,ship,complete,cancel}`
+- [ ] 订单状态按钮操作
+- [ ] **测试**: 状态流转正常
+- [ ] 提交
+
+---
+
+### Phase 14: 统计页面
+
+#### 14.1 仪表盘
+- [ ] **契约**: 展示关键指标
+- [ ] `src/views/dashboard/Dashboard.vue`
+- [ ] **测试**: 数据展示正常
+- [ ] 提交
+
+#### 14.2 订单统计
+- [ ] **契约**: `GET /api/stats/orders`
+- [ ] 订单数量按状态分组
+- [ ] **测试**: 统计数据正确
+- [ ] 提交
+
+#### 14.3 营收统计
+- [ ] **契约**: `GET /api/stats/revenue`
+- [ ] 营收金额统计
+- [ ] **测试**: 营收数据正确
+- [ ] 提交
+
+---
+
+## 十、任务统计
+
+| 分支 | 模块 | Phase | 主任务 | 子任务 |
+|------|------|-------|--------|--------|
+| phase1-7 | 后端 | 1-7 | 28 | 112 |
+| phase8 | 数据库 | 8 | 3 | 12 |
+| phase9-14 | 前端 | 9-14 | 10 | 40 |
+| **总计** | | | **41** | **164** |
+
+---
+
+## 十一、Agent 分工参考
+
+| Agent | 负责模块 | Phase |
+|-------|----------|-------|
+| Agent-DB | 数据库集成 | 8.1 - 8.3 |
+| Agent-Frontend | 前端开发 | 9 - 14 |
+
+---
+
+## 十二、前端技术栈
+
+- Vue 3 (Composition API)
+- Element Plus
+- Axios
+- Vue Router
+- Vite
