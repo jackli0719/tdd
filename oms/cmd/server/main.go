@@ -14,14 +14,18 @@ func main() {
 	cfg := config.Load()
 
 	// Initialize database (optional - continue without DB for now)
-	config.InitDB(cfg.DSN)
+	db, err := config.InitDB(cfg.DSN)
+	if err != nil {
+		log.Printf("Warning: Failed to connect to database: %v", err)
+		log.Println("Server will start without database connection")
+	}
 
 	// Setup Gin
 	gin.SetMode(gin.DebugMode)
 	r := gin.Default()
 
 	// Setup routes
-	router.Setup(r)
+	router.Setup(r, db)
 
 	// Start server
 	log.Printf("Server starting on port %s", cfg.Port)
