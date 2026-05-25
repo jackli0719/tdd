@@ -3,49 +3,51 @@
     <el-row :gutter="20">
       <el-col :span="6">
         <el-card class="stat-card">
-          <div class="stat-title">Total Users</div>
+          <div class="stat-title">用户总数</div>
           <div class="stat-value">{{ stats.users }}</div>
         </el-card>
       </el-col>
       <el-col :span="6">
         <el-card class="stat-card">
-          <div class="stat-title">Total Products</div>
+          <div class="stat-title">产品总数</div>
           <div class="stat-value">{{ stats.products }}</div>
         </el-card>
       </el-col>
       <el-col :span="6">
         <el-card class="stat-card">
-          <div class="stat-title">Total Orders</div>
+          <div class="stat-title">订单总数</div>
           <div class="stat-value">{{ stats.orders }}</div>
         </el-card>
       </el-col>
       <el-col :span="6">
         <el-card class="stat-card">
-          <div class="stat-title">Revenue</div>
-          <div class="stat-value">${{ stats.revenue }}</div>
+          <div class="stat-title">总收入</div>
+          <div class="stat-value">¥{{ stats.revenue }}</div>
         </el-card>
       </el-col>
     </el-row>
     <el-row :gutter="20" style="margin-top: 20px;">
       <el-col :span="12">
         <el-card>
-          <template #header>Order Stats</template>
+          <template #header>订单统计</template>
           <div class="order-stats">
-            <p>Pending: {{ orderStats.pending }}</p>
-            <p>Paid: {{ orderStats.paid }}</p>
-            <p>Shipped: {{ orderStats.shipped }}</p>
-            <p>Completed: {{ orderStats.completed }}</p>
-            <p>Cancelled: {{ orderStats.cancelled }}</p>
+            <p>待支付: {{ orderStats.pending }}</p>
+            <p>已支付: {{ orderStats.paid }}</p>
+            <p>已发货: {{ orderStats.shipped }}</p>
+            <p>已完成: {{ orderStats.completed }}</p>
+            <p>已取消: {{ orderStats.cancelled }}</p>
           </div>
         </el-card>
       </el-col>
       <el-col :span="12">
         <el-card>
-          <template #header>Revenue Stats</template>
+          <template #header>营收统计</template>
           <div class="order-stats">
-            <p>Today: ${{ revenueStats.today }}</p>
-            <p>This Week: ${{ revenueStats.week }}</p>
-            <p>This Month: ${{ revenueStats.month }}</p>
+            <p>总收入: ¥{{ revenueStats.total_revenue }}</p>
+            <p>待支付营收: ¥{{ revenueStats.pending_revenue }}</p>
+            <p>已支付营收: ¥{{ revenueStats.paid_revenue }}</p>
+            <p>已发货营收: ¥{{ revenueStats.shipped_revenue }}</p>
+            <p>已完成营收: ¥{{ revenueStats.completed_revenue }}</p>
           </div>
         </el-card>
       </el-col>
@@ -76,9 +78,11 @@ const orderStats = ref({
 })
 
 const revenueStats = ref({
-  today: 0,
-  week: 0,
-  month: 0,
+  total_revenue: 0,
+  pending_revenue: 0,
+  paid_revenue: 0,
+  shipped_revenue: 0,
+  completed_revenue: 0,
 })
 
 const loadStats = async () => {
@@ -90,10 +94,10 @@ const loadStats = async () => {
       getOrderStats(),
       getRevenueStats(),
     ])
-    stats.value.users = usersRes.data?.length || 0
-    stats.value.products = productsRes.data?.length || 0
-    stats.value.orders = ordersRes.data?.length || 0
-    stats.value.revenue = revenueRes.data?.total || 0
+    stats.value.users = usersRes.data.users?.length || 0
+    stats.value.products = productsRes.data.products?.length || 0
+    stats.value.orders = ordersRes.data.orders?.length || 0
+    stats.value.revenue = revenueRes.data?.total_revenue || 0
     if (orderStatsRes.data) {
       orderStats.value = orderStatsRes.data
     }
@@ -101,7 +105,7 @@ const loadStats = async () => {
       revenueStats.value = revenueRes.data
     }
   } catch (error) {
-    console.error('Failed to load stats:', error)
+    console.error('加载统计数据失败:', error)
   }
 }
 

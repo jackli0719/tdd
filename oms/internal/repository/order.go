@@ -8,7 +8,9 @@ import (
 
 // OrderRepository handles order data access
 type OrderRepository interface {
+	DB() *gorm.DB
 	Create(order *model.Order) error
+	CreateTx(tx *gorm.DB, order *model.Order) error
 	GetByID(id int64) (*model.Order, error)
 	GetByOrderNo(orderNo string) (*model.Order, error)
 	Update(order *model.Order) error
@@ -26,8 +28,16 @@ func NewOrderRepository(db *gorm.DB) OrderRepository {
 	return &orderRepository{db: db}
 }
 
+func (r *orderRepository) DB() *gorm.DB {
+	return r.db
+}
+
 func (r *orderRepository) Create(order *model.Order) error {
 	return r.db.Create(order).Error
+}
+
+func (r *orderRepository) CreateTx(tx *gorm.DB, order *model.Order) error {
+	return tx.Create(order).Error
 }
 
 func (r *orderRepository) GetByID(id int64) (*model.Order, error) {

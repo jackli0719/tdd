@@ -8,25 +8,25 @@
         class="sidebar-menu"
       >
         <el-menu-item index="/dashboard">
-          <span>Dashboard</span>
+          <span>仪表盘</span>
         </el-menu-item>
         <el-menu-item index="/users">
-          <span>Users</span>
+          <span>用户管理</span>
         </el-menu-item>
         <el-menu-item index="/products">
-          <span>Products</span>
+          <span>产品管理</span>
         </el-menu-item>
         <el-menu-item index="/orders">
-          <span>Orders</span>
+          <span>订单管理</span>
         </el-menu-item>
         <el-menu-item index="/stats">
-          <span>Stats</span>
+          <span>统计</span>
         </el-menu-item>
       </el-menu>
     </el-aside>
     <el-container>
       <el-header class="header">
-        <h2>Order Management System</h2>
+        <h2>订单管理系统</h2>
       </el-header>
       <el-main class="main-content">
         <router-view />

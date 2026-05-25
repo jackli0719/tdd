@@ -28,4 +28,7 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    chunkSizeWarningLimit: 1000, // Increase limit for element-plus
+  },
 })

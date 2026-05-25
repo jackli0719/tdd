@@ -56,6 +56,7 @@ oms/
 
 - `docs/oms-development-plan.md` - 任务清单、开发计划
 - `docs/naming-convention.md` - 命名规范（必须遵循）
+- `docs/development-improvement.md` - 开发改进建议（含 API 契约模板）
 
 ## 命名规范
 
@@ -68,3 +69,15 @@ oms/
 ## 多 Agent 开发
 
 使用分层代理模式，参考 docs/oms-development-plan.md 的 Agent 分工表。
+
+## 注意事项
+
+**开发前必读**：
+1. 先阅读 `docs/naming-convention.md` 了解命名规范
+2. 前后端接口字段名必须保持一致（参考后端 handler 返回的 JSON 结构）
+3. 使用 `go build ./...` 和 `go test ./...` 验证后再提交
+4. 重要：axios interceptor 返回 `response.data`，后端响应是 `{ code, message, data: {...} }`，取列表数据用 `res.data.orders` 等
+
+## 常见错误
+
+参考 `memory/oms-common-errors.md` 避免重复犯错。

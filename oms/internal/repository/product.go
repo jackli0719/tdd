@@ -14,6 +14,7 @@ type ProductRepository interface {
 	Update(product *model.Product) error
 	Delete(id int64) error
 	List(offset, limit int) ([]*model.Product, int64, error)
+	DecrementStockTx(tx *gorm.DB, id int64, quantity int) (int64, error)
 }
 
 type productRepository struct {
@@ -65,4 +66,16 @@ func (r *productRepository) List(offset, limit int) ([]*model.Product, int64, er
 		return nil, 0, err
 	}
 	return products, total, nil
+}
+
+func (r *productRepository) DecrementStockTx(tx *gorm.DB, id int64, quantity int) (int64, error) {
+	result := tx.Model(&model.Product{}).Where("id = ? AND stock >= ?", id, quantity).
+		Update("stock", gorm.Expr("stock - ?", quantity))
+	if result.Error != nil {
+		return 0, result.Error
+	}
+	if result.RowsAffected == 0 {
+		return 0, gorm.ErrRecordNotFound
+	}
+	return result.RowsAffected, nil
 }

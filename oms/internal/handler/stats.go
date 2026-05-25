@@ -68,15 +68,19 @@ func (h *StatsHandler) OrderStats(c *gin.Context) {
 
 // RevenueStats handles GET /api/stats/revenue
 func (h *StatsHandler) RevenueStats(c *gin.Context) {
-	orders, total, err := h.orderSvc.List(1, 1000)
+	orders, _, err := h.orderSvc.List(1, 1000)
 	if err != nil {
 		response.Error(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	stats := RevenueStats{}
-	for i := int64(0); i < total; i++ {
-		order := orders[i]
+	for _, order := range orders {
+		// Cancelled orders don't count as revenue
+		if order.Status == model.OrderStatusCancelled {
+			continue
+		}
+
 		stats.TotalRevenue += order.TotalAmount
 
 		switch order.Status {

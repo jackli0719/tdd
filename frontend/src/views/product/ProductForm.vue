@@ -1,26 +1,26 @@
 <template>
   <el-dialog
     v-model="visible"
-    :title="product ? 'Edit Product' : 'Add Product'"
+    :title="product ? '编辑产品' : '添加产品'"
     width="500px"
   >
     <el-form :model="form" label-width="80px">
-      <el-form-item label="Name">
+      <el-form-item label="名称">
         <el-input v-model="form.name" />
       </el-form-item>
-      <el-form-item label="Price">
+      <el-form-item label="价格">
         <el-input v-model="form.price" type="number" />
       </el-form-item>
-      <el-form-item label="Stock">
+      <el-form-item label="库存">
         <el-input v-model="form.stock" type="number" />
       </el-form-item>
-      <el-form-item label="Description">
+      <el-form-item label="描述">
         <el-input v-model="form.description" type="textarea" rows="3" />
       </el-form-item>
     </el-form>
     <template #footer>
-      <el-button @click="visible = false">Cancel</el-button>
-      <el-button type="primary" @click="handleSubmit" :loading="loading">Submit</el-button>
+      <el-button @click="visible = false">取消</el-button>
+      <el-button type="primary" @click="handleSubmit" :loading="loading">提交</el-button>
     </template>
   </el-dialog>
 </template>
@@ -66,7 +66,7 @@ watch(visible, (val) => {
 
 const handleSubmit = async () => {
   if (!form.value.name || !form.value.price) {
-    ElMessage.warning('Please fill in required fields')
+    ElMessage.warning('请填写必填字段')
     return
   }
   loading.value = true
@@ -81,11 +81,11 @@ const handleSubmit = async () => {
     } else {
       await createProduct(data)
     }
-    ElMessage.success('Success')
+    ElMessage.success('保存成功')
     visible.value = false
     emit('success')
   } catch (error) {
-    ElMessage.error(error.message || 'Failed to save product')
+    ElMessage.error(error.message || '保存失败')
   } finally {
     loading.value = false
   }

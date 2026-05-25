@@ -3,25 +3,26 @@
     <el-row :gutter="20">
       <el-col :span="12">
         <el-card>
-          <template #header>Order Statistics</template>
+          <template #header>订单统计</template>
           <div class="stats-content" v-loading="loading">
-            <p>Total Orders: {{ stats.total }}</p>
-            <p>Pending: {{ stats.pending }}</p>
-            <p>Paid: {{ stats.paid }}</p>
-            <p>Shipped: {{ stats.shipped }}</p>
-            <p>Completed: {{ stats.completed }}</p>
-            <p>Cancelled: {{ stats.cancelled }}</p>
+            <p>订单总数: {{ stats.total }}</p>
+            <p>待支付: {{ stats.pending }}</p>
+            <p>已支付: {{ stats.paid }}</p>
+            <p>已发货: {{ stats.shipped }}</p>
+            <p>已完成: {{ stats.completed }}</p>
+            <p>已取消: {{ stats.cancelled }}</p>
           </div>
         </el-card>
       </el-col>
       <el-col :span="12">
         <el-card>
-          <template #header>Revenue Statistics</template>
+          <template #header>营收统计</template>
           <div class="stats-content" v-loading="loading">
-            <p>Total Revenue: ${{ revenue.total }}</p>
-            <p>Today: ${{ revenue.today }}</p>
-            <p>This Week: ${{ revenue.week }}</p>
-            <p>This Month: ${{ revenue.month }}</p>
+            <p>总收入: ¥{{ revenue.total_revenue }}</p>
+            <p>待支付营收: ¥{{ revenue.pending_revenue }}</p>
+            <p>已支付营收: ¥{{ revenue.paid_revenue }}</p>
+            <p>已发货营收: ¥{{ revenue.shipped_revenue }}</p>
+            <p>已完成营收: ¥{{ revenue.completed_revenue }}</p>
           </div>
         </el-card>
       </el-col>
@@ -44,10 +45,11 @@ const stats = ref({
 })
 
 const revenue = ref({
-  total: 0,
-  today: 0,
-  week: 0,
-  month: 0,
+  total_revenue: 0,
+  pending_revenue: 0,
+  paid_revenue: 0,
+  shipped_revenue: 0,
+  completed_revenue: 0,
 })
 
 const loading = ref(false)
@@ -66,7 +68,7 @@ const loadStats = async () => {
       revenue.value = { ...revenue.value, ...revenueRes.data }
     }
   } catch (error) {
-    ElMessage.error('Failed to load stats')
+    ElMessage.error('加载统计数据失败')
   } finally {
     loading.value = false
   }

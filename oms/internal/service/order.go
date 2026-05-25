@@ -98,15 +98,24 @@ func (s *orderService) Create(req *model.CreateOrderRequest) (*model.Order, erro
 		Items:       items,
 	}
 
-	if err := s.orderRepo.Create(order); err != nil {
+	// Use transaction for order creation and stock decrement
+	tx := s.orderRepo.DB().Begin()
+	if err := s.orderRepo.CreateTx(tx, order); err != nil {
+		tx.Rollback()
 		return nil, err
 	}
 
-	// Decrement stock
+	// Decrement stock for each item
 	for _, item := range req.Items {
-		product, _ := s.productRepo.GetByID(item.ProductID)
-		product.Stock -= item.Quantity
-		s.productRepo.Update(product)
+		_, err := s.productRepo.DecrementStockTx(tx, item.ProductID, item.Quantity)
+		if err != nil {
+			tx.Rollback()
+			return nil, ErrInsufficientStock
+		}
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		return nil, err
 	}
 
 	return order, nil

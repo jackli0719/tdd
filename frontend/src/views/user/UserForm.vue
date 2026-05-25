@@ -1,23 +1,26 @@
 <template>
   <el-dialog
     v-model="visible"
-    :title="user ? 'Edit User' : 'Add User'"
+    :title="user ? '编辑用户' : '添加用户'"
     width="500px"
   >
     <el-form :model="form" label-width="80px">
-      <el-form-item label="Username">
+      <el-form-item label="用户名">
         <el-input v-model="form.username" />
       </el-form-item>
-      <el-form-item label="Email">
+      <el-form-item label="邮箱">
         <el-input v-model="form.email" type="email" />
       </el-form-item>
-      <el-form-item label="Password" v-if="!user">
+      <el-form-item label="电话">
+        <el-input v-model="form.phone" />
+      </el-form-item>
+      <el-form-item label="密码" v-if="!user">
         <el-input v-model="form.password" type="password" />
       </el-form-item>
     </el-form>
     <template #footer>
-      <el-button @click="visible = false">Cancel</el-button>
-      <el-button type="primary" @click="handleSubmit" :loading="loading">Submit</el-button>
+      <el-button @click="visible = false">取消</el-button>
+      <el-button type="primary" @click="handleSubmit" :loading="loading">提交</el-button>
     </template>
   </el-dialog>
 </template>
@@ -39,6 +42,7 @@ const loading = ref(false)
 const form = ref({
   username: '',
   email: '',
+  phone: '',
   password: '',
 })
 
@@ -48,10 +52,11 @@ watch(() => props.modelValue, (val) => {
     form.value = {
       username: props.user.username || '',
       email: props.user.email || '',
+      phone: props.user.phone || '',
       password: '',
     }
   } else if (val) {
-    form.value = { username: '', email: '', password: '' }
+    form.value = { username: '', email: '', phone: '', password: '' }
   }
 })
 
@@ -61,7 +66,7 @@ watch(visible, (val) => {
 
 const handleSubmit = async () => {
   if (!form.value.username || !form.value.email) {
-    ElMessage.warning('Please fill in required fields')
+    ElMessage.warning('请填写必填字段')
     return
   }
   loading.value = true
@@ -71,11 +76,11 @@ const handleSubmit = async () => {
     } else {
       await createUser(form.value)
     }
-    ElMessage.success('Success')
+    ElMessage.success('保存成功')
     visible.value = false
     emit('success')
   } catch (error) {
-    ElMessage.error(error.message || 'Failed to save user')
+    ElMessage.error(error.message || '保存失败')
   } finally {
     loading.value = false
   }
