@@ -23,17 +23,17 @@ mysql --version
 ## 开发命令
 
 ```bash
-# 安装依赖
-go mod tidy
+# 统一使用 Makefile
+make install    # 安装依赖
+make build      # 编译
+make test       # 测试
+make lint       # 代码检查
+make dev        # 启动前后端
+make pre-commit # 提交前检查
 
-# 编译
-go build ./...
-
-# 运行
-go run cmd/server/main.go
-
-# 测试
-curl http://localhost:8080/api/users
+# 或者直接使用
+cd oms && go run cmd/server/main.go   # 后端
+cd frontend && npm run dev             # 前端
 ```
 
 ## 项目结构
