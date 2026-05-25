@@ -18,7 +18,8 @@ func Load() *Config {
 	}
 	dsn := os.Getenv("DSN")
 	if dsn == "" {
-		dsn = "root:password@tcp(localhost:3306)/oms?charset=utf8mb4&parseTime=True&loc=Local"
+		// Default to SQLite for local development
+		dsn = "sqlite://oms.db"
 	}
 	return &Config{
 		Port: port,
