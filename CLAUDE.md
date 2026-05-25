@@ -81,3 +81,16 @@ oms/
 ## 常见错误
 
 参考 `memory/oms-common-errors.md` 避免重复犯错。
+
+## 开发检查清单
+
+**开发前必读**：
+1. `docs/development-improvement.md` - 包含开发检查清单
+2. `docs/naming-convention.md` - 命名规范
+3. `memory/oms-common-errors.md` - 历史错误记录
+
+**每次提交前必须检查**：
+- [ ] `go build ./...` 和 `go test ./...` 通过
+- [ ] `npm run build` 和 `npm test` 通过
+- [ ] API 字段名前后端一致（用 curl 测试响应结构）
+- [ ] git status 无意外修改

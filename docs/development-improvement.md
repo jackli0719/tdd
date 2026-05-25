@@ -177,3 +177,50 @@
 1. 先阅读 `naming-convention.md` 和 `oms-common-errors.md`
 2. 开发新功能前检查是否涉及已知的错误模式
 3. 遵守 API 契约设计流程
+
+---
+
+## 开发检查清单（下次必执行）
+
+### 开发前 - API 契约设计
+```
+[ ] 编写 API 契约文档（含响应结构、字段名、JSON 示例）
+[ ] 前后端双方签字确认
+[ ] 确认字段名与 naming-convention.md 一致
+```
+
+### 开发中 - 代码编写
+```
+[ ] 后端：遵循 snake_case 命名规范
+[ ] 后端：使用 binding:"required" 验证时，前端表单必须有对应字段
+[ ] 后端：事务操作必须检查 RowsAffected
+[ ] 前端：API 响应解析用 res.data.xxx 而非 res.xxx
+[ ] 前端：字段名必须与后端 API 返回的字段名完全一致
+```
+
+### 开发后 - 验证测试
+```
+[ ] 后端：go build ./... 通过
+[ ] 后端：go test ./... 通过
+[ ] 前端：npm run build 通过
+[ ] 前端：npm test 通过
+[ ] 前后端联调：用 curl 测试 API 响应结构
+[ ] 检查字段名是否一致
+```
+
+### 提交前 - Git 检查
+```
+[ ] 已追踪文件需要移除时，用 git rm --cached <file>
+[ ] .gitignore 对已追踪文件无效
+[ ] 运行 git status 检查是否有意外的 modified/deleted 文件
+[ ] 确保 oms.db、server、*.log、node_modules 不在 git 追踪中
+```
+
+### 常见错误警戒线
+```
+⚠️ 前端列表显示为空 → 检查 res.data.users 还是 res.users
+⚠️ 字段显示 undefined → 检查字段名是否与后端一致
+⚠️ 表单提交 400 错误 → 检查后端 binding:"required" 字段是否都有
+⚠️ 并发库存扣成负数 → 检查 WHERE stock >= ? + RowsAffected 检查
+⚠️ 总收入 != 分项之和 → 检查是否有状态被遗漏或错误计入
+```
