@@ -63,5 +63,10 @@ func Setup(r *gin.Engine, db *gorm.DB) {
 		api.POST("/orders/:id/ship", orderHandler.Ship)
 		api.POST("/orders/:id/complete", orderHandler.Complete)
 		api.POST("/orders/:id/cancel", orderHandler.Cancel)
+
+		// Stats routes
+		statsHandler := handler.NewStatsHandler(orderSvc)
+		api.GET("/stats/orders", statsHandler.OrderStats)
+		api.GET("/stats/revenue", statsHandler.RevenueStats)
 	}
 }
