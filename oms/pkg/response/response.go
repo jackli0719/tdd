@@ -23,9 +23,9 @@ func Success(c *gin.Context, data interface{}) {
 }
 
 // Error sends an error response
-func Error(c *gin.Context, code int, message string) {
-	c.JSON(http.StatusBadRequest, Response{
-		Code:    code,
+func Error(c *gin.Context, httpStatus int, message string) {
+	c.JSON(httpStatus, Response{
+		Code:    httpStatus,
 		Message: message,
 	})
 }
