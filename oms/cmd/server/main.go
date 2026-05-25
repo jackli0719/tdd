@@ -2,14 +2,26 @@ package main
 
 import (
 	"log"
+	"os"
 
 	"oms/internal/config"
 	"oms/internal/router"
+	"oms/pkg/logger"
 
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
+	// Initialize logger
+	logLevel := os.Getenv("LOG_LEVEL")
+	if logLevel == "" {
+		logLevel = "info"
+	}
+	if err := logger.Init(logLevel); err != nil {
+		log.Fatalf("Failed to initialize logger: %v", err)
+	}
+	defer logger.Sync()
+
 	// Load configuration
 	cfg := config.Load()
 

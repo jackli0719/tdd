@@ -2,6 +2,7 @@ package router
 
 import (
 	"oms/internal/handler"
+	"oms/internal/middleware"
 	"oms/internal/repository"
 	"oms/internal/service"
 
@@ -11,6 +12,12 @@ import (
 
 // Setup configures all routes
 func Setup(r *gin.Engine, db *gorm.DB) {
+	// Recovery middleware must be first to catch panics
+	r.Use(middleware.Recovery())
+
+	// Logger middleware
+	r.Use(middleware.Logger())
+
 	// Health check
 	r.GET("/health", func(c *gin.Context) {
 		if db == nil {
