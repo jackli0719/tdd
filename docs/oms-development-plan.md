@@ -607,7 +607,8 @@ curl http://localhost:8080/api/orders
 | phase1-7 | 后端 | 1-7 | 28 | 112 |
 | phase8 | 数据库 | 8 | 3 | 12 |
 | phase9-14 | 前端 | 9-14 | 10 | 40 |
-| **总计** | | | **41** | **164** |
+| phase15-18 | 完善项 | 15-18 | 14 | 56 |
+| **总计** | | | **55** | **220** |
 
 ---
 
@@ -617,6 +618,10 @@ curl http://localhost:8080/api/orders
 |-------|----------|-------|
 | Agent-DB | 数据库集成 | 8.1 - 8.3 |
 | Agent-Frontend | 前端开发 | 9 - 14 |
+| Agent-Test | 单元测试覆盖率 | 15.1 - 15.3 |
+| Agent-Error | 错误处理 | 16.1 - 16.2 |
+| Agent-Log | 日志记录 | 17.1 - 17.2 |
+| Agent-Deploy | 部署文档 | 18.1 - 18.3 |
 
 ---
 
@@ -627,3 +632,113 @@ curl http://localhost:8080/api/orders
 - Axios
 - Vue Router
 - Vite
+
+---
+
+## 十三、单元测试覆盖率 (Phase 15)
+
+> 每任务遵循：**契约先行 → 补充测试 → 验证覆盖率 → 提交**
+
+### Phase 15: 单元测试覆盖率提升
+
+#### 15.1 后端单元测试覆盖
+- [ ] **契约**: 测试覆盖率目标 70%+
+- [ ] `go test ./... -cover` 查看当前覆盖率
+- [ ] 补充 handler/service/repository 测试
+- [ ] **测试**: 覆盖率达标
+- [ ] 提交
+
+#### 15.2 前端组件测试
+- [ ] **契约**: Vitest + Vue Test Utils
+- [ ] `npm install -D vitest @vue/test-utils`
+- [ ] 编写组件基础测试
+- [ ] **测试**: `npm run test` 通过
+- [ ] 提交
+
+#### 15.3 API 集成测试
+- [ ] **契约**: 使用 JSON Schema 验证 API 响应
+- [ ] 编写 API 响应格式测试
+- [ ] **测试**: E2E API 测试通过
+- [ ] 提交
+
+---
+
+## 十四、错误处理完善 (Phase 16)
+
+> 每任务遵循：**契约先行 → 定义错误码 → 实现处理 → 提交**
+
+### Phase 16: 错误处理完善
+
+#### 16.1 统一错误码定义
+- [ ] **契约**: 错误码规范
+  ```go
+  const (
+      ErrCodeSuccess = 0
+      ErrCodeParam = 400
+      ErrCodeUnauthorized = 401
+      ErrCodeForbidden = 403
+      ErrCodeNotFound = 404
+      ErrCodeInternal = 500
+  )
+  ```
+- [ ] 创建 `pkg/errors/errors.go`
+- [ ] **测试**: 错误码一致性
+- [ ] 提交
+
+#### 16.2 全局错误处理中间件
+- [ ] **契约**: Gin 中间件统一捕获 panic
+- [ ] 创建 `internal/middleware/recovery.go`
+- [ ] 统一日志记录错误
+- [ ] **测试**: 模拟 panic 被捕获
+- [ ] 提交
+
+---
+
+## 十五、日志记录 (Phase 17)
+
+> 每任务遵循：**契约先行 → 定义日志格式 → 实现记录 → 提交**
+
+### Phase 17: 日志记录
+
+#### 17.1 日志库集成
+- [ ] **契约**: 结构化日志 (JSON 格式)
+- [ ] `go get go.uber.org/zap`
+- [ ] 创建 `pkg/logger/logger.go`
+- [ ] **测试**: 日志输出正常
+- [ ] 提交
+
+#### 17.2 日志中间件
+- [ ] **契约**: HTTP 请求日志
+- [ ] 创建 `internal/middleware/logger.go`
+- [ ] 记录请求耗时、状态码、路径
+- [ ] **测试**: 请求日志正确输出
+- [ ] 提交
+
+---
+
+## 十六、部署文档 (Phase 18)
+
+> 每任务遵循：**契约先行 → 编写文档 → 验证部署 → 提交**
+
+### Phase 18: 部署文档
+
+#### 18.1 Docker 配置
+- [ ] **契约**: Dockerfile + docker-compose.yml
+- [ ] 创建 `Dockerfile` (Go 构建)
+- [ ] 创建 `docker-compose.yml` (Go + Vue + SQLite)
+- [ ] **测试**: `docker-compose up` 启动成功
+- [ ] 提交
+
+#### 18.2 环境变量配置
+- [ ] **契约**: `.env.example` 模板
+- [ ] 创建 `oms/.env.example`
+- [ ] 创建 `frontend/.env.example`
+- [ ] **测试**: 按模板配置可正常运行
+- [ ] 提交
+
+#### 18.3 README 部署说明
+- [ ] **契约**: 部署步骤清晰、可执行
+- [ ] 编写 `docs/DEPLOYMENT.md`
+- [ ] 包含：环境要求、本地部署、Docker 部署
+- [ ] **测试**: 文档可读性检查
+- [ ] 提交

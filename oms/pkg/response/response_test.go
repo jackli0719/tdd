@@ -58,3 +58,26 @@ func TestError(t *testing.T) {
 		t.Errorf("expected message 'bad request', got %s", resp.Message)
 	}
 }
+
+func TestErrorWithStatus(t *testing.T) {
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+
+	ErrorWithStatus(c, http.StatusInternalServerError, 500, "internal error")
+
+	if w.Code != http.StatusInternalServerError {
+		t.Errorf("expected status %d, got %d", http.StatusInternalServerError, w.Code)
+	}
+
+	var resp Response
+	if err := json.Unmarshal(w.Body.Bytes(), &resp); err != nil {
+		t.Fatalf("failed to unmarshal: %v", err)
+	}
+
+	if resp.Code != 500 {
+		t.Errorf("expected code 500, got %d", resp.Code)
+	}
+	if resp.Message != "internal error" {
+		t.Errorf("expected message 'internal error', got %s", resp.Message)
+	}
+}

@@ -175,3 +175,67 @@ func TestProductHandler_Delete(t *testing.T) {
 		t.Errorf("expected status %d, got %d", http.StatusOK, w.Code)
 	}
 }
+
+func TestProductHandler_Delete_NotFound(t *testing.T) {
+	db := setupProductTestDB(t)
+	repo := repository.NewProductRepository(db)
+	svc := service.NewProductService(repo)
+	r := setupProductRouter(svc)
+
+	req, _ := http.NewRequest("DELETE", "/api/products/999", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusNotFound {
+		t.Errorf("expected status %d, got %d", http.StatusNotFound, w.Code)
+	}
+}
+
+func TestProductHandler_Create_InvalidJSON(t *testing.T) {
+	db := setupProductTestDB(t)
+	repo := repository.NewProductRepository(db)
+	svc := service.NewProductService(repo)
+	r := setupProductRouter(svc)
+
+	body := `{invalid json}`
+	req, _ := http.NewRequest("POST", "/api/products", bytes.NewBufferString(body))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusBadRequest {
+		t.Errorf("expected status %d, got %d", http.StatusBadRequest, w.Code)
+	}
+}
+
+func TestProductHandler_Update_NotFound(t *testing.T) {
+	db := setupProductTestDB(t)
+	repo := repository.NewProductRepository(db)
+	svc := service.NewProductService(repo)
+	r := setupProductRouter(svc)
+
+	body := `{"stock":50}`
+	req, _ := http.NewRequest("PUT", "/api/products/999", bytes.NewBufferString(body))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusNotFound {
+		t.Errorf("expected status %d, got %d", http.StatusNotFound, w.Code)
+	}
+}
+
+func TestProductHandler_InvalidID(t *testing.T) {
+	db := setupProductTestDB(t)
+	repo := repository.NewProductRepository(db)
+	svc := service.NewProductService(repo)
+	r := setupProductRouter(svc)
+
+	req, _ := http.NewRequest("GET", "/api/products/invalid", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusBadRequest {
+		t.Errorf("expected status %d, got %d", http.StatusBadRequest, w.Code)
+	}
+}
