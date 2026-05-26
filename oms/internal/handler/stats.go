@@ -22,18 +22,18 @@ func NewStatsHandler(orderSvc service.OrderService) *StatsHandler {
 
 // OrderStats represents order statistics
 type OrderStats struct {
-	Total      int64 `json:"total"`
-	Pending    int64 `json:"pending"`
-	Confirmed  int64 `json:"confirmed"`
-	InService  int64 `json:"in_service"`
-	Completed  int64 `json:"completed"`
-	Cancelled  int64 `json:"cancelled"`
+	Total     int64 `json:"total"`
+	Pending   int64 `json:"pending"`
+	Confirmed int64 `json:"confirmed"`
+	InService int64 `json:"in_service"`
+	Completed int64 `json:"completed"`
+	Cancelled int64 `json:"cancelled"`
 }
 
 // RevenueStats represents revenue statistics
 type RevenueStats struct {
-	TotalRevenue    float64 `json:"total_revenue"`
-	PendingRevenue  float64 `json:"pending_revenue"`
+	TotalRevenue     float64 `json:"total_revenue"`
+	PendingRevenue   float64 `json:"pending_revenue"`
 	ConfirmedRevenue float64 `json:"confirmed_revenue"`
 	InServiceRevenue float64 `json:"in_service_revenue"`
 	CompletedRevenue float64 `json:"completed_revenue"`

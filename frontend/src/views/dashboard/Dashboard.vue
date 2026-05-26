@@ -38,9 +38,9 @@
         <el-card>
           <template #header>订单统计</template>
           <div class="order-stats">
-            <p>待支付: {{ orderStats.pending }}</p>
-            <p>已支付: {{ orderStats.paid }}</p>
-            <p>已发货: {{ orderStats.shipped }}</p>
+            <p>待确认: {{ orderStats.pending }}</p>
+            <p>已确认: {{ orderStats.confirmed }}</p>
+            <p>服务中: {{ orderStats.in_service }}</p>
             <p>已完成: {{ orderStats.completed }}</p>
             <p>已取消: {{ orderStats.cancelled }}</p>
           </div>
@@ -51,9 +51,9 @@
           <template #header>营收统计</template>
           <div class="order-stats">
             <p>总收入: ¥{{ revenueStats.total_revenue }}</p>
-            <p>待支付营收: ¥{{ revenueStats.pending_revenue }}</p>
-            <p>已支付营收: ¥{{ revenueStats.paid_revenue }}</p>
-            <p>已发货营收: ¥{{ revenueStats.shipped_revenue }}</p>
+            <p>待确认营收: ¥{{ revenueStats.pending_revenue }}</p>
+            <p>已确认营收: ¥{{ revenueStats.confirmed_revenue }}</p>
+            <p>服务中营收: ¥{{ revenueStats.in_service_revenue }}</p>
             <p>已完成营收: ¥{{ revenueStats.completed_revenue }}</p>
           </div>
         </el-card>
@@ -92,8 +92,8 @@ const stats = ref({
 
 const orderStats = ref({
   pending: 0,
-  paid: 0,
-  shipped: 0,
+  confirmed: 0,
+  in_service: 0,
   completed: 0,
   cancelled: 0,
 })
@@ -101,8 +101,8 @@ const orderStats = ref({
 const revenueStats = ref({
   total_revenue: 0,
   pending_revenue: 0,
-  paid_revenue: 0,
-  shipped_revenue: 0,
+  confirmed_revenue: 0,
+  in_service_revenue: 0,
   completed_revenue: 0,
 })
 
