@@ -25,6 +25,11 @@
             {{ row.staff_id || '-' }}
           </template>
         </el-table-column>
+        <el-table-column prop="appointment_time" label="预约时间">
+          <template #default="{ row }">
+            {{ formatAppointmentTime(row.appointment_time) }}
+          </template>
+        </el-table-column>
         <el-table-column prop="created_at" label="创建时间">
           <template #default="{ row }">
             {{ formatDate(row.created_at) }}
@@ -180,6 +185,11 @@ const selectStaff = async (row) => {
 }
 
 const formatDate = (date) => {
+  if (!date) return '-'
+  return new Date(date).toLocaleString()
+}
+
+const formatAppointmentTime = (date) => {
   if (!date) return '-'
   return new Date(date).toLocaleString()
 }

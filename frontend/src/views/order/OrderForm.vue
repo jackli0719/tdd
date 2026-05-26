@@ -2,7 +2,7 @@
   <el-dialog
     v-model="visible"
     title="创建订单"
-    width="500px"
+    width="600px"
   >
     <el-form :model="form" label-width="80px">
       <el-form-item label="用户">
@@ -14,6 +14,19 @@
             :value="user.id"
           />
         </el-select>
+      </el-form-item>
+      <el-form-item label="预约时间">
+        <div class="appointment-row">
+          <DatePicker v-model="appointmentDate" @change="onDateChange" />
+          <TimeSlotPicker
+            v-model="appointmentTime"
+            :date="appointmentDate"
+            :slots="slots"
+            :loading="slotsLoading"
+            :disabled="!appointmentDate"
+            @slots-updated="onSlotsUpdated"
+          />
+        </div>
       </el-form-item>
       <el-form-item label="产品">
         <div class="product-items">
@@ -41,10 +54,13 @@
 </template>
 
 <script setup>
-import { ref, watch, computed } from 'vue'
+import { ref, watch } from 'vue'
 import { createOrder } from '../../api/order'
 import { getUsers } from '../../api/user'
 import { getProducts } from '../../api/product'
+import { getSlots } from '../../api/slot'
+import DatePicker from '../../components/DatePicker.vue'
+import TimeSlotPicker from '../../components/TimeSlotPicker.vue'
 import { ElMessage } from 'element-plus'
 
 const props = defineProps({
@@ -57,6 +73,10 @@ const visible = ref(props.modelValue)
 const loading = ref(false)
 const users = ref([])
 const products = ref([])
+const appointmentDate = ref('')
+const appointmentTime = ref('')
+const slots = ref([])
+const slotsLoading = ref(false)
 const form = ref({
   user_id: null,
   items: [{ product_id: null, quantity: 1 }],
@@ -67,6 +87,9 @@ watch(() => props.modelValue, async (val) => {
   if (val) {
     await loadUsers()
     await loadProducts()
+    appointmentDate.value = ''
+    appointmentTime.value = ''
+    slots.value = []
     form.value = { user_id: null, items: [{ product_id: null, quantity: 1 }] }
   }
 })
@@ -93,8 +116,28 @@ const loadProducts = async () => {
   }
 }
 
+const onDateChange = async (date) => {
+  appointmentTime.value = ''
+  if (!date) {
+    slots.value = []
+    return
+  }
+  slotsLoading.value = true
+  try {
+    const res = await getSlots(date)
+    slots.value = res.data?.slots || []
+  } catch (error) {
+    slots.value = []
+  } finally {
+    slotsLoading.value = false
+  }
+}
+
+const onSlotsUpdated = (updatedSlots) => {
+  slots.value = updatedSlots
+}
+
 const onProductChange = (index) => {
-  // Reset quantity when product changes
   form.value.items[index].quantity = 1
 }
 
@@ -114,6 +157,11 @@ const removeItem = (index) => {
   }
 }
 
+const buildAppointmentTime = () => {
+  if (!appointmentDate.value || !appointmentTime.value) return null
+  return appointmentDate.value + ' ' + appointmentTime.value + ':00'
+}
+
 const handleSubmit = async () => {
   if (!form.value.user_id) {
     ElMessage.warning('请选择用户')
@@ -126,12 +174,18 @@ const handleSubmit = async () => {
     return
   }
 
+  const appointmentTime = buildAppointmentTime()
+  const orderData = {
+    user_id: form.value.user_id,
+    items: validItems,
+  }
+  if (appointmentTime) {
+    orderData.appointment_time = appointmentTime
+  }
+
   loading.value = true
   try {
-    await createOrder({
-      user_id: form.value.user_id,
-      items: validItems,
-    })
+    await createOrder(orderData)
     ElMessage.success('创建成功')
     visible.value = false
     emit('success')
@@ -157,5 +211,11 @@ const handleSubmit = async () => {
 
 .product-item-row .el-select {
   flex: 1;
+}
+
+.appointment-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
 }
 </style>
