@@ -33,47 +33,37 @@
     <AddressForm
       v-model="formVisible"
       :address="currentAddress"
+      :user-id="currentUserId"
       @success="loadAddresses"
     />
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref, onMounted } from 'vue'
+import { getUserId } from '../../api/auth'
 import { getAddresses, deleteAddress as deleteAddressApi, setDefaultAddress } from '../../api/address'
 import AddressForm from './AddressForm.vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-
-const props = defineProps({
-  userId: {
-    type: [Number, String],
-    required: true,
-  },
-})
-
-const route = useRoute()
 
 const addresses = ref([])
 const loading = ref(false)
 const formVisible = ref(false)
 const currentAddress = ref(null)
-const effectiveUserId = ref(props.userId)
+const currentUserId = ref(null)
 
-onMounted(() => {
-  effectiveUserId.value = props.userId
-  loadAddresses()
-})
-
-watch(() => props.userId, (newId) => {
-  effectiveUserId.value = newId
-  loadAddresses()
+onMounted(async () => {
+  currentUserId.value = await getUserId()
+  if (currentUserId.value) {
+    loadAddresses()
+  }
 })
 
 const loadAddresses = async () => {
+  if (!currentUserId.value) return
   loading.value = true
   try {
-    const res = await getAddresses(effectiveUserId.value)
+    const res = await getAddresses(currentUserId.value)
     addresses.value = res.data?.addresses || []
   } catch (error) {
     ElMessage.error('加载地址列表失败')
@@ -94,7 +84,7 @@ const editAddress = (address) => {
 
 const setDefault = async (address) => {
   try {
-    await setDefaultAddress(address.id, effectiveUserId.value)
+    await setDefaultAddress(address.id, currentUserId.value)
     ElMessage.success('设置成功')
     loadAddresses()
   } catch (error) {

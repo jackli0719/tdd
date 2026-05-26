@@ -30,6 +30,11 @@
             {{ formatAppointmentTime(row.appointment_time) }}
           </template>
         </el-table-column>
+        <el-table-column prop="address" label="服务地址">
+          <template #default="{ row }">
+            {{ row.address || (row.address_id ? '地址#' + row.address_id : '-') }}
+          </template>
+        </el-table-column>
         <el-table-column prop="created_at" label="创建时间">
           <template #default="{ row }">
             {{ formatDate(row.created_at) }}

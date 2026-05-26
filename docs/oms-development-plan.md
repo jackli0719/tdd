@@ -1231,57 +1231,57 @@ P6: Phase 30 (服务者管理)        → 6-8天
 ### Phase 26 服务地址 - 详细任务
 
 #### 后端 Model (26.1)
-- [ ] 26.1.1 **契约**: `Address` 结构体 (id, user_id, name, phone, province, city, district, detail, is_default, created_at, updated_at)
-- [ ] 26.1.2 创建 `internal/model/address.go`
-- [ ] 26.1.3 **测试**: `go build ./...`
-- [ ] 26.1.4 提交
+- [x] 26.1.1 **契约**: `Address` 结构体 (id, user_id, name, phone, province, city, district, detail, is_default, created_at, updated_at)
+- [x] 26.1.2 创建 `internal/model/address.go`
+- [x] 26.1.3 **测试**: `go build ./...`
+- [x] 26.1.4 提交
 
 #### 后端 Repository (26.2)
-- [ ] 26.2.1 **契约**: Create, GetByID, Update, Delete, ListByUserID, SetDefault
-- [ ] 26.2.2 创建 `internal/repository/address.go`
-- [ ] 26.2.3 **测试**: `go test ./...`
-- [ ] 26.2.4 提交
+- [x] 26.2.1 **契约**: Create, GetByID, Update, Delete, ListByUserID, SetDefault
+- [x] 26.2.2 创建 `internal/repository/address.go`
+- [x] 26.2.3 **测试**: `go test ./...`
+- [x] 26.2.4 提交
 
 #### 后端 Service (26.3)
-- [ ] 26.3.1 **契约**: 用户地址列表、默认地址设置
-- [ ] 26.3.2 创建 `internal/service/address.go`
-- [ ] 26.3.3 **测试**: `go test ./...`
-- [ ] 26.3.4 提交
+- [x] 26.3.1 **契约**: 用户地址列表、默认地址设置
+- [x] 26.3.2 创建 `internal/service/address.go`
+- [x] 26.3.3 **测试**: `go test ./...`
+- [x] 26.3.4 提交
 
 #### 后端 Handler (26.4)
-- [ ] 26.4.1 **契约**: `GET /api/addresses` 用户地址列表
-- [ ] 26.4.2 **契约**: `GET /api/addresses/:id` 地址详情
-- [ ] 26.4.3 **契约**: `POST /api/addresses` 新增地址
-- [ ] 26.4.4 **契约**: `PUT /api/addresses/:id` 更新地址
-- [ ] 26.4.5 **契约**: `DELETE /api/addresses/:id` 删除地址
-- [ ] 26.4.6 **契约**: `PUT /api/addresses/:id/default` 设为默认地址
-- [ ] 26.4.7 创建 `internal/handler/address.go`
-- [ ] 26.4.8 **测试**: `go test ./...`
-- [ ] 26.4.9 提交
+- [x] 26.4.1 **契约**: `GET /api/addresses` 用户地址列表
+- [x] 26.4.2 **契约**: `GET /api/addresses/:id` 地址详情
+- [x] 26.4.3 **契约**: `POST /api/addresses` 新增地址
+- [x] 26.4.4 **契约**: `PUT /api/addresses/:id` 更新地址
+- [x] 26.4.5 **契约**: `DELETE /api/addresses/:id` 删除地址
+- [x] 26.4.6 **契约**: `PUT /api/addresses/:id/default` 设为默认地址
+- [x] 26.4.7 创建 `internal/handler/address.go`
+- [x] 26.4.8 **测试**: `go test ./...`
+- [x] 26.4.9 提交
 
 #### 后端 路由 (26.5)
-- [ ] 26.5.1 **契约**: 路由组 `/api/addresses`
-- [ ] 26.5.2 在 router 中注册 address 路由
-- [ ] 26.5.3 **测试**: `go build ./...`
-- [ ] 26.5.4 提交
+- [x] 26.5.1 **契约**: 路由组 `/api/addresses`
+- [x] 26.5.2 在 router 中注册 address 路由
+- [x] 26.5.3 **测试**: `go build ./...`
+- [x] 26.5.4 提交
 
 #### 前端 API (26.6)
-- [ ] 26.6.1 **契约**: CRUD + 设置默认 API
-- [ ] 26.6.2 创建 `src/api/address.js`
-- [ ] 26.6.3 **测试**: `npm test`
-- [ ] 26.6.4 提交
+- [x] 26.6.1 **契约**: CRUD + 设置默认 API
+- [x] 26.6.2 创建 `src/api/address.js`
+- [x] 26.6.3 **测试**: `npm run build`
+- [x] 26.6.4 提交
 
 #### 前端 列表页 (26.7)
-- [ ] 26.7.1 **契约**: 地址列表展示、默认地址标记
-- [ ] 26.7.2 创建 `src/views/address/AddressList.vue`
-- [ ] 26.7.3 **测试**: `npm test`
-- [ ] 26.7.4 提交
+- [x] 26.7.1 **契约**: 地址列表展示、默认地址标记
+- [x] 26.7.2 创建 `src/views/address/AddressList.vue`
+- [x] 26.7.3 **测试**: `npm run build`
+- [x] 26.7.4 提交
 
 #### 前端 表单弹窗 (26.8)
-- [ ] 26.8.1 **契约**: 新增/编辑地址表单
-- [ ] 26.8.2 创建 `src/views/address/AddressForm.vue`
-- [ ] 26.8.3 **测试**: `npm test`
-- [ ] 26.8.4 提交
+- [x] 26.8.1 **契约**: 新增/编辑地址表单
+- [x] 26.8.2 创建 `src/views/address/AddressForm.vue`
+- [x] 26.8.3 **测试**: `npm run build`
+- [x] 26.8.4 提交
 
 #### 前端 订单表单集成 (26.9)
 - [x] 26.9.1 **契约**: OrderForm.vue 添加服务地址选择
@@ -1298,10 +1298,11 @@ P6: Phase 30 (服务者管理)        → 6-8天
 #### E2E (26.11)
 - [x] 26.11.1 **契约**: 地址管理 E2E 测试
 - [x] 26.11.2 添加 `e2e/address.spec.js`
-- [x] 26.11.3 **测试**: 创建，编辑，设置默认，删除
+- [x] 26.11.3 **测试**: 创建，编辑，设置默认，删除，空列表 (5 tests)
 - [x] 26.11.4 提交
 
 #### 验证 (26.12)
 - [x] 26.12.1 `go build ./...` 通过
 - [x] 26.12.2 `go test ./...` 通过
 - [x] 26.12.3 `npm run build` 通过
+- [x] 26.12.4 E2E 全部 29 tests 通过

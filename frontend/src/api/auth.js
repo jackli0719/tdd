@@ -13,4 +13,13 @@ export const getCurrentUser = () => {
   return api.get('/auth/me')
 }
 
+export const getUserId = async () => {
+  try {
+    const res = await getCurrentUser()
+    return res?.data?.user_id || res?.user_id || null
+  } catch {
+    return null
+  }
+}
+
 export { getToken, setToken, removeToken }

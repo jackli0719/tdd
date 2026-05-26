@@ -48,13 +48,19 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { removeToken } from '../api/auth'
+import { removeToken, getUserId } from '../api/auth'
 
 const route = useRoute()
 const router = useRouter()
 const currentRoute = computed(() => route.path)
+const currentUserId = ref(1)
+
+onMounted(async () => {
+  const uid = await getUserId()
+  if (uid) currentUserId.value = uid
+})
 
 const handleLogout = () => {
   removeToken()
