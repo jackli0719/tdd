@@ -3,16 +3,16 @@ import { getToken } from '../api/auth'
 const whiteList = ['/login', '/register']
 
 export const setupAuthGuard = (router) => {
-  router.beforeEach((to, from, next) => {
+  router.beforeEach((to, from) => {
     const token = getToken()
+    const whiteList = ['/login', '/register']
 
     if (whiteList.includes(to.path)) {
-      next()
+      return true
     } else if (!token) {
-      next('/login')
-    } else {
-      next()
+      return '/login'
     }
+    return true
   })
 }
 
