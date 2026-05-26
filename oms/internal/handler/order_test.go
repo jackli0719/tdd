@@ -42,8 +42,8 @@ func setupOrderRouter(svc service.OrderService) *gin.Engine {
 		api.GET("/orders/:id", h.Get)
 		api.POST("/orders", h.Create)
 		api.DELETE("/orders/:id", h.Delete)
-		api.POST("/orders/:id/paid", h.Paid)
-		api.POST("/orders/:id/ship", h.Ship)
+		api.POST("/orders/:id/confirm", h.Paid)
+		api.POST("/orders/:id/start", h.Ship)
 		api.POST("/orders/:id/complete", h.Complete)
 		api.POST("/orders/:id/cancel", h.Cancel)
 	}
@@ -146,7 +146,7 @@ func TestOrderHandler_Paid(t *testing.T) {
 		},
 	})
 
-	req, _ := http.NewRequest("POST", "/api/orders/1/paid", nil)
+	req, _ := http.NewRequest("POST", "/api/orders/1/confirm", nil)
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 
@@ -156,8 +156,8 @@ func TestOrderHandler_Paid(t *testing.T) {
 
 	// Verify status changed
 	updatedOrder, _ := svc.GetByID(order.ID)
-	if updatedOrder.Status != model.OrderStatusPaid {
-		t.Errorf("expected status 'paid', got '%s'", updatedOrder.Status)
+	if updatedOrder.Status != model.OrderStatusConfirmed {
+		t.Errorf("expected status 'confirmed', got '%s'", updatedOrder.Status)
 	}
 }
 
@@ -240,7 +240,7 @@ func TestOrderHandler_Ship(t *testing.T) {
 	// Create product
 	productRepo.Create(&model.Product{Name: "Test Product", Price: 99.99, Stock: 100})
 
-	// Create and pay order
+	// Create and confirm order
 	order, _ := svc.Create(&model.CreateOrderRequest{
 		UserID: 1,
 		Items: []model.CreateOrderItemRequest{
@@ -249,7 +249,7 @@ func TestOrderHandler_Ship(t *testing.T) {
 	})
 	svc.Paid(order.ID)
 
-	req, _ := http.NewRequest("POST", "/api/orders/1/ship", nil)
+	req, _ := http.NewRequest("POST", "/api/orders/1/start", nil)
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 
@@ -272,7 +272,7 @@ func TestOrderHandler_Complete(t *testing.T) {
 	// Create product
 	productRepo.Create(&model.Product{Name: "Test Product", Price: 99.99, Stock: 100})
 
-	// Create, pay, and ship order
+	// Create, confirm, and start service
 	order, _ := svc.Create(&model.CreateOrderRequest{
 		UserID: 1,
 		Items: []model.CreateOrderItemRequest{

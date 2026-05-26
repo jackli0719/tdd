@@ -6,9 +6,9 @@
           <template #header>订单统计</template>
           <div class="stats-content" v-loading="loading">
             <p>订单总数: {{ stats.total }}</p>
-            <p>待支付: {{ stats.pending }}</p>
-            <p>已支付: {{ stats.paid }}</p>
-            <p>已发货: {{ stats.shipped }}</p>
+            <p>待确认: {{ stats.pending }}</p>
+            <p>已确认: {{ stats.confirmed }}</p>
+            <p>服务中: {{ stats.in_service }}</p>
             <p>已完成: {{ stats.completed }}</p>
             <p>已取消: {{ stats.cancelled }}</p>
           </div>
@@ -19,9 +19,9 @@
           <template #header>营收统计</template>
           <div class="stats-content" v-loading="loading">
             <p>总收入: ¥{{ revenue.total_revenue }}</p>
-            <p>待支付营收: ¥{{ revenue.pending_revenue }}</p>
-            <p>已支付营收: ¥{{ revenue.paid_revenue }}</p>
-            <p>已发货营收: ¥{{ revenue.shipped_revenue }}</p>
+            <p>待确认营收: ¥{{ revenue.pending_revenue }}</p>
+            <p>已确认营收: ¥{{ revenue.confirmed_revenue }}</p>
+            <p>服务中营收: ¥{{ revenue.in_service_revenue }}</p>
             <p>已完成营收: ¥{{ revenue.completed_revenue }}</p>
           </div>
         </el-card>
@@ -38,8 +38,8 @@ import { ElMessage } from 'element-plus'
 const stats = ref({
   total: 0,
   pending: 0,
-  paid: 0,
-  shipped: 0,
+  confirmed: 0,
+  in_service: 0,
   completed: 0,
   cancelled: 0,
 })
@@ -47,8 +47,8 @@ const stats = ref({
 const revenue = ref({
   total_revenue: 0,
   pending_revenue: 0,
-  paid_revenue: 0,
-  shipped_revenue: 0,
+  confirmed_revenue: 0,
+  in_service_revenue: 0,
   completed_revenue: 0,
 })
 

@@ -9,8 +9,8 @@ type OrderStatus string
 
 const (
 	OrderStatusPending   OrderStatus = "pending"
-	OrderStatusPaid      OrderStatus = "paid"
-	OrderStatusShipped   OrderStatus = "shipped"
+	OrderStatusConfirmed OrderStatus = "confirmed"
+	OrderStatusInService OrderStatus = "in_service"
 	OrderStatusCompleted OrderStatus = "completed"
 	OrderStatusCancelled OrderStatus = "cancelled"
 )

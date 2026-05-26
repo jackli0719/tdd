@@ -104,15 +104,15 @@ func TestOrderRepository_Update(t *testing.T) {
 	}
 	repo.Create(order)
 
-	order.Status = model.OrderStatusPaid
+	order.Status = model.OrderStatusConfirmed
 	err := repo.Update(order)
 	if err != nil {
 		t.Fatalf("failed to update order: %v", err)
 	}
 
 	found, _ := repo.GetByID(order.ID)
-	if found.Status != model.OrderStatusPaid {
-		t.Errorf("expected status 'paid', got '%s'", found.Status)
+	if found.Status != model.OrderStatusConfirmed {
+		t.Errorf("expected status 'confirmed', got '%s'", found.Status)
 	}
 }
 

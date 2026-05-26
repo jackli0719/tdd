@@ -21,17 +21,18 @@ type ProductService interface {
 	GetByID(id int64) (*model.Product, error)
 	Update(id int64, req *model.UpdateProductRequest) (*model.Product, error)
 	Delete(id int64) error
-	List(page, pageSize int) ([]*model.Product, int64, error)
+	List(page, pageSize int, categoryID int64) ([]*model.Product, int64, error)
 	DecrementStock(id int64, quantity int) error
 }
 
 type productService struct {
-	repo repository.ProductRepository
+	repo         repository.ProductRepository
+	categoryRepo repository.CategoryRepository
 }
 
 // NewProductService creates a new ProductService
-func NewProductService(repo repository.ProductRepository) ProductService {
-	return &productService{repo: repo}
+func NewProductService(repo repository.ProductRepository, categoryRepo repository.CategoryRepository) ProductService {
+	return &productService{repo: repo, categoryRepo: categoryRepo}
 }
 
 func (s *productService) Create(req *model.CreateProductRequest) (*model.Product, error) {
@@ -42,10 +43,19 @@ func (s *productService) Create(req *model.CreateProductRequest) (*model.Product
 		return nil, err
 	}
 
+	// Check if category exists
+	if _, err := s.categoryRepo.GetByID(req.CategoryID); err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrCategoryNotFound
+		}
+		return nil, err
+	}
+
 	product := &model.Product{
-		Name:  req.Name,
-		Price: req.Price,
-		Stock: req.Stock,
+		CategoryID: req.CategoryID,
+		Name:       req.Name,
+		Price:      req.Price,
+		Stock:      req.Stock,
 	}
 
 	if err := s.repo.Create(product); err != nil {
@@ -82,15 +92,28 @@ func (s *productService) Update(id int64, req *model.UpdateProductRequest) (*mod
 		}
 	}
 
+	// Check if category exists if being updated
+	if req.CategoryID != nil && *req.CategoryID != product.CategoryID {
+		if _, err := s.categoryRepo.GetByID(*req.CategoryID); err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return nil, ErrCategoryNotFound
+			}
+			return nil, err
+		}
+	}
+
 	// Update fields
+	if req.CategoryID != nil {
+		product.CategoryID = *req.CategoryID
+	}
 	if req.Name != "" {
 		product.Name = req.Name
 	}
 	if req.Price > 0 {
 		product.Price = req.Price
 	}
-	if req.Stock >= 0 {
-		product.Stock = req.Stock
+	if req.Stock != nil {
+		product.Stock = *req.Stock
 	}
 
 	if err := s.repo.Update(product); err != nil {
@@ -112,7 +135,7 @@ func (s *productService) Delete(id int64) error {
 	return s.repo.Delete(id)
 }
 
-func (s *productService) List(page, pageSize int) ([]*model.Product, int64, error) {
+func (s *productService) List(page, pageSize int, categoryID int64) ([]*model.Product, int64, error) {
 	if page < 1 {
 		page = 1
 	}
@@ -121,7 +144,7 @@ func (s *productService) List(page, pageSize int) ([]*model.Product, int64, erro
 	}
 
 	offset := (page - 1) * pageSize
-	return s.repo.List(offset, pageSize)
+	return s.repo.List(offset, pageSize, categoryID)
 }
 
 func (s *productService) DecrementStock(id int64, quantity int) error {

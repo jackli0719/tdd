@@ -18,9 +18,9 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'cd /Users/liwei/res/minimaxi/tdd/oms && go build -o server ./cmd/server && ./server & sleep 2 && cd /Users/liwei/res/minimaxi/tdd/frontend && npm run dev',
+    command: '(curl -fsS http://127.0.0.1:8080/health >/dev/null 2>&1 || (cd ../oms && go build -o server ./cmd/server && ./server)) & npm run dev -- --host 127.0.0.1',
     port: 5173,
-    reuseExistingServer: false, // Always start fresh, don't depend on residual services
+    reuseExistingServer: !process.env.CI,
     timeout: 180000,
     stdout: 'pipe',
     stderr: 'pipe',

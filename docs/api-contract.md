@@ -136,11 +136,108 @@ DELETE /api/users/:id
 
 ---
 
+## 品类管理
+
+### 品类列表
+```
+GET /api/categories?page=1&page_size=10
+```
+
+**响应**:
+```json
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "categories": [
+      {
+        "id": 1,
+        "name": "家政",
+        "description": "家政服务类",
+        "created_at": "2026-05-25T10:00:00+08:00",
+        "updated_at": "2026-05-25T10:00:00+08:00"
+      }
+    ],
+    "total": 10,
+    "page": 1
+  }
+}
+```
+
+### 获取单个品类
+```
+GET /api/categories/:id
+```
+
+**响应**:
+```json
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "id": 1,
+    "name": "家政",
+    "description": "家政服务类",
+    "created_at": "2026-05-25T10:00:00+08:00",
+    "updated_at": "2026-05-25T10:00:00+08:00"
+  }
+}
+```
+
+### 创建品类
+```
+POST /api/categories
+```
+
+**请求体**:
+```json
+{
+  "name": "家政",
+  "description": "家政服务类"
+}
+```
+
+**响应**: 同获取单个品类
+
+### 更新品类
+```
+PUT /api/categories/:id
+```
+
+**请求体**:
+```json
+{
+  "name": "家政服务",
+  "description": "家政服务类目"
+}
+```
+
+**响应**: 同获取单个品类
+
+### 删除品类
+```
+DELETE /api/categories/:id
+```
+
+**约束**: 品类下有产品时不能删除
+
+**响应**:
+```json
+{
+  "code": 0,
+  "message": "success",
+  "data": null
+}
+```
+
+---
+
 ## 产品管理
 
 ### 产品列表
 ```
 GET /api/products?page=1&page_size=10
+GET /api/products?category_id=1  # 按品类筛选
 ```
 
 **响应**:
@@ -152,6 +249,7 @@ GET /api/products?page=1&page_size=10
     "products": [
       {
         "id": 1,
+        "category_id": 1,
         "name": "空调清洗",
         "price": 98,
         "stock": 95,
@@ -177,6 +275,7 @@ GET /api/products/:id
   "message": "success",
   "data": {
     "id": 1,
+    "category_id": 1,
     "name": "空调清洗",
     "price": 98,
     "stock": 95,
@@ -194,6 +293,7 @@ POST /api/products
 **请求体**:
 ```json
 {
+  "category_id": 1,
   "name": "空调清洗",
   "price": 98,
   "stock": 100
@@ -210,6 +310,7 @@ PUT /api/products/:id
 **请求体**:
 ```json
 {
+  "category_id": 1,
   "name": "空调深度清洗",
   "price": 128,
   "stock": 80
@@ -253,7 +354,7 @@ GET /api/orders?page=1&page_size=10
         "order_no": "ORD1779708285563400000",
         "user_id": 1,
         "total_amount": 490,
-        "status": "paid",
+        "status": "confirmed",
         "created_at": "2026-05-25T19:24:45.563439+08:00",
         "updated_at": "2026-05-25T19:24:47.217833+08:00",
         "items": [
@@ -275,19 +376,19 @@ GET /api/orders?page=1&page_size=10
 }
 ```
 
-### 订单状态说明
+### 订单状态说明（上门服务模式）
 | 状态 | 说明 |
 |------|------|
-| pending | 待支付 |
-| paid | 已支付 |
-| shipped | 已发货 |
+| pending | 待确认 |
+| confirmed | 已确认（待服务） |
+| in_service | 服务中 |
 | completed | 已完成 |
 | cancelled | 已取消 |
 
 ### 状态转换规则
-- pending → paid / cancelled
-- paid → shipped / cancelled
-- shipped → completed
+- pending → confirmed / cancelled
+- confirmed → in_service / cancelled
+- in_service → completed
 - completed → (终态)
 - cancelled → (终态)
 
@@ -336,11 +437,13 @@ DELETE /api/orders/:id
 
 ### 订单状态操作
 ```
-POST /api/orders/:id/paid    # 支付
-POST /api/orders/:id/ship    # 发货
-POST /api/orders/:id/complete # 完成
-POST /api/orders/:id/cancel  # 取消
+POST /api/orders/:id/confirm  # 确认订单
+POST /api/orders/:id/start    # 开始服务
+POST /api/orders/:id/complete # 完成服务
+POST /api/orders/:id/cancel   # 取消订单
 ```
+
+**约束**: 只能删除 pending 状态的订单
 
 **响应**:
 ```json
@@ -368,8 +471,8 @@ GET /api/stats/orders
   "data": {
     "total": 100,
     "pending": 10,
-    "paid": 20,
-    "shipped": 30,
+    "confirmed": 20,
+    "in_service": 30,
     "completed": 35,
     "cancelled": 5
   }
@@ -389,8 +492,8 @@ GET /api/stats/revenue
   "data": {
     "total_revenue": 50000,
     "pending_revenue": 5000,
-    "paid_revenue": 10000,
-    "shipped_revenue": 15000,
+    "confirmed_revenue": 10000,
+    "in_service_revenue": 15000,
     "completed_revenue": 20000
   }
 }

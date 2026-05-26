@@ -162,8 +162,8 @@ func (s *orderService) Delete(id int64) error {
 }
 
 // State transitions
-// pending -> paid -> shipped -> completed
-//           -> cancelled (from pending or paid)
+// pending -> confirmed -> in_service -> completed
+//           -> cancelled (from pending or confirmed)
 
 func (s *orderService) Paid(id int64) error {
 	order, err := s.orderRepo.GetByID(id)
@@ -178,7 +178,7 @@ func (s *orderService) Paid(id int64) error {
 		return ErrInvalidOrderState
 	}
 
-	order.Status = model.OrderStatusPaid
+	order.Status = model.OrderStatusConfirmed
 	return s.orderRepo.Update(order)
 }
 
@@ -191,11 +191,11 @@ func (s *orderService) Ship(id int64) error {
 		return err
 	}
 
-	if order.Status != model.OrderStatusPaid {
+	if order.Status != model.OrderStatusConfirmed {
 		return ErrInvalidOrderState
 	}
 
-	order.Status = model.OrderStatusShipped
+	order.Status = model.OrderStatusInService
 	return s.orderRepo.Update(order)
 }
 
@@ -208,7 +208,7 @@ func (s *orderService) Complete(id int64) error {
 		return err
 	}
 
-	if order.Status != model.OrderStatusShipped {
+	if order.Status != model.OrderStatusInService {
 		return ErrInvalidOrderState
 	}
 
@@ -225,7 +225,7 @@ func (s *orderService) Cancel(id int64) error {
 		return err
 	}
 
-	if order.Status != model.OrderStatusPending && order.Status != model.OrderStatusPaid {
+	if order.Status != model.OrderStatusPending && order.Status != model.OrderStatusConfirmed {
 		return ErrInvalidOrderState
 	}
 

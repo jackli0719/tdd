@@ -13,6 +13,9 @@
         <el-menu-item index="/users">
           <span>用户管理</span>
         </el-menu-item>
+        <el-menu-item index="/categories">
+          <span>品类管理</span>
+        </el-menu-item>
         <el-menu-item index="/products">
           <span>产品管理</span>
         </el-menu-item>

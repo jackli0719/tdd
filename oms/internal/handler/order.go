@@ -114,7 +114,7 @@ func (h *OrderHandler) Delete(c *gin.Context) {
 	response.Success(c, nil)
 }
 
-// Paid handles POST /api/orders/:id/paid
+// Paid handles POST /api/orders/:id/confirm (confirm order)
 func (h *OrderHandler) Paid(c *gin.Context) {
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
@@ -128,7 +128,7 @@ func (h *OrderHandler) Paid(c *gin.Context) {
 			return
 		}
 		if errors.Is(err, service.ErrInvalidOrderState) {
-			response.Error(c, http.StatusBadRequest, "invalid order state")
+			response.Error(c, http.StatusBadRequest, "can only confirm pending orders")
 			return
 		}
 		response.Error(c, http.StatusInternalServerError, err.Error())
@@ -138,7 +138,7 @@ func (h *OrderHandler) Paid(c *gin.Context) {
 	response.Success(c, nil)
 }
 
-// Ship handles POST /api/orders/:id/ship
+// Ship handles POST /api/orders/:id/start (start service)
 func (h *OrderHandler) Ship(c *gin.Context) {
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
@@ -152,7 +152,7 @@ func (h *OrderHandler) Ship(c *gin.Context) {
 			return
 		}
 		if errors.Is(err, service.ErrInvalidOrderState) {
-			response.Error(c, http.StatusBadRequest, "invalid order state")
+			response.Error(c, http.StatusBadRequest, "can only start service for confirmed orders")
 			return
 		}
 		response.Error(c, http.StatusInternalServerError, err.Error())
@@ -176,7 +176,7 @@ func (h *OrderHandler) Complete(c *gin.Context) {
 			return
 		}
 		if errors.Is(err, service.ErrInvalidOrderState) {
-			response.Error(c, http.StatusBadRequest, "invalid order state")
+			response.Error(c, http.StatusBadRequest, "can only complete orders in service")
 			return
 		}
 		response.Error(c, http.StatusInternalServerError, err.Error())

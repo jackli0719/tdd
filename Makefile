@@ -60,7 +60,9 @@ db-create: ## Create SQLite database file
 # Git
 git-check: ## Check git status for untracked/ignored files
 	@echo "=== Git Status ===" && git status --short
-	@echo "=== Git Ignored Files ===" && git ls-files -o --exclude-standard --ignored | while read f; do echo "Ignored: $$f"; done
+	@ignored_count=$$(git ls-files -o --exclude-standard --ignored | wc -l | tr -d ' '); \
+	echo "=== Git Ignored Files ==="; \
+	echo "Ignored files: $$ignored_count (not listed; run 'git ls-files -o --exclude-standard --ignored' to inspect)"
 
 # Full check before commit
 pre-commit: check lint git-check ## Run all checks before commit

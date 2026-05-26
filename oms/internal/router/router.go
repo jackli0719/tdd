@@ -18,6 +18,9 @@ func Setup(r *gin.Engine, db *gorm.DB) {
 	// Logger middleware
 	r.Use(middleware.Logger())
 
+	// CORS middleware
+	r.Use(middleware.CORS())
+
 	// Health check
 	r.GET("/health", func(c *gin.Context) {
 		if db == nil {
@@ -38,6 +41,16 @@ func Setup(r *gin.Engine, db *gorm.DB) {
 	// API routes
 	api := r.Group("/api")
 	{
+		// Category routes
+		categoryRepo := repository.NewCategoryRepository(db)
+		categorySvc := service.NewCategoryService(categoryRepo)
+		categoryHandler := handler.NewCategoryHandler(categorySvc)
+		api.GET("/categories", categoryHandler.List)
+		api.GET("/categories/:id", categoryHandler.Get)
+		api.POST("/categories", categoryHandler.Create)
+		api.PUT("/categories/:id", categoryHandler.Update)
+		api.DELETE("/categories/:id", categoryHandler.Delete)
+
 		// User routes
 		userRepo := repository.NewUserRepository(db)
 		userSvc := service.NewUserService(userRepo)
@@ -50,7 +63,7 @@ func Setup(r *gin.Engine, db *gorm.DB) {
 
 		// Product routes
 		productRepo := repository.NewProductRepository(db)
-		productSvc := service.NewProductService(productRepo)
+		productSvc := service.NewProductService(productRepo, categoryRepo)
 		productHandler := handler.NewProductHandler(productSvc)
 		api.GET("/products", productHandler.List)
 		api.GET("/products/:id", productHandler.Get)
@@ -66,8 +79,8 @@ func Setup(r *gin.Engine, db *gorm.DB) {
 		api.GET("/orders/:id", orderHandler.Get)
 		api.POST("/orders", orderHandler.Create)
 		api.DELETE("/orders/:id", orderHandler.Delete)
-		api.POST("/orders/:id/paid", orderHandler.Paid)
-		api.POST("/orders/:id/ship", orderHandler.Ship)
+		api.POST("/orders/:id/confirm", orderHandler.Paid)
+		api.POST("/orders/:id/start", orderHandler.Ship)
 		api.POST("/orders/:id/complete", orderHandler.Complete)
 		api.POST("/orders/:id/cancel", orderHandler.Cancel)
 
