@@ -54,11 +54,11 @@ func TestOrderStatus(t *testing.T) {
 	if OrderStatusPending != "pending" {
 		t.Errorf("expected 'pending', got '%s'", OrderStatusPending)
 	}
-	if OrderStatusPaid != "paid" {
-		t.Errorf("expected 'paid', got '%s'", OrderStatusPaid)
+	if OrderStatusConfirmed != "confirmed" {
+		t.Errorf("expected 'confirmed', got '%s'", OrderStatusConfirmed)
 	}
-	if OrderStatusShipped != "shipped" {
-		t.Errorf("expected 'shipped', got '%s'", OrderStatusShipped)
+	if OrderStatusInService != "in_service" {
+		t.Errorf("expected 'in_service', got '%s'", OrderStatusInService)
 	}
 	if OrderStatusCompleted != "completed" {
 		t.Errorf("expected 'completed', got '%s'", OrderStatusCompleted)

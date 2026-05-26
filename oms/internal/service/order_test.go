@@ -54,26 +54,26 @@ func TestOrderService_StateTransitions(t *testing.T) {
 		t.Errorf("expected status 'pending', got '%s'", order.Status)
 	}
 
-	// Test Paid transition
+	// Test Paid (Confirm) transition
 	err = svc.Paid(order.ID)
 	if err != nil {
-		t.Fatalf("failed to pay order: %v", err)
+		t.Fatalf("failed to confirm order: %v", err)
 	}
 
 	order, _ = svc.GetByID(order.ID)
-	if order.Status != model.OrderStatusPaid {
-		t.Errorf("expected status 'paid', got '%s'", order.Status)
+	if order.Status != model.OrderStatusConfirmed {
+		t.Errorf("expected status 'confirmed', got '%s'", order.Status)
 	}
 
-	// Test Ship transition
+	// Test Ship (Start service) transition
 	err = svc.Ship(order.ID)
 	if err != nil {
-		t.Fatalf("failed to ship order: %v", err)
+		t.Fatalf("failed to start service: %v", err)
 	}
 
 	order, _ = svc.GetByID(order.ID)
-	if order.Status != model.OrderStatusShipped {
-		t.Errorf("expected status 'shipped', got '%s'", order.Status)
+	if order.Status != model.OrderStatusInService {
+		t.Errorf("expected status 'in_service', got '%s'", order.Status)
 	}
 
 	// Test Complete transition

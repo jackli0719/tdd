@@ -22,20 +22,20 @@ func NewStatsHandler(orderSvc service.OrderService) *StatsHandler {
 
 // OrderStats represents order statistics
 type OrderStats struct {
-	Total     int64 `json:"total"`
-	Pending   int64 `json:"pending"`
-	Paid      int64 `json:"paid"`
-	Shipped   int64 `json:"shipped"`
-	Completed int64 `json:"completed"`
-	Cancelled int64 `json:"cancelled"`
+	Total      int64 `json:"total"`
+	Pending    int64 `json:"pending"`
+	Confirmed  int64 `json:"confirmed"`
+	InService  int64 `json:"in_service"`
+	Completed  int64 `json:"completed"`
+	Cancelled  int64 `json:"cancelled"`
 }
 
 // RevenueStats represents revenue statistics
 type RevenueStats struct {
-	TotalRevenue     float64 `json:"total_revenue"`
-	PendingRevenue   float64 `json:"pending_revenue"`
-	PaidRevenue      float64 `json:"paid_revenue"`
-	ShippedRevenue   float64 `json:"shipped_revenue"`
+	TotalRevenue    float64 `json:"total_revenue"`
+	PendingRevenue  float64 `json:"pending_revenue"`
+	ConfirmedRevenue float64 `json:"confirmed_revenue"`
+	InServiceRevenue float64 `json:"in_service_revenue"`
 	CompletedRevenue float64 `json:"completed_revenue"`
 }
 
@@ -52,10 +52,10 @@ func (h *StatsHandler) OrderStats(c *gin.Context) {
 		switch order.Status {
 		case model.OrderStatusPending:
 			stats.Pending++
-		case model.OrderStatusPaid:
-			stats.Paid++
-		case model.OrderStatusShipped:
-			stats.Shipped++
+		case model.OrderStatusConfirmed:
+			stats.Confirmed++
+		case model.OrderStatusInService:
+			stats.InService++
 		case model.OrderStatusCompleted:
 			stats.Completed++
 		case model.OrderStatusCancelled:
@@ -86,10 +86,10 @@ func (h *StatsHandler) RevenueStats(c *gin.Context) {
 		switch order.Status {
 		case model.OrderStatusPending:
 			stats.PendingRevenue += order.TotalAmount
-		case model.OrderStatusPaid:
-			stats.PaidRevenue += order.TotalAmount
-		case model.OrderStatusShipped:
-			stats.ShippedRevenue += order.TotalAmount
+		case model.OrderStatusConfirmed:
+			stats.ConfirmedRevenue += order.TotalAmount
+		case model.OrderStatusInService:
+			stats.InServiceRevenue += order.TotalAmount
 		case model.OrderStatusCompleted:
 			stats.CompletedRevenue += order.TotalAmount
 		}

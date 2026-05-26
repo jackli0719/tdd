@@ -79,8 +79,8 @@ func Setup(r *gin.Engine, db *gorm.DB) {
 		api.GET("/orders/:id", orderHandler.Get)
 		api.POST("/orders", orderHandler.Create)
 		api.DELETE("/orders/:id", orderHandler.Delete)
-		api.POST("/orders/:id/paid", orderHandler.Paid)
-		api.POST("/orders/:id/ship", orderHandler.Ship)
+		api.POST("/orders/:id/confirm", orderHandler.Paid)
+		api.POST("/orders/:id/start", orderHandler.Ship)
 		api.POST("/orders/:id/complete", orderHandler.Complete)
 		api.POST("/orders/:id/cancel", orderHandler.Cancel)
 

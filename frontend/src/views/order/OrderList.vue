@@ -31,16 +31,16 @@
               v-if="row.status === 'pending'"
               size="small"
               type="success"
-              @click="updateStatus(row.id, 'paid')"
-            >支付</el-button>
+              @click="updateStatus(row.id, 'confirm')"
+            >确认</el-button>
             <el-button
-              v-if="row.status === 'paid'"
+              v-if="row.status === 'confirmed'"
               size="small"
               type="warning"
-              @click="updateStatus(row.id, 'ship')"
-            >发货</el-button>
+              @click="updateStatus(row.id, 'start')"
+            >开始服务</el-button>
             <el-button
-              v-if="row.status === 'shipped'"
+              v-if="row.status === 'in_service'"
               size="small"
               type="primary"
               @click="updateStatus(row.id, 'complete')"
@@ -91,8 +91,8 @@ const loadOrders = async () => {
 const getStatusType = (status) => {
   const types = {
     pending: 'info',
-    paid: 'success',
-    shipped: 'warning',
+    confirmed: 'success',
+    in_service: 'warning',
     completed: '',
     cancelled: 'danger',
   }
@@ -101,9 +101,9 @@ const getStatusType = (status) => {
 
 const getStatusText = (status) => {
   const texts = {
-    pending: '待支付',
-    paid: '已支付',
-    shipped: '已发货',
+    pending: '待确认',
+    confirmed: '已确认',
+    in_service: '服务中',
     completed: '已完成',
     cancelled: '已取消',
   }
