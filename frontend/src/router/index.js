@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Layout from '../components/Layout.vue'
+import { setupAuthGuard } from './guards'
 
 const routes = [
   {
@@ -34,11 +35,23 @@ const routes = [
       },
     ],
   },
+  {
+    path: '/login',
+    name: 'Login',
+    component: () => import('../views/auth/Login.vue'),
+  },
+  {
+    path: '/register',
+    name: 'Register',
+    component: () => import('../views/auth/Register.vue'),
+  },
 ]
 
 const router = createRouter({
   history: createWebHistory(),
   routes,
 })
+
+setupAuthGuard(router)
 
 export default router

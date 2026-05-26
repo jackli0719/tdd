@@ -1,7 +1,38 @@
 import { test, expect } from '@playwright/test'
 
 test.describe('OMS Frontend E2E', () => {
+  // Setup: register and login before tests
   test.beforeEach(async ({ page }) => {
+    // Navigate to login page first to set up the context
+    await page.goto('/login')
+
+    // Register a test user
+    const timestamp = Date.now()
+    const registerRes = await page.request.post('http://localhost:8080/api/auth/register', {
+      data: {
+        username: 'testuser_' + timestamp,
+        password: 'password123',
+        email: 'test' + timestamp + '@example.com',
+        phone: '13800138000',
+      },
+    })
+    // Login
+    const loginRes = await page.request.post('http://localhost:8080/api/auth/login', {
+      data: {
+        username: 'testuser_' + timestamp,
+        password: 'password123',
+      },
+    })
+    // Set token in localStorage and navigate to dashboard
+    if (loginRes.ok()) {
+      const loginData = await loginRes.json()
+      const token = loginData?.data?.token
+      if (token) {
+        await page.evaluate((t) => {
+          localStorage.setItem('auth_token', t)
+        }, token)
+      }
+    }
     await page.goto('/dashboard')
   })
 

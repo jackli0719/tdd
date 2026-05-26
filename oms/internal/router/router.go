@@ -11,7 +11,7 @@ import (
 )
 
 // Setup configures all routes
-func Setup(r *gin.Engine, db *gorm.DB) {
+func Setup(r *gin.Engine, db *gorm.DB, jwtSecret string) {
 	// Recovery middleware must be first to catch panics
 	r.Use(middleware.Recovery())
 
@@ -35,23 +35,53 @@ func Setup(r *gin.Engine, db *gorm.DB) {
 		return
 	}
 
+	// Repositories
+	userRepo := repository.NewUserRepository(db)
+	productRepo := repository.NewProductRepository(db)
+	orderRepo := repository.NewOrderRepository(db)
+
+	// Services
+	userSvc := service.NewUserService(userRepo)
+	authSvc := service.NewAuthService(userRepo, jwtSecret)
+	productSvc := service.NewProductService(productRepo)
+	orderSvc := service.NewOrderService(orderRepo, userRepo, productRepo)
+
+	// Handlers
+	userHandler := handler.NewUserHandler(userSvc)
+	authHandler := handler.NewAuthHandler(authSvc)
+	productHandler := handler.NewProductHandler(productSvc)
+	orderHandler := handler.NewOrderHandler(orderSvc)
+	statsHandler := handler.NewStatsHandler(orderSvc)
+
+	// Auth middleware (for protected routes)
+	authMiddleware := middleware.AuthMiddleware(authSvc)
+
 	// API routes
 	api := r.Group("/api")
 	{
-		// User routes
-		userRepo := repository.NewUserRepository(db)
-		userSvc := service.NewUserService(userRepo)
-		userHandler := handler.NewUserHandler(userSvc)
-		api.GET("/users", userHandler.List)
-		api.GET("/users/:id", userHandler.Get)
-		api.POST("/users", userHandler.Create)
-		api.PUT("/users/:id", userHandler.Update)
-		api.DELETE("/users/:id", userHandler.Delete)
+		// Auth routes (public)
+		api.POST("/auth/login", authHandler.Login)
+		api.POST("/auth/register", authHandler.Register)
+
+		// Auth routes (protected)
+		auth := api.Group("/auth")
+		auth.Use(authMiddleware)
+		{
+			auth.GET("/me", authHandler.Me)
+		}
+
+		// User routes (protected)
+		users := api.Group("/users")
+		users.Use(authMiddleware)
+		{
+			users.GET("", userHandler.List)
+			users.GET("/:id", userHandler.Get)
+			users.POST("", userHandler.Create)
+			users.PUT("/:id", userHandler.Update)
+			users.DELETE("/:id", userHandler.Delete)
+		}
 
 		// Product routes
-		productRepo := repository.NewProductRepository(db)
-		productSvc := service.NewProductService(productRepo)
-		productHandler := handler.NewProductHandler(productSvc)
 		api.GET("/products", productHandler.List)
 		api.GET("/products/:id", productHandler.Get)
 		api.POST("/products", productHandler.Create)
@@ -59,20 +89,16 @@ func Setup(r *gin.Engine, db *gorm.DB) {
 		api.DELETE("/products/:id", productHandler.Delete)
 
 		// Order routes
-		orderRepo := repository.NewOrderRepository(db)
-		orderSvc := service.NewOrderService(orderRepo, userRepo, productRepo)
-		orderHandler := handler.NewOrderHandler(orderSvc)
 		api.GET("/orders", orderHandler.List)
 		api.GET("/orders/:id", orderHandler.Get)
 		api.POST("/orders", orderHandler.Create)
 		api.DELETE("/orders/:id", orderHandler.Delete)
-		api.POST("/orders/:id/paid", orderHandler.Paid)
-		api.POST("/orders/:id/ship", orderHandler.Ship)
+		api.POST("/orders/:id/confirm", orderHandler.Paid)
+		api.POST("/orders/:id/start", orderHandler.Ship)
 		api.POST("/orders/:id/complete", orderHandler.Complete)
 		api.POST("/orders/:id/cancel", orderHandler.Cancel)
 
 		// Stats routes
-		statsHandler := handler.NewStatsHandler(orderSvc)
 		api.GET("/stats/orders", statsHandler.OrderStats)
 		api.GET("/stats/revenue", statsHandler.RevenueStats)
 	}
