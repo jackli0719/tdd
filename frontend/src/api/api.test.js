@@ -73,9 +73,9 @@ describe('API Response Parsing', () => {
 describe('Order Status Mapping', () => {
   const getStatusText = (status) => {
     const texts = {
-      pending: '待支付',
-      paid: '已支付',
-      shipped: '已发货',
+      pending: '待确认',
+      confirmed: '已确认',
+      in_service: '服务中',
       completed: '已完成',
       cancelled: '已取消',
     }
@@ -85,8 +85,8 @@ describe('Order Status Mapping', () => {
   const getStatusType = (status) => {
     const types = {
       pending: 'info',
-      paid: 'success',
-      shipped: 'warning',
+      confirmed: 'success',
+      in_service: 'warning',
       completed: '',
       cancelled: 'danger',
     }
@@ -94,17 +94,17 @@ describe('Order Status Mapping', () => {
   }
 
   it('should return correct status text for all statuses', () => {
-    expect(getStatusText('pending')).toBe('待支付')
-    expect(getStatusText('paid')).toBe('已支付')
-    expect(getStatusText('shipped')).toBe('已发货')
+    expect(getStatusText('pending')).toBe('待确认')
+    expect(getStatusText('confirmed')).toBe('已确认')
+    expect(getStatusText('in_service')).toBe('服务中')
     expect(getStatusText('completed')).toBe('已完成')
     expect(getStatusText('cancelled')).toBe('已取消')
   })
 
   it('should return correct status type for all statuses', () => {
     expect(getStatusType('pending')).toBe('info')
-    expect(getStatusType('paid')).toBe('success')
-    expect(getStatusType('shipped')).toBe('warning')
+    expect(getStatusType('confirmed')).toBe('success')
+    expect(getStatusType('in_service')).toBe('warning')
     expect(getStatusType('completed')).toBe('')
     expect(getStatusType('cancelled')).toBe('danger')
   })
@@ -120,16 +120,16 @@ describe('Revenue Stats Field Mapping', () => {
     const backendResponse = {
       total_revenue: 1000.00,
       pending_revenue: 100.00,
-      paid_revenue: 200.00,
-      shipped_revenue: 300.00,
+      confirmed_revenue: 200.00,
+      in_service_revenue: 300.00,
       completed_revenue: 400.00,
     }
 
     const revenue = {
       total_revenue: backendResponse.total_revenue || 0,
       pending_revenue: backendResponse.pending_revenue || 0,
-      paid_revenue: backendResponse.paid_revenue || 0,
-      shipped_revenue: backendResponse.shipped_revenue || 0,
+      confirmed_revenue: backendResponse.confirmed_revenue || 0,
+      in_service_revenue: backendResponse.in_service_revenue || 0,
       completed_revenue: backendResponse.completed_revenue || 0,
     }
 
@@ -172,6 +172,36 @@ describe('Order Form Validation', () => {
     }
     const validItems = form.items.filter(item => item.product_id && item.quantity > 0)
     expect(validItems.length).toBe(2)
+  })
+})
+
+describe('Time Formatting', () => {
+  const formatTime = (date) => {
+    const now = date || new Date()
+    const year = now.getFullYear()
+    const month = String(now.getMonth() + 1).padStart(2, '0')
+    const day = String(now.getDate()).padStart(2, '0')
+    const hours = String(now.getHours()).padStart(2, '0')
+    const minutes = String(now.getMinutes()).padStart(2, '0')
+    const seconds = String(now.getSeconds()).padStart(2, '0')
+    return `${year}/${month}/${day} ${hours}:${minutes}:${seconds}`
+  }
+
+  it('should format time with zero padding', () => {
+    const date = new Date(2026, 0, 5, 9, 5, 7) // 2026/01/05 09:05:07
+    const result = formatTime(date)
+    expect(result).toBe('2026/01/05 09:05:07')
+  })
+
+  it('should format time with double digit values', () => {
+    const date = new Date(2026, 11, 25, 14, 30, 45) // 2026/12/25 14:30:45
+    const result = formatTime(date)
+    expect(result).toBe('2026/12/25 14:30:45')
+  })
+
+  it('should format current time when no date provided', () => {
+    const result = formatTime()
+    expect(result).toMatch(/^\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}$/)
   })
 })
 
@@ -284,29 +314,29 @@ describe('ProductForm Validation', () => {
 describe('OrderStateTransition', () => {
   const getNextActions = (status) => {
     const transitions = {
-      pending: ['paid', 'cancel'],
-      paid: ['ship', 'cancel'],
-      shipped: ['complete'],
+      pending: ['confirm', 'cancel'],
+      confirmed: ['start', 'cancel'],
+      in_service: ['complete'],
       completed: [],
       cancelled: [],
     }
     return transitions[status] || []
   }
 
-  it('should allow paid and cancel from pending', () => {
+  it('should allow confirm and cancel from pending', () => {
     const actions = getNextActions('pending')
-    expect(actions).toContain('paid')
+    expect(actions).toContain('confirm')
     expect(actions).toContain('cancel')
   })
 
-  it('should allow ship and cancel from paid', () => {
-    const actions = getNextActions('paid')
-    expect(actions).toContain('ship')
+  it('should allow start and cancel from confirmed', () => {
+    const actions = getNextActions('confirmed')
+    expect(actions).toContain('start')
     expect(actions).toContain('cancel')
   })
 
-  it('should allow complete from shipped', () => {
-    const actions = getNextActions('shipped')
+  it('should allow complete from in_service', () => {
+    const actions = getNextActions('in_service')
     expect(actions).toContain('complete')
   })
 

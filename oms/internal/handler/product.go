@@ -26,8 +26,9 @@ func NewProductHandler(svc service.ProductService) *ProductHandler {
 func (h *ProductHandler) List(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "10"))
+	categoryID, _ := strconv.ParseInt(c.DefaultQuery("category_id", "0"), 10, 64)
 
-	products, total, err := h.svc.List(page, pageSize)
+	products, total, err := h.svc.List(page, pageSize, categoryID)
 	if err != nil {
 		response.Error(c, http.StatusInternalServerError, err.Error())
 		return

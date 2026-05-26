@@ -27,7 +27,7 @@ func setupProductTestDB(t *testing.T) *gorm.DB {
 		t.Fatalf("failed to open test db: %v", err)
 	}
 
-	err = db.AutoMigrate(&model.Product{})
+	err = db.AutoMigrate(&model.Product{}, &model.Category{})
 	if err != nil {
 		t.Fatalf("failed to migrate: %v", err)
 	}
@@ -51,13 +51,24 @@ func setupProductRouter(svc service.ProductService) *gin.Engine {
 	return r
 }
 
+func createTestCategory(t *testing.T, db *gorm.DB) *model.Category {
+	categoryRepo := repository.NewCategoryRepository(db)
+	c := &model.Category{Name: "Test Category"}
+	categoryRepo.Create(c)
+	found, _ := categoryRepo.GetByName("Test Category")
+	return found
+}
+
 func TestProductHandler_Create(t *testing.T) {
 	db := setupProductTestDB(t)
-	repo := repository.NewProductRepository(db)
-	svc := service.NewProductService(repo)
+	productRepo := repository.NewProductRepository(db)
+	categoryRepo := repository.NewCategoryRepository(db)
+	svc := service.NewProductService(productRepo, categoryRepo)
 	r := setupProductRouter(svc)
 
-	body := `{"name":"Test Product","price":99.99,"stock":100}`
+	category := createTestCategory(t, db)
+
+	body := fmt.Sprintf(`{"category_id":%d,"name":"Test Product","price":99.99,"stock":100}`, category.ID)
 	req, _ := http.NewRequest("POST", "/api/products", bytes.NewBufferString(body))
 	req.Header.Set("Content-Type", "application/json")
 	w := httptest.NewRecorder()
@@ -76,15 +87,19 @@ func TestProductHandler_Create(t *testing.T) {
 
 func TestProductHandler_List(t *testing.T) {
 	db := setupProductTestDB(t)
-	repo := repository.NewProductRepository(db)
-	svc := service.NewProductService(repo)
+	productRepo := repository.NewProductRepository(db)
+	categoryRepo := repository.NewCategoryRepository(db)
+	svc := service.NewProductService(productRepo, categoryRepo)
 	r := setupProductRouter(svc)
+
+	category := createTestCategory(t, db)
 
 	// Create a product first
 	svc.Create(&model.CreateProductRequest{
-		Name:  "Test Product",
-		Price: 99.99,
-		Stock: 100,
+		CategoryID: category.ID,
+		Name:       "Test Product",
+		Price:      99.99,
+		Stock:      100,
 	})
 
 	req, _ := http.NewRequest("GET", "/api/products?page=1&page_size=10", nil)
@@ -98,17 +113,21 @@ func TestProductHandler_List(t *testing.T) {
 
 func TestProductHandler_Get(t *testing.T) {
 	db := setupProductTestDB(t)
-	repo := repository.NewProductRepository(db)
-	svc := service.NewProductService(repo)
+	productRepo := repository.NewProductRepository(db)
+	categoryRepo := repository.NewCategoryRepository(db)
+	svc := service.NewProductService(productRepo, categoryRepo)
 	r := setupProductRouter(svc)
 
-	svc.Create(&model.CreateProductRequest{
-		Name:  "Test Product",
-		Price: 99.99,
-		Stock: 100,
+	category := createTestCategory(t, db)
+
+	created, _ := svc.Create(&model.CreateProductRequest{
+		CategoryID: category.ID,
+		Name:       "Test Product",
+		Price:      99.99,
+		Stock:      100,
 	})
 
-	req, _ := http.NewRequest("GET", "/api/products/1", nil)
+	req, _ := http.NewRequest("GET", fmt.Sprintf("/api/products/%d", created.ID), nil)
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 
@@ -119,8 +138,9 @@ func TestProductHandler_Get(t *testing.T) {
 
 func TestProductHandler_Get_NotFound(t *testing.T) {
 	db := setupProductTestDB(t)
-	repo := repository.NewProductRepository(db)
-	svc := service.NewProductService(repo)
+	productRepo := repository.NewProductRepository(db)
+	categoryRepo := repository.NewCategoryRepository(db)
+	svc := service.NewProductService(productRepo, categoryRepo)
 	r := setupProductRouter(svc)
 
 	req, _ := http.NewRequest("GET", "/api/products/999", nil)
@@ -134,14 +154,18 @@ func TestProductHandler_Get_NotFound(t *testing.T) {
 
 func TestProductHandler_Update(t *testing.T) {
 	db := setupProductTestDB(t)
-	repo := repository.NewProductRepository(db)
-	svc := service.NewProductService(repo)
+	productRepo := repository.NewProductRepository(db)
+	categoryRepo := repository.NewCategoryRepository(db)
+	svc := service.NewProductService(productRepo, categoryRepo)
 	r := setupProductRouter(svc)
 
+	category := createTestCategory(t, db)
+
 	svc.Create(&model.CreateProductRequest{
-		Name:  "Test Product",
-		Price: 99.99,
-		Stock: 100,
+		CategoryID: category.ID,
+		Name:       "Test Product",
+		Price:      99.99,
+		Stock:      100,
 	})
 
 	body := `{"stock":50}`
@@ -157,14 +181,18 @@ func TestProductHandler_Update(t *testing.T) {
 
 func TestProductHandler_Delete(t *testing.T) {
 	db := setupProductTestDB(t)
-	repo := repository.NewProductRepository(db)
-	svc := service.NewProductService(repo)
+	productRepo := repository.NewProductRepository(db)
+	categoryRepo := repository.NewCategoryRepository(db)
+	svc := service.NewProductService(productRepo, categoryRepo)
 	r := setupProductRouter(svc)
 
+	category := createTestCategory(t, db)
+
 	created, _ := svc.Create(&model.CreateProductRequest{
-		Name:  fmt.Sprintf("Test Product"),
-		Price: 99.99,
-		Stock: 100,
+		CategoryID: category.ID,
+		Name:       fmt.Sprintf("Test Product"),
+		Price:      99.99,
+		Stock:      100,
 	})
 
 	req, _ := http.NewRequest("DELETE", fmt.Sprintf("/api/products/%d", created.ID), nil)
@@ -178,8 +206,9 @@ func TestProductHandler_Delete(t *testing.T) {
 
 func TestProductHandler_Delete_NotFound(t *testing.T) {
 	db := setupProductTestDB(t)
-	repo := repository.NewProductRepository(db)
-	svc := service.NewProductService(repo)
+	productRepo := repository.NewProductRepository(db)
+	categoryRepo := repository.NewCategoryRepository(db)
+	svc := service.NewProductService(productRepo, categoryRepo)
 	r := setupProductRouter(svc)
 
 	req, _ := http.NewRequest("DELETE", "/api/products/999", nil)
@@ -193,8 +222,9 @@ func TestProductHandler_Delete_NotFound(t *testing.T) {
 
 func TestProductHandler_Create_InvalidJSON(t *testing.T) {
 	db := setupProductTestDB(t)
-	repo := repository.NewProductRepository(db)
-	svc := service.NewProductService(repo)
+	productRepo := repository.NewProductRepository(db)
+	categoryRepo := repository.NewCategoryRepository(db)
+	svc := service.NewProductService(productRepo, categoryRepo)
 	r := setupProductRouter(svc)
 
 	body := `{invalid json}`
@@ -210,8 +240,9 @@ func TestProductHandler_Create_InvalidJSON(t *testing.T) {
 
 func TestProductHandler_Update_NotFound(t *testing.T) {
 	db := setupProductTestDB(t)
-	repo := repository.NewProductRepository(db)
-	svc := service.NewProductService(repo)
+	productRepo := repository.NewProductRepository(db)
+	categoryRepo := repository.NewCategoryRepository(db)
+	svc := service.NewProductService(productRepo, categoryRepo)
 	r := setupProductRouter(svc)
 
 	body := `{"stock":50}`
@@ -227,8 +258,9 @@ func TestProductHandler_Update_NotFound(t *testing.T) {
 
 func TestProductHandler_InvalidID(t *testing.T) {
 	db := setupProductTestDB(t)
-	repo := repository.NewProductRepository(db)
-	svc := service.NewProductService(repo)
+	productRepo := repository.NewProductRepository(db)
+	categoryRepo := repository.NewCategoryRepository(db)
+	svc := service.NewProductService(productRepo, categoryRepo)
 	r := setupProductRouter(svc)
 
 	req, _ := http.NewRequest("GET", "/api/products/invalid", nil)

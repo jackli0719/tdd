@@ -9,8 +9,8 @@ type OrderStatus string
 
 const (
 	OrderStatusPending   OrderStatus = "pending"
-	OrderStatusPaid     OrderStatus = "paid"
-	OrderStatusShipped  OrderStatus = "shipped"
+	OrderStatusConfirmed OrderStatus = "confirmed"
+	OrderStatusInService OrderStatus = "in_service"
 	OrderStatusCompleted OrderStatus = "completed"
 	OrderStatusCancelled OrderStatus = "cancelled"
 )
@@ -52,14 +52,14 @@ func (OrderItem) TableName() string {
 
 // CreateOrderRequest is the request body for creating an order
 type CreateOrderRequest struct {
-	UserID      int64                   `json:"user_id" binding:"required"`
-	Items       []CreateOrderItemRequest `json:"items" binding:"required,min=1,dive"`
+	UserID int64                    `json:"user_id" binding:"required"`
+	Items  []CreateOrderItemRequest `json:"items" binding:"required,min=1,dive"`
 }
 
 // CreateOrderItemRequest is the request body for an order item
 type CreateOrderItemRequest struct {
-	ProductID int64   `json:"product_id" binding:"required"`
-	Quantity  int     `json:"quantity" binding:"required,gt=0"`
+	ProductID int64 `json:"product_id" binding:"required"`
+	Quantity  int   `json:"quantity" binding:"required,gt=0"`
 }
 
 // OrderResponse is the response for an order with items

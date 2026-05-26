@@ -29,8 +29,16 @@ check: build test ## Run build and test
 
 # Lint
 lint: ## Run all linters
-	cd oms && golangci-lint run ./... || gofmt -l .
-	cd frontend && npm run lint || npm run lint:fix
+	@echo "=== Go Lint ===" && \
+	if ! command -v golangci-lint >/dev/null 2>&1; then \
+		echo "golangci-lint not found. Install: curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $$(go env GOPATH)/bin v1.61.0"; \
+		echo "Running gofmt check instead..."; \
+		cd oms && gofmt -l . && [ -z "$$(gofmt -l .)" ] || { echo "gofmt failed: run 'cd oms && gofmt -w .'"; exit 1; }; \
+	else \
+		cd oms && golangci-lint run ./...; \
+	fi
+	@echo "=== Frontend Lint ===" && \
+	cd frontend && npm run lint
 
 # Clean
 clean: ## Clean build artifacts
@@ -51,8 +59,10 @@ db-create: ## Create SQLite database file
 
 # Git
 git-check: ## Check git status for untracked/ignored files
-	git status --short
-	git check-ignore -v \$$(git ls-files -o --exclude-standard)
+	@echo "=== Git Status ===" && git status --short
+	@ignored_count=$$(git ls-files -o --exclude-standard --ignored | wc -l | tr -d ' '); \
+	echo "=== Git Ignored Files ==="; \
+	echo "Ignored files: $$ignored_count (not listed; run 'git ls-files -o --exclude-standard --ignored' to inspect)"
 
 # Full check before commit
 pre-commit: check lint git-check ## Run all checks before commit
