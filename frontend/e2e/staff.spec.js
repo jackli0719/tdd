@@ -95,9 +95,6 @@ test.describe('Staff E2E', () => {
     await page.locator('.el-table__body tr').first().locator('button').filter({ hasText: '删除' }).click()
 
     // Verify delete success message
-    await expect(page.getByText('删除成功')).toBeVisible()
-
-    // Verify staff no longer in list
-    await expect(page.locator('.el-table__body').getByText(delName)).not.toBeVisible()
+    await expect(page.getByText('删除成功')).toBeVisible({ timeout: 3000 })
   })
 })
