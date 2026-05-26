@@ -5,8 +5,8 @@ import (
 
 	"oms/pkg/logger"
 
-	"go.uber.org/zap"
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 func Logger() gin.HandlerFunc {
