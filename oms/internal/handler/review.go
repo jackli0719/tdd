@@ -145,6 +145,8 @@ func (h *ReviewHandler) handleError(c *gin.Context, err error) {
 		response.Error(c, http.StatusBadRequest, "review already exists for order")
 	case errors.Is(err, service.ErrReviewOrderInvalid):
 		response.Error(c, http.StatusBadRequest, "only completed orders with assigned staff can be reviewed")
+	case errors.Is(err, service.ErrReviewOrderForbidden):
+		response.Error(c, http.StatusForbidden, "order does not belong to current user")
 	default:
 		response.Error(c, http.StatusInternalServerError, err.Error())
 	}

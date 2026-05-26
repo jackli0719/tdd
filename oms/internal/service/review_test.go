@@ -75,6 +75,27 @@ func TestReviewService_CreateRejectsInvalidOrder(t *testing.T) {
 	}
 }
 
+func TestReviewService_CreateRejectsOtherUsersOrder(t *testing.T) {
+	db, reviewRepo, orderRepo := setupReviewServiceTestDB(t)
+	svc := NewReviewService(reviewRepo, orderRepo)
+	staffID := int64(3)
+	order := &model.Order{
+		OrderNo:     "ORD_REVIEW_3",
+		UserID:      2,
+		StaffID:     &staffID,
+		TotalAmount: 100,
+		Status:      model.OrderStatusCompleted,
+	}
+	if err := db.Create(order).Error; err != nil {
+		t.Fatalf("failed to create order: %v", err)
+	}
+
+	_, err := svc.Create(1, &model.CreateReviewRequest{OrderID: order.ID, Rating: 5})
+	if !errors.Is(err, ErrReviewOrderForbidden) {
+		t.Fatalf("Create() error = %v, want ErrReviewOrderForbidden", err)
+	}
+}
+
 func TestReviewService_CreateRejectsInvalidRating(t *testing.T) {
 	_, reviewRepo, orderRepo := setupReviewServiceTestDB(t)
 	svc := NewReviewService(reviewRepo, orderRepo)

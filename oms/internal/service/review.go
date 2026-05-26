@@ -10,10 +10,11 @@ import (
 )
 
 var (
-	ErrReviewNotFound      = errors.New("review not found")
-	ErrReviewAlreadyExists = errors.New("review already exists for order")
-	ErrReviewOrderInvalid  = errors.New("only completed orders with assigned staff can be reviewed")
-	ErrInvalidRating       = errors.New("rating must be between 1 and 5")
+	ErrReviewNotFound       = errors.New("review not found")
+	ErrReviewAlreadyExists  = errors.New("review already exists for order")
+	ErrReviewOrderInvalid   = errors.New("only completed orders with assigned staff can be reviewed")
+	ErrReviewOrderForbidden = errors.New("order does not belong to current user")
+	ErrInvalidRating        = errors.New("rating must be between 1 and 5")
 )
 
 // ReviewService handles review business logic.
@@ -38,6 +39,9 @@ func (s *ReviewService) Create(userID int64, req *model.CreateReviewRequest) (*m
 			return nil, ErrOrderNotFound
 		}
 		return nil, err
+	}
+	if order.UserID != userID {
+		return nil, ErrReviewOrderForbidden
 	}
 	if order.Status != model.OrderStatusCompleted || order.StaffID == nil {
 		return nil, ErrReviewOrderInvalid

@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 
 let userId = 0
-const apiBase = 'http://localhost:8080/api'
+const apiBase = 'http://127.0.0.1:8080/api'
 const getNextUsername = () => `review_${Date.now()}_${++userId}`
 
 const registerAndLogin = async (page, testInfo) => {
