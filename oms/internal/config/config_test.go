@@ -55,6 +55,7 @@ func TestInitDB_SQLite(t *testing.T) {
 }
 
 func TestInitDB_SQLiteFilePath(t *testing.T) {
+	os.Remove("test.db")
 	db, err := InitDB("sqlite://test.db")
 	if err != nil {
 		t.Fatalf("failed to init sqlite db: %v", err)

@@ -146,7 +146,7 @@ func TestProductRepository_List(t *testing.T) {
 		})
 	}
 
-	products, total, err := repo.List(0, 10)
+	products, total, err := repo.List(0, 10, 0)
 	if err != nil {
 		t.Fatalf("failed to list products: %v", err)
 	}

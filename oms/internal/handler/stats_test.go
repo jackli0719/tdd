@@ -23,7 +23,7 @@ func setupStatsTestDB(t *testing.T) *gorm.DB {
 		t.Fatalf("failed to open test db: %v", err)
 	}
 
-	err = db.AutoMigrate(&model.User{}, &model.Product{}, &model.Order{}, &model.OrderItem{})
+	err = db.AutoMigrate(&model.User{}, &model.Product{}, &model.Order{}, &model.OrderItem{}, &model.Staff{})
 	if err != nil {
 		t.Fatalf("failed to migrate: %v", err)
 	}
@@ -49,7 +49,8 @@ func TestStatsHandler_OrderStats(t *testing.T) {
 	userRepo := repository.NewUserRepository(db)
 	productRepo := repository.NewProductRepository(db)
 	orderRepo := repository.NewOrderRepository(db)
-	svc := service.NewOrderService(orderRepo, userRepo, productRepo)
+	staffRepo := repository.NewStaffRepository(db)
+	svc := service.NewOrderService(orderRepo, userRepo, productRepo, staffRepo)
 	r := setupStatsRouter(svc)
 
 	// Create user
@@ -83,7 +84,8 @@ func TestStatsHandler_RevenueStats(t *testing.T) {
 	userRepo := repository.NewUserRepository(db)
 	productRepo := repository.NewProductRepository(db)
 	orderRepo := repository.NewOrderRepository(db)
-	svc := service.NewOrderService(orderRepo, userRepo, productRepo)
+	staffRepo := repository.NewStaffRepository(db)
+	svc := service.NewOrderService(orderRepo, userRepo, productRepo, staffRepo)
 	r := setupStatsRouter(svc)
 
 	// Create user
@@ -112,7 +114,8 @@ func TestStatsHandler_OrderStats_Empty(t *testing.T) {
 	userRepo := repository.NewUserRepository(db)
 	productRepo := repository.NewProductRepository(db)
 	orderRepo := repository.NewOrderRepository(db)
-	svc := service.NewOrderService(orderRepo, userRepo, productRepo)
+	staffRepo := repository.NewStaffRepository(db)
+	svc := service.NewOrderService(orderRepo, userRepo, productRepo, staffRepo)
 	r := setupStatsRouter(svc)
 
 	req, _ := http.NewRequest("GET", "/api/stats/orders", nil)
@@ -129,7 +132,8 @@ func TestStatsHandler_RevenueStats_Empty(t *testing.T) {
 	userRepo := repository.NewUserRepository(db)
 	productRepo := repository.NewProductRepository(db)
 	orderRepo := repository.NewOrderRepository(db)
-	svc := service.NewOrderService(orderRepo, userRepo, productRepo)
+	staffRepo := repository.NewStaffRepository(db)
+	svc := service.NewOrderService(orderRepo, userRepo, productRepo, staffRepo)
 	r := setupStatsRouter(svc)
 
 	req, _ := http.NewRequest("GET", "/api/stats/revenue", nil)

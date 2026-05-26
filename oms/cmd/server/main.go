@@ -37,7 +37,11 @@ func main() {
 	r := gin.Default()
 
 	// Setup routes
-	router.Setup(r, db)
+	jwtSecret := cfg.JWTSecret
+	if jwtSecret == "" {
+		jwtSecret = "your-secret-key-change-in-production"
+	}
+	router.Setup(r, db, jwtSecret)
 
 	// Start server
 	log.Printf("Server starting on port %s", cfg.Port)

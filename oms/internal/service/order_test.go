@@ -4,6 +4,7 @@ import (
 	"oms/internal/model"
 	"oms/internal/repository"
 	"testing"
+	"time"
 
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -17,8 +18,13 @@ func setupOrderTestDB(t *testing.T) *gorm.DB {
 	if err != nil {
 		t.Fatalf("failed to open test db: %v", err)
 	}
+	sqlDB, err := db.DB()
+	if err != nil {
+		t.Fatalf("failed to get sql db: %v", err)
+	}
+	sqlDB.SetMaxOpenConns(1)
 
-	err = db.AutoMigrate(&model.User{}, &model.Product{}, &model.Order{}, &model.OrderItem{})
+	err = db.AutoMigrate(&model.User{}, &model.Product{}, &model.Order{}, &model.OrderItem{}, &model.Staff{})
 	if err != nil {
 		t.Fatalf("failed to migrate: %v", err)
 	}
@@ -31,7 +37,8 @@ func TestOrderService_StateTransitions(t *testing.T) {
 	userRepo := repository.NewUserRepository(db)
 	productRepo := repository.NewProductRepository(db)
 	orderRepo := repository.NewOrderRepository(db)
-	svc := NewOrderService(orderRepo, userRepo, productRepo)
+	staffRepo := repository.NewStaffRepository(db)
+	svc := NewOrderService(orderRepo, userRepo, productRepo, staffRepo)
 
 	// Create user
 	userRepo.Create(&model.User{Username: "testuser", Email: "test@example.com", Phone: "1234567890"})
@@ -93,7 +100,8 @@ func TestOrderService_CancelFromPending(t *testing.T) {
 	userRepo := repository.NewUserRepository(db)
 	productRepo := repository.NewProductRepository(db)
 	orderRepo := repository.NewOrderRepository(db)
-	svc := NewOrderService(orderRepo, userRepo, productRepo)
+	staffRepo := repository.NewStaffRepository(db)
+	svc := NewOrderService(orderRepo, userRepo, productRepo, staffRepo)
 
 	// Create user
 	userRepo.Create(&model.User{Username: "testuser", Email: "test@example.com", Phone: "1234567890"})
@@ -126,7 +134,8 @@ func TestOrderService_CancelFromPaid(t *testing.T) {
 	userRepo := repository.NewUserRepository(db)
 	productRepo := repository.NewProductRepository(db)
 	orderRepo := repository.NewOrderRepository(db)
-	svc := NewOrderService(orderRepo, userRepo, productRepo)
+	staffRepo := repository.NewStaffRepository(db)
+	svc := NewOrderService(orderRepo, userRepo, productRepo, staffRepo)
 
 	// Create user
 	userRepo.Create(&model.User{Username: "testuser", Email: "test@example.com", Phone: "1234567890"})
@@ -160,7 +169,8 @@ func TestOrderService_InvalidTransitions(t *testing.T) {
 	userRepo := repository.NewUserRepository(db)
 	productRepo := repository.NewProductRepository(db)
 	orderRepo := repository.NewOrderRepository(db)
-	svc := NewOrderService(orderRepo, userRepo, productRepo)
+	staffRepo := repository.NewStaffRepository(db)
+	svc := NewOrderService(orderRepo, userRepo, productRepo, staffRepo)
 
 	// Create user
 	userRepo.Create(&model.User{Username: "testuser", Email: "test@example.com", Phone: "1234567890"})
@@ -202,7 +212,8 @@ func TestOrderService_GetByID_NotFound(t *testing.T) {
 	userRepo := repository.NewUserRepository(db)
 	productRepo := repository.NewProductRepository(db)
 	orderRepo := repository.NewOrderRepository(db)
-	svc := NewOrderService(orderRepo, userRepo, productRepo)
+	staffRepo := repository.NewStaffRepository(db)
+	svc := NewOrderService(orderRepo, userRepo, productRepo, staffRepo)
 
 	_, err := svc.GetByID(999)
 	if err != ErrOrderNotFound {
@@ -215,7 +226,8 @@ func TestOrderService_List(t *testing.T) {
 	userRepo := repository.NewUserRepository(db)
 	productRepo := repository.NewProductRepository(db)
 	orderRepo := repository.NewOrderRepository(db)
-	svc := NewOrderService(orderRepo, userRepo, productRepo)
+	staffRepo := repository.NewStaffRepository(db)
+	svc := NewOrderService(orderRepo, userRepo, productRepo, staffRepo)
 
 	// Create user
 	userRepo.Create(&model.User{Username: "testuser", Email: "test@example.com", Phone: "1234567890"})
@@ -253,7 +265,8 @@ func TestOrderService_Delete(t *testing.T) {
 	userRepo := repository.NewUserRepository(db)
 	productRepo := repository.NewProductRepository(db)
 	orderRepo := repository.NewOrderRepository(db)
-	svc := NewOrderService(orderRepo, userRepo, productRepo)
+	staffRepo := repository.NewStaffRepository(db)
+	svc := NewOrderService(orderRepo, userRepo, productRepo, staffRepo)
 
 	// Create user
 	userRepo.Create(&model.User{Username: "testuser", Email: "test@example.com", Phone: "1234567890"})
@@ -286,7 +299,8 @@ func TestOrderService_Delete_InvalidState(t *testing.T) {
 	userRepo := repository.NewUserRepository(db)
 	productRepo := repository.NewProductRepository(db)
 	orderRepo := repository.NewOrderRepository(db)
-	svc := NewOrderService(orderRepo, userRepo, productRepo)
+	staffRepo := repository.NewStaffRepository(db)
+	svc := NewOrderService(orderRepo, userRepo, productRepo, staffRepo)
 
 	// Create user
 	userRepo.Create(&model.User{Username: "testuser", Email: "test@example.com", Phone: "1234567890"})
@@ -312,12 +326,132 @@ func TestOrderService_Delete_InvalidState(t *testing.T) {
 	}
 }
 
+func TestOrderService_AssignStaffMarksStaffBusy(t *testing.T) {
+	db := setupOrderTestDB(t)
+	userRepo := repository.NewUserRepository(db)
+	productRepo := repository.NewProductRepository(db)
+	orderRepo := repository.NewOrderRepository(db)
+	staffRepo := repository.NewStaffRepository(db)
+	svc := NewOrderService(orderRepo, userRepo, productRepo, staffRepo)
+
+	userRepo.Create(&model.User{Username: "testuser", Email: "test@example.com", Phone: "1234567890"})
+	productRepo.Create(&model.Product{Name: "Test Product", Price: 99.99, Stock: 100})
+	staffRepo.Create(&model.Staff{Name: "Staff A", Status: model.StaffStatusAvailable})
+
+	order, err := svc.Create(&model.CreateOrderRequest{
+		UserID: 1,
+		Items: []model.CreateOrderItemRequest{
+			{ProductID: 1, Quantity: 1},
+		},
+	})
+	if err != nil {
+		t.Fatalf("failed to create order: %v", err)
+	}
+
+	staffID := int64(1)
+	if err := svc.AssignStaff(order.ID, &staffID); err != nil {
+		t.Fatalf("failed to assign staff: %v", err)
+	}
+
+	staff, err := staffRepo.GetByID(staffID)
+	if err != nil {
+		t.Fatalf("failed to get staff: %v", err)
+	}
+	if staff.Status != model.StaffStatusBusy {
+		t.Fatalf("staff status = %s, want %s", staff.Status, model.StaffStatusBusy)
+	}
+
+	available, err := staffRepo.ListAvailable()
+	if err != nil {
+		t.Fatalf("failed to list available staff: %v", err)
+	}
+	if len(available) != 0 {
+		t.Fatalf("available staff count = %d, want 0", len(available))
+	}
+}
+
+func TestOrderService_CreateWithStaffMarksStaffBusy(t *testing.T) {
+	db := setupOrderTestDB(t)
+	userRepo := repository.NewUserRepository(db)
+	productRepo := repository.NewProductRepository(db)
+	orderRepo := repository.NewOrderRepository(db)
+	staffRepo := repository.NewStaffRepository(db)
+	svc := NewOrderService(orderRepo, userRepo, productRepo, staffRepo)
+
+	userRepo.Create(&model.User{Username: "testuser", Email: "test@example.com", Phone: "1234567890"})
+	productRepo.Create(&model.Product{Name: "Test Product", Price: 99.99, Stock: 100})
+	staffRepo.Create(&model.Staff{Name: "Staff A", Status: model.StaffStatusAvailable})
+
+	staffID := int64(1)
+	order, err := svc.Create(&model.CreateOrderRequest{
+		UserID:  1,
+		StaffID: &staffID,
+		Items: []model.CreateOrderItemRequest{
+			{ProductID: 1, Quantity: 1},
+		},
+	})
+	if err != nil {
+		t.Fatalf("failed to create order with staff: %v", err)
+	}
+	if order.StaffID == nil || *order.StaffID != staffID {
+		t.Fatalf("order staff_id = %v, want %d", order.StaffID, staffID)
+	}
+
+	staff, err := staffRepo.GetByID(staffID)
+	if err != nil {
+		t.Fatalf("failed to get staff: %v", err)
+	}
+	if staff.Status != model.StaffStatusBusy {
+		t.Fatalf("staff status = %s, want %s", staff.Status, model.StaffStatusBusy)
+	}
+}
+
+func TestOrderService_UnassignStaffMarksStaffAvailable(t *testing.T) {
+	db := setupOrderTestDB(t)
+	userRepo := repository.NewUserRepository(db)
+	productRepo := repository.NewProductRepository(db)
+	orderRepo := repository.NewOrderRepository(db)
+	staffRepo := repository.NewStaffRepository(db)
+	svc := NewOrderService(orderRepo, userRepo, productRepo, staffRepo)
+
+	userRepo.Create(&model.User{Username: "testuser", Email: "test@example.com", Phone: "1234567890"})
+	productRepo.Create(&model.Product{Name: "Test Product", Price: 99.99, Stock: 100})
+	staffRepo.Create(&model.Staff{Name: "Staff A", Status: model.StaffStatusAvailable})
+
+	order, err := svc.Create(&model.CreateOrderRequest{
+		UserID: 1,
+		Items: []model.CreateOrderItemRequest{
+			{ProductID: 1, Quantity: 1},
+		},
+	})
+	if err != nil {
+		t.Fatalf("failed to create order: %v", err)
+	}
+
+	staffID := int64(1)
+	if err := svc.AssignStaff(order.ID, &staffID); err != nil {
+		t.Fatalf("failed to assign staff: %v", err)
+	}
+	if err := svc.AssignStaff(order.ID, nil); err != nil {
+		t.Fatalf("failed to unassign staff: %v", err)
+	}
+
+	staff, err := staffRepo.GetByID(staffID)
+	if err != nil {
+		t.Fatalf("failed to get staff: %v", err)
+	}
+	if staff.Status != model.StaffStatusAvailable {
+		t.Fatalf("staff status = %s, want %s", staff.Status, model.StaffStatusAvailable)
+	}
+}
+
 func TestOrderService_Create_UserNotFound(t *testing.T) {
 	db := setupOrderTestDB(t)
 	userRepo := repository.NewUserRepository(db)
 	productRepo := repository.NewProductRepository(db)
 	orderRepo := repository.NewOrderRepository(db)
-	svc := NewOrderService(orderRepo, userRepo, productRepo)
+	staffRepo := repository.NewStaffRepository(db)
+	svc := NewOrderService(orderRepo, userRepo, productRepo, staffRepo)
 
 	// Create product
 	productRepo.Create(&model.Product{Name: "Test Product", Price: 99.99, Stock: 100})
@@ -338,7 +472,8 @@ func TestOrderService_Create_ProductNotFound(t *testing.T) {
 	userRepo := repository.NewUserRepository(db)
 	productRepo := repository.NewProductRepository(db)
 	orderRepo := repository.NewOrderRepository(db)
-	svc := NewOrderService(orderRepo, userRepo, productRepo)
+	staffRepo := repository.NewStaffRepository(db)
+	svc := NewOrderService(orderRepo, userRepo, productRepo, staffRepo)
 
 	// Create user
 	userRepo.Create(&model.User{Username: "testuser", Email: "test@example.com", Phone: "1234567890"})
@@ -359,7 +494,8 @@ func TestOrderService_Create_InsufficientStock(t *testing.T) {
 	userRepo := repository.NewUserRepository(db)
 	productRepo := repository.NewProductRepository(db)
 	orderRepo := repository.NewOrderRepository(db)
-	svc := NewOrderService(orderRepo, userRepo, productRepo)
+	staffRepo := repository.NewStaffRepository(db)
+	svc := NewOrderService(orderRepo, userRepo, productRepo, staffRepo)
 
 	// Create user
 	userRepo.Create(&model.User{Username: "testuser", Email: "test@example.com", Phone: "1234567890"})
@@ -375,5 +511,87 @@ func TestOrderService_Create_InsufficientStock(t *testing.T) {
 	})
 	if err != ErrInsufficientStock {
 		t.Errorf("expected ErrInsufficientStock, got %v", err)
+	}
+}
+
+func TestOrderService_Create_WithAppointmentTime(t *testing.T) {
+	db := setupOrderTestDB(t)
+	userRepo := repository.NewUserRepository(db)
+	productRepo := repository.NewProductRepository(db)
+	orderRepo := repository.NewOrderRepository(db)
+	staffRepo := repository.NewStaffRepository(db)
+	svc := NewOrderService(orderRepo, userRepo, productRepo, staffRepo)
+
+	// Create user
+	userRepo.Create(&model.User{Username: "testuser", Email: "test@example.com", Phone: "1234567890"})
+
+	// Create product
+	productRepo.Create(&model.Product{Name: "Test Product", Price: 99.99, Stock: 100})
+
+	// Create appointment time for tomorrow at 10:00
+	tomorrow := time.Now().AddDate(0, 0, 1)
+	appointmentTime := time.Date(tomorrow.Year(), tomorrow.Month(), tomorrow.Day(), 10, 0, 0, 0, time.Local)
+
+	// Create order with appointment time
+	order, err := svc.Create(&model.CreateOrderRequest{
+		UserID:          1,
+		AppointmentTime: &appointmentTime,
+		Items: []model.CreateOrderItemRequest{
+			{ProductID: 1, Quantity: 2},
+		},
+	})
+	if err != nil {
+		t.Fatalf("failed to create order: %v", err)
+	}
+
+	// Verify appointment time was saved
+	if order.AppointmentTime == nil {
+		t.Fatal("expected AppointmentTime to be set, got nil")
+	}
+	if order.AppointmentTime.Hour() != 10 {
+		t.Errorf("expected hour 10, got %d", order.AppointmentTime.Hour())
+	}
+}
+
+func TestOrderService_Create_DuplicateAppointmentTime(t *testing.T) {
+	db := setupOrderTestDB(t)
+	userRepo := repository.NewUserRepository(db)
+	productRepo := repository.NewProductRepository(db)
+	orderRepo := repository.NewOrderRepository(db)
+	staffRepo := repository.NewStaffRepository(db)
+	svc := NewOrderService(orderRepo, userRepo, productRepo, staffRepo)
+
+	// Create user
+	userRepo.Create(&model.User{Username: "testuser", Email: "test@example.com", Phone: "1234567890"})
+
+	// Create product
+	productRepo.Create(&model.Product{Name: "Test Product", Price: 99.99, Stock: 100})
+
+	// Create appointment time for tomorrow at 10:00
+	tomorrow := time.Now().AddDate(0, 0, 1)
+	appointmentTime := time.Date(tomorrow.Year(), tomorrow.Month(), tomorrow.Day(), 10, 0, 0, 0, time.Local)
+
+	// Create first order
+	_, err := svc.Create(&model.CreateOrderRequest{
+		UserID:          1,
+		AppointmentTime: &appointmentTime,
+		Items: []model.CreateOrderItemRequest{
+			{ProductID: 1, Quantity: 1},
+		},
+	})
+	if err != nil {
+		t.Fatalf("failed to create first order: %v", err)
+	}
+
+	// Try to create second order at the same hour
+	_, err = svc.Create(&model.CreateOrderRequest{
+		UserID:          1,
+		AppointmentTime: &appointmentTime,
+		Items: []model.CreateOrderItemRequest{
+			{ProductID: 1, Quantity: 1},
+		},
+	})
+	if err != ErrSlotAlreadyBooked {
+		t.Errorf("expected ErrSlotAlreadyBooked, got %v", err)
 	}
 }
