@@ -1,9 +1,7 @@
 import { getToken } from '../api/auth'
 
-const whiteList = ['/login', '/register']
-
 export const setupAuthGuard = (router) => {
-  router.beforeEach((to, from) => {
+  router.beforeEach((to) => {
     const token = getToken()
     const whiteList = ['/login', '/register']
 
