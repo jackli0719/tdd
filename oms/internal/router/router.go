@@ -80,16 +80,12 @@ func Setup(r *gin.Engine, db *gorm.DB, jwtSecret string) {
 		api.PUT("/categories/:id", categoryHandler.Update)
 		api.DELETE("/categories/:id", categoryHandler.Delete)
 
-		// User routes (protected)
-		users := api.Group("/users")
-		users.Use(authMiddleware)
-		{
-			users.GET("", userHandler.List)
-			users.GET("/:id", userHandler.Get)
-			users.POST("", userHandler.Create)
-			users.PUT("/:id", userHandler.Update)
-			users.DELETE("/:id", userHandler.Delete)
-		}
+		// User routes (public - admin access)
+		api.GET("/users", userHandler.List)
+		api.GET("/users/:id", userHandler.Get)
+		api.POST("/users", userHandler.Create)
+		api.PUT("/users/:id", userHandler.Update)
+		api.DELETE("/users/:id", userHandler.Delete)
 
 		// Product routes (public for now)
 		api.GET("/products", productHandler.List)
