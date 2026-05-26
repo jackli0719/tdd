@@ -38,6 +38,16 @@ func Setup(r *gin.Engine, db *gorm.DB) {
 	// API routes
 	api := r.Group("/api")
 	{
+		// Category routes
+		categoryRepo := repository.NewCategoryRepository(db)
+		categorySvc := service.NewCategoryService(categoryRepo)
+		categoryHandler := handler.NewCategoryHandler(categorySvc)
+		api.GET("/categories", categoryHandler.List)
+		api.GET("/categories/:id", categoryHandler.Get)
+		api.POST("/categories", categoryHandler.Create)
+		api.PUT("/categories/:id", categoryHandler.Update)
+		api.DELETE("/categories/:id", categoryHandler.Delete)
+
 		// User routes
 		userRepo := repository.NewUserRepository(db)
 		userSvc := service.NewUserService(userRepo)
