@@ -24,7 +24,7 @@ func setupOrderTestDB(t *testing.T) *gorm.DB {
 		t.Fatalf("failed to open test db: %v", err)
 	}
 
-	err = db.AutoMigrate(&model.User{}, &model.Product{}, &model.Order{}, &model.OrderItem{})
+	err = db.AutoMigrate(&model.User{}, &model.Product{}, &model.Order{}, &model.OrderItem{}, &model.Staff{})
 	if err != nil {
 		t.Fatalf("failed to migrate: %v", err)
 	}
@@ -56,7 +56,8 @@ func TestOrderHandler_Create(t *testing.T) {
 	userRepo := repository.NewUserRepository(db)
 	productRepo := repository.NewProductRepository(db)
 	orderRepo := repository.NewOrderRepository(db)
-	svc := service.NewOrderService(orderRepo, userRepo, productRepo)
+	staffRepo := repository.NewStaffRepository(db)
+	svc := service.NewOrderService(orderRepo, userRepo, productRepo, staffRepo)
 	r := setupOrderRouter(svc)
 
 	// Create user
@@ -81,7 +82,8 @@ func TestOrderHandler_Get(t *testing.T) {
 	userRepo := repository.NewUserRepository(db)
 	productRepo := repository.NewProductRepository(db)
 	orderRepo := repository.NewOrderRepository(db)
-	svc := service.NewOrderService(orderRepo, userRepo, productRepo)
+	staffRepo := repository.NewStaffRepository(db)
+	svc := service.NewOrderService(orderRepo, userRepo, productRepo, staffRepo)
 	r := setupOrderRouter(svc)
 
 	// Create user
@@ -112,7 +114,8 @@ func TestOrderHandler_List(t *testing.T) {
 	userRepo := repository.NewUserRepository(db)
 	productRepo := repository.NewProductRepository(db)
 	orderRepo := repository.NewOrderRepository(db)
-	svc := service.NewOrderService(orderRepo, userRepo, productRepo)
+	staffRepo := repository.NewStaffRepository(db)
+	svc := service.NewOrderService(orderRepo, userRepo, productRepo, staffRepo)
 	r := setupOrderRouter(svc)
 
 	req, _ := http.NewRequest("GET", "/api/orders", nil)
@@ -129,7 +132,8 @@ func TestOrderHandler_Paid(t *testing.T) {
 	userRepo := repository.NewUserRepository(db)
 	productRepo := repository.NewProductRepository(db)
 	orderRepo := repository.NewOrderRepository(db)
-	svc := service.NewOrderService(orderRepo, userRepo, productRepo)
+	staffRepo := repository.NewStaffRepository(db)
+	svc := service.NewOrderService(orderRepo, userRepo, productRepo, staffRepo)
 	r := setupOrderRouter(svc)
 
 	// Create user
@@ -166,7 +170,8 @@ func TestOrderHandler_Cancel(t *testing.T) {
 	userRepo := repository.NewUserRepository(db)
 	productRepo := repository.NewProductRepository(db)
 	orderRepo := repository.NewOrderRepository(db)
-	svc := service.NewOrderService(orderRepo, userRepo, productRepo)
+	staffRepo := repository.NewStaffRepository(db)
+	svc := service.NewOrderService(orderRepo, userRepo, productRepo, staffRepo)
 	r := setupOrderRouter(svc)
 
 	// Create user
@@ -197,7 +202,8 @@ func TestOrderHandler_Get_NotFound(t *testing.T) {
 	userRepo := repository.NewUserRepository(db)
 	productRepo := repository.NewProductRepository(db)
 	orderRepo := repository.NewOrderRepository(db)
-	svc := service.NewOrderService(orderRepo, userRepo, productRepo)
+	staffRepo := repository.NewStaffRepository(db)
+	svc := service.NewOrderService(orderRepo, userRepo, productRepo, staffRepo)
 	r := setupOrderRouter(svc)
 
 	req, _ := http.NewRequest("GET", "/api/orders/999", nil)
@@ -214,7 +220,8 @@ func TestOrderHandler_Delete_NotFound(t *testing.T) {
 	userRepo := repository.NewUserRepository(db)
 	productRepo := repository.NewProductRepository(db)
 	orderRepo := repository.NewOrderRepository(db)
-	svc := service.NewOrderService(orderRepo, userRepo, productRepo)
+	staffRepo := repository.NewStaffRepository(db)
+	svc := service.NewOrderService(orderRepo, userRepo, productRepo, staffRepo)
 	r := setupOrderRouter(svc)
 
 	req, _ := http.NewRequest("DELETE", "/api/orders/999", nil)
@@ -231,7 +238,8 @@ func TestOrderHandler_Ship(t *testing.T) {
 	userRepo := repository.NewUserRepository(db)
 	productRepo := repository.NewProductRepository(db)
 	orderRepo := repository.NewOrderRepository(db)
-	svc := service.NewOrderService(orderRepo, userRepo, productRepo)
+	staffRepo := repository.NewStaffRepository(db)
+	svc := service.NewOrderService(orderRepo, userRepo, productRepo, staffRepo)
 	r := setupOrderRouter(svc)
 
 	// Create user
@@ -263,7 +271,8 @@ func TestOrderHandler_Complete(t *testing.T) {
 	userRepo := repository.NewUserRepository(db)
 	productRepo := repository.NewProductRepository(db)
 	orderRepo := repository.NewOrderRepository(db)
-	svc := service.NewOrderService(orderRepo, userRepo, productRepo)
+	staffRepo := repository.NewStaffRepository(db)
+	svc := service.NewOrderService(orderRepo, userRepo, productRepo, staffRepo)
 	r := setupOrderRouter(svc)
 
 	// Create user
@@ -296,7 +305,8 @@ func TestOrderHandler_Create_InvalidJSON(t *testing.T) {
 	userRepo := repository.NewUserRepository(db)
 	productRepo := repository.NewProductRepository(db)
 	orderRepo := repository.NewOrderRepository(db)
-	svc := service.NewOrderService(orderRepo, userRepo, productRepo)
+	staffRepo := repository.NewStaffRepository(db)
+	svc := service.NewOrderService(orderRepo, userRepo, productRepo, staffRepo)
 	r := setupOrderRouter(svc)
 
 	body := `{invalid json}`
@@ -315,7 +325,8 @@ func TestOrderHandler_InvalidID(t *testing.T) {
 	userRepo := repository.NewUserRepository(db)
 	productRepo := repository.NewProductRepository(db)
 	orderRepo := repository.NewOrderRepository(db)
-	svc := service.NewOrderService(orderRepo, userRepo, productRepo)
+	staffRepo := repository.NewStaffRepository(db)
+	svc := service.NewOrderService(orderRepo, userRepo, productRepo, staffRepo)
 	r := setupOrderRouter(svc)
 
 	req, _ := http.NewRequest("GET", "/api/orders/invalid", nil)

@@ -12,8 +12,10 @@ import (
 )
 
 var (
-	ErrOrderNotFound     = errors.New("order not found")
-	ErrInvalidOrderState = errors.New("invalid order state transition")
+	ErrOrderNotFound      = errors.New("order not found")
+	ErrInvalidOrderState  = errors.New("invalid order state transition")
+	ErrStaffNotAvailable  = errors.New("staff is not available")
+	ErrAssignedStaffInvalid = errors.New("assigned staff not found or not available")
 )
 
 // OrderService handles order business logic
@@ -22,6 +24,7 @@ type OrderService interface {
 	GetByID(id int64) (*model.Order, error)
 	List(page, pageSize int) ([]*model.Order, int64, error)
 	Delete(id int64) error
+	AssignStaff(orderID int64, staffID *int64) error
 
 	// State transitions
 	Paid(id int64) error
@@ -34,6 +37,7 @@ type orderService struct {
 	orderRepo   repository.OrderRepository
 	userRepo    repository.UserRepository
 	productRepo repository.ProductRepository
+	staffRepo   repository.StaffRepository
 }
 
 // NewOrderService creates a new OrderService
@@ -41,11 +45,13 @@ func NewOrderService(
 	orderRepo repository.OrderRepository,
 	userRepo repository.UserRepository,
 	productRepo repository.ProductRepository,
+	staffRepo repository.StaffRepository,
 ) OrderService {
 	return &orderService{
 		orderRepo:   orderRepo,
 		userRepo:    userRepo,
 		productRepo: productRepo,
+		staffRepo:   staffRepo,
 	}
 }
 
@@ -57,6 +63,20 @@ func (s *orderService) Create(req *model.CreateOrderRequest) (*model.Order, erro
 			return nil, ErrUserNotFound
 		}
 		return nil, err
+	}
+
+	// Verify staff if provided
+	if req.StaffID != nil {
+		staff, err := s.staffRepo.GetByID(*req.StaffID)
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return nil, ErrAssignedStaffInvalid
+			}
+			return nil, err
+		}
+		if staff.Status != model.StaffStatusAvailable {
+			return nil, ErrAssignedStaffInvalid
+		}
 	}
 
 	// Calculate total and verify products
@@ -93,6 +113,7 @@ func (s *orderService) Create(req *model.CreateOrderRequest) (*model.Order, erro
 	order := &model.Order{
 		OrderNo:     orderNo,
 		UserID:      req.UserID,
+		StaffID:     req.StaffID,
 		TotalAmount: totalAmount,
 		Status:      model.OrderStatusPending,
 		Items:       items,
@@ -142,6 +163,33 @@ func (s *orderService) List(page, pageSize int) ([]*model.Order, int64, error) {
 
 	offset := (page - 1) * pageSize
 	return s.orderRepo.List(offset, pageSize)
+}
+
+func (s *orderService) AssignStaff(orderID int64, staffID *int64) error {
+	// Verify order exists
+	_, err := s.orderRepo.GetByID(orderID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return ErrOrderNotFound
+		}
+		return err
+	}
+
+	// Verify staff if provided
+	if staffID != nil {
+		staff, err := s.staffRepo.GetByID(*staffID)
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return ErrAssignedStaffInvalid
+			}
+			return err
+		}
+		if staff.Status != model.StaffStatusAvailable {
+			return ErrAssignedStaffInvalid
+		}
+	}
+
+	return s.orderRepo.AssignStaff(orderID, staffID)
 }
 
 func (s *orderService) Delete(id int64) error {

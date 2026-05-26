@@ -83,11 +83,55 @@ func (h *OrderHandler) Create(c *gin.Context) {
 			response.Error(c, http.StatusBadRequest, "insufficient stock")
 			return
 		}
+		if errors.Is(err, service.ErrStaffNotFound) {
+			response.Error(c, http.StatusNotFound, "staff not found")
+			return
+		}
+		if errors.Is(err, service.ErrStaffNotAvailable) {
+			response.Error(c, http.StatusBadRequest, "staff is not available")
+			return
+		}
+		if errors.Is(err, service.ErrAssignedStaffInvalid) {
+			response.Error(c, http.StatusBadRequest, "staff is not found or not available")
+			return
+		}
 		response.Error(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	response.Success(c, order)
+}
+
+// AssignStaff handles PUT /api/orders/:id/staff
+func (h *OrderHandler) AssignStaff(c *gin.Context) {
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		response.Error(c, http.StatusBadRequest, "invalid id")
+		return
+	}
+
+	var req struct {
+		StaffID *int64 `json:"staff_id"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.Error(c, http.StatusBadRequest, "invalid request: "+err.Error())
+		return
+	}
+
+	if err := h.svc.AssignStaff(id, req.StaffID); err != nil {
+		if errors.Is(err, service.ErrOrderNotFound) {
+			response.Error(c, http.StatusNotFound, "order not found")
+			return
+		}
+		if errors.Is(err, service.ErrAssignedStaffInvalid) {
+			response.Error(c, http.StatusBadRequest, "staff is not found or not available")
+			return
+		}
+		response.Error(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	response.Success(c, nil)
 }
 
 // Delete handles DELETE /api/orders/:id

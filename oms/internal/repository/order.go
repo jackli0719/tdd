@@ -17,6 +17,7 @@ type OrderRepository interface {
 	Delete(id int64) error
 	List(offset, limit int) ([]*model.Order, int64, error)
 	ListByUserID(userID int64, offset, limit int) ([]*model.Order, int64, error)
+	AssignStaff(id int64, staffID *int64) error
 }
 
 type orderRepository struct {
@@ -90,4 +91,8 @@ func (r *orderRepository) ListByUserID(userID int64, offset, limit int) ([]*mode
 		return nil, 0, err
 	}
 	return orders, total, nil
+}
+
+func (r *orderRepository) AssignStaff(id int64, staffID *int64) error {
+	return r.db.Model(&model.Order{}).Where("id = ?", id).Update("staff_id", staffID).Error
 }

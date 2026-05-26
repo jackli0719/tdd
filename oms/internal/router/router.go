@@ -39,12 +39,13 @@ func Setup(r *gin.Engine, db *gorm.DB, jwtSecret string) {
 	userRepo := repository.NewUserRepository(db)
 	productRepo := repository.NewProductRepository(db)
 	orderRepo := repository.NewOrderRepository(db)
+	staffRepo := repository.NewStaffRepository(db)
 
 	// Services
 	userSvc := service.NewUserService(userRepo)
 	authSvc := service.NewAuthService(userRepo, jwtSecret)
 	productSvc := service.NewProductService(productRepo)
-	orderSvc := service.NewOrderService(orderRepo, userRepo, productRepo)
+	orderSvc := service.NewOrderService(orderRepo, userRepo, productRepo, staffRepo)
 
 	// Handlers
 	userHandler := handler.NewUserHandler(userSvc)
@@ -81,7 +82,6 @@ func Setup(r *gin.Engine, db *gorm.DB, jwtSecret string) {
 		protected.DELETE("/categories/:id", categoryHandler.Delete)
 
 		// Staff routes
-		staffRepo := repository.NewStaffRepository(db)
 		staffSvc := service.NewStaffService(staffRepo)
 		staffHandler := handler.NewStaffHandler(staffSvc)
 		protected.GET("/staff", staffHandler.List)
@@ -110,6 +110,7 @@ func Setup(r *gin.Engine, db *gorm.DB, jwtSecret string) {
 		protected.GET("/orders/:id", orderHandler.Get)
 		protected.POST("/orders", orderHandler.Create)
 		protected.DELETE("/orders/:id", orderHandler.Delete)
+		protected.PUT("/orders/:id/staff", orderHandler.AssignStaff)
 		protected.POST("/orders/:id/paid", orderHandler.Paid)
 		protected.POST("/orders/:id/ship", orderHandler.Ship)
 		protected.POST("/orders/:id/complete", orderHandler.Complete)

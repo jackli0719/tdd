@@ -53,8 +53,14 @@ func (OrderItem) TableName() string {
 
 // CreateOrderRequest is the request body for creating an order
 type CreateOrderRequest struct {
-	UserID int64                    `json:"user_id" binding:"required"`
-	Items  []CreateOrderItemRequest `json:"items" binding:"required,min=1,dive"`
+	UserID  int64                    `json:"user_id" binding:"required"`
+	StaffID *int64                  `json:"staff_id"`
+	Items   []CreateOrderItemRequest `json:"items" binding:"required,min=1,dive"`
+}
+
+// UpdateOrderRequest is the request body for updating an order
+type UpdateOrderRequest struct {
+	StaffID *int64 `json:"staff_id"`
 }
 
 // CreateOrderItemRequest is the request body for an order item

@@ -18,7 +18,7 @@ func setupOrderTestDB(t *testing.T) *gorm.DB {
 		t.Fatalf("failed to open test db: %v", err)
 	}
 
-	err = db.AutoMigrate(&model.User{}, &model.Product{}, &model.Order{}, &model.OrderItem{})
+	err = db.AutoMigrate(&model.User{}, &model.Product{}, &model.Order{}, &model.OrderItem{}, &model.Staff{})
 	if err != nil {
 		t.Fatalf("failed to migrate: %v", err)
 	}
@@ -31,7 +31,8 @@ func TestOrderService_StateTransitions(t *testing.T) {
 	userRepo := repository.NewUserRepository(db)
 	productRepo := repository.NewProductRepository(db)
 	orderRepo := repository.NewOrderRepository(db)
-	svc := NewOrderService(orderRepo, userRepo, productRepo)
+	staffRepo := repository.NewStaffRepository(db)
+	svc := NewOrderService(orderRepo, userRepo, productRepo, staffRepo)
 
 	// Create user
 	userRepo.Create(&model.User{Username: "testuser", Email: "test@example.com", Phone: "1234567890"})
@@ -93,7 +94,8 @@ func TestOrderService_CancelFromPending(t *testing.T) {
 	userRepo := repository.NewUserRepository(db)
 	productRepo := repository.NewProductRepository(db)
 	orderRepo := repository.NewOrderRepository(db)
-	svc := NewOrderService(orderRepo, userRepo, productRepo)
+	staffRepo := repository.NewStaffRepository(db)
+	svc := NewOrderService(orderRepo, userRepo, productRepo, staffRepo)
 
 	// Create user
 	userRepo.Create(&model.User{Username: "testuser", Email: "test@example.com", Phone: "1234567890"})
@@ -126,7 +128,8 @@ func TestOrderService_CancelFromPaid(t *testing.T) {
 	userRepo := repository.NewUserRepository(db)
 	productRepo := repository.NewProductRepository(db)
 	orderRepo := repository.NewOrderRepository(db)
-	svc := NewOrderService(orderRepo, userRepo, productRepo)
+	staffRepo := repository.NewStaffRepository(db)
+	svc := NewOrderService(orderRepo, userRepo, productRepo, staffRepo)
 
 	// Create user
 	userRepo.Create(&model.User{Username: "testuser", Email: "test@example.com", Phone: "1234567890"})
@@ -160,7 +163,8 @@ func TestOrderService_InvalidTransitions(t *testing.T) {
 	userRepo := repository.NewUserRepository(db)
 	productRepo := repository.NewProductRepository(db)
 	orderRepo := repository.NewOrderRepository(db)
-	svc := NewOrderService(orderRepo, userRepo, productRepo)
+	staffRepo := repository.NewStaffRepository(db)
+	svc := NewOrderService(orderRepo, userRepo, productRepo, staffRepo)
 
 	// Create user
 	userRepo.Create(&model.User{Username: "testuser", Email: "test@example.com", Phone: "1234567890"})
@@ -202,7 +206,8 @@ func TestOrderService_GetByID_NotFound(t *testing.T) {
 	userRepo := repository.NewUserRepository(db)
 	productRepo := repository.NewProductRepository(db)
 	orderRepo := repository.NewOrderRepository(db)
-	svc := NewOrderService(orderRepo, userRepo, productRepo)
+	staffRepo := repository.NewStaffRepository(db)
+	svc := NewOrderService(orderRepo, userRepo, productRepo, staffRepo)
 
 	_, err := svc.GetByID(999)
 	if err != ErrOrderNotFound {
@@ -215,7 +220,8 @@ func TestOrderService_List(t *testing.T) {
 	userRepo := repository.NewUserRepository(db)
 	productRepo := repository.NewProductRepository(db)
 	orderRepo := repository.NewOrderRepository(db)
-	svc := NewOrderService(orderRepo, userRepo, productRepo)
+	staffRepo := repository.NewStaffRepository(db)
+	svc := NewOrderService(orderRepo, userRepo, productRepo, staffRepo)
 
 	// Create user
 	userRepo.Create(&model.User{Username: "testuser", Email: "test@example.com", Phone: "1234567890"})
@@ -253,7 +259,8 @@ func TestOrderService_Delete(t *testing.T) {
 	userRepo := repository.NewUserRepository(db)
 	productRepo := repository.NewProductRepository(db)
 	orderRepo := repository.NewOrderRepository(db)
-	svc := NewOrderService(orderRepo, userRepo, productRepo)
+	staffRepo := repository.NewStaffRepository(db)
+	svc := NewOrderService(orderRepo, userRepo, productRepo, staffRepo)
 
 	// Create user
 	userRepo.Create(&model.User{Username: "testuser", Email: "test@example.com", Phone: "1234567890"})
@@ -286,7 +293,8 @@ func TestOrderService_Delete_InvalidState(t *testing.T) {
 	userRepo := repository.NewUserRepository(db)
 	productRepo := repository.NewProductRepository(db)
 	orderRepo := repository.NewOrderRepository(db)
-	svc := NewOrderService(orderRepo, userRepo, productRepo)
+	staffRepo := repository.NewStaffRepository(db)
+	svc := NewOrderService(orderRepo, userRepo, productRepo, staffRepo)
 
 	// Create user
 	userRepo.Create(&model.User{Username: "testuser", Email: "test@example.com", Phone: "1234567890"})
@@ -317,7 +325,8 @@ func TestOrderService_Create_UserNotFound(t *testing.T) {
 	userRepo := repository.NewUserRepository(db)
 	productRepo := repository.NewProductRepository(db)
 	orderRepo := repository.NewOrderRepository(db)
-	svc := NewOrderService(orderRepo, userRepo, productRepo)
+	staffRepo := repository.NewStaffRepository(db)
+	svc := NewOrderService(orderRepo, userRepo, productRepo, staffRepo)
 
 	// Create product
 	productRepo.Create(&model.Product{Name: "Test Product", Price: 99.99, Stock: 100})
@@ -338,7 +347,8 @@ func TestOrderService_Create_ProductNotFound(t *testing.T) {
 	userRepo := repository.NewUserRepository(db)
 	productRepo := repository.NewProductRepository(db)
 	orderRepo := repository.NewOrderRepository(db)
-	svc := NewOrderService(orderRepo, userRepo, productRepo)
+	staffRepo := repository.NewStaffRepository(db)
+	svc := NewOrderService(orderRepo, userRepo, productRepo, staffRepo)
 
 	// Create user
 	userRepo.Create(&model.User{Username: "testuser", Email: "test@example.com", Phone: "1234567890"})
@@ -359,7 +369,8 @@ func TestOrderService_Create_InsufficientStock(t *testing.T) {
 	userRepo := repository.NewUserRepository(db)
 	productRepo := repository.NewProductRepository(db)
 	orderRepo := repository.NewOrderRepository(db)
-	svc := NewOrderService(orderRepo, userRepo, productRepo)
+	staffRepo := repository.NewStaffRepository(db)
+	svc := NewOrderService(orderRepo, userRepo, productRepo, staffRepo)
 
 	// Create user
 	userRepo.Create(&model.User{Username: "testuser", Email: "test@example.com", Phone: "1234567890"})
