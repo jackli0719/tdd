@@ -22,6 +22,9 @@
         <el-menu-item index="/orders">
           <span>订单管理</span>
         </el-menu-item>
+        <el-menu-item index="/staff">
+          <span>服务人员</span>
+        </el-menu-item>
         <el-menu-item index="/stats">
           <span>统计</span>
         </el-menu-item>
