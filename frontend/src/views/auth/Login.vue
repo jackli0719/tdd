@@ -49,7 +49,7 @@ const handleLogin = async () => {
   loading.value = true
   try {
     const res = await login(form.value)
-    setToken(res.token)
+    setToken(res.data.token)
     ElMessage.success('登录成功')
     router.push('/dashboard')
   } catch (error) {
