@@ -52,7 +52,7 @@ db-create: ## Create SQLite database file
 # Git
 git-check: ## Check git status for untracked/ignored files
 	git status --short
-	git check-ignore -v \$$(git ls-files -o --exclude-standard)
+	git check-ignore -v --exclude-standard
 
 # Full check before commit
 pre-commit: check lint git-check ## Run all checks before commit
