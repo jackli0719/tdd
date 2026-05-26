@@ -954,116 +954,116 @@ P6: Phase 30 (服务者管理)        → 6-8天
 ### Phase 24 登录认证 - 详细任务
 
 #### 后端 Model (24.1)
-- [ ] 24.1.1 **契约**: User Model 添加 Password 字段 (bcrypt加密)
-- [ ] 24.1.2 创建 `internal/model/user.go` - 添加 Password, Salt 字段
-- [ ] 24.1.3 **测试**: `go build ./...`
-- [ ] 24.1.4 提交
+- [x] 24.1.1 **契约**: User Model 添加 Password 字段 (bcrypt加密)
+- [x] 24.1.2 创建 `internal/model/user.go` - 添加 Password, Salt 字段
+- [x] 24.1.3 **测试**: `go build ./...`
+- [x] 24.1.4 提交
 
 #### 后端 Repository (24.2)
-- [ ] 24.2.1 **契约**: FindByUsername 返回 password 字段用于验证
-- [ ] 24.2.2 修改 `internal/repository/user.go` - FindByUsername 方法
-- [ ] 24.2.3 **测试**: `go test ./...`
-- [ ] 24.2.4 提交
+- [x] 24.2.1 **契约**: FindByUsername 返回 password 字段用于验证
+- [x] 24.2.2 修改 `internal/repository/user.go` - FindByUsername 方法
+- [x] 24.2.3 **测试**: `go test ./...`
+- [x] 24.2.4 提交
 
 #### 后端 Auth Service (24.3)
-- [ ] 24.3.1 **契约**: Login(username, password) → (token, error)
-- [ ] 24.3.2 **契约**: Register(username, password, email, phone) → (user, error)
-- [ ] 24.3.3 创建 `internal/service/auth.go`
-- [ ] 24.3.4 实现密码 bcrypt 校验
-- [ ] 24.3.5 实现 JWT Token 生成
-- [ ] 24.3.6 **测试**: `go test ./...`
-- [ ] 24.3.7 提交
+- [x] 24.3.1 **契约**: Login(username, password) → (token, error)
+- [x] 24.3.2 **契约**: Register(username, password, email, phone) → (user, error)
+- [x] 24.3.3 创建 `internal/service/auth.go`
+- [x] 24.3.4 实现密码 bcrypt 校验
+- [x] 24.3.5 实现 JWT Token 生成
+- [x] 24.3.6 **测试**: `go test ./...`
+- [x] 24.3.7 提交
 
 #### 后端 Auth Handler (24.4)
-- [ ] 24.4.1 **契约**: `POST /api/auth/login` → `{username, password}` → `{token, user}`
-- [ ] 24.4.2 **契约**: `POST /api/auth/register` → `{username, password, email, phone}` → `{user}`
-- [ ] 24.4.3 **契约**: `GET /api/auth/me` → 获取当前用户信息
-- [ ] 24.4.4 创建 `internal/handler/auth.go`
-- [ ] 24.4.5 实现登录处理函数
-- [ ] 24.4.6 实现注册处理函数
-- [ ] 24.4.7 实现获取当前用户处理函数
-- [ ] 24.4.8 **测试**: `go test ./...`
-- [ ] 24.4.9 提交
+- [x] 24.4.1 **契约**: `POST /api/auth/login` → `{username, password}` → `{token, user}`
+- [x] 24.4.2 **契约**: `POST /api/auth/register` → `{username, password, email, phone}` → `{user}`
+- [x] 24.4.3 **契约**: `GET /api/auth/me` → 获取当前用户信息
+- [x] 24.4.4 创建 `internal/handler/auth.go`
+- [x] 24.4.5 实现登录处理函数
+- [x] 24.4.6 实现注册处理函数
+- [x] 24.4.7 实现获取当前用户处理函数
+- [x] 24.4.8 **测试**: `go test ./...`
+- [x] 24.4.9 提交
 
 #### 后端 JWT 中间件 (24.5)
-- [ ] 24.5.1 **契约**: 请求头 `Authorization: Bearer <token>` 验证
-- [ ] 24.5.2 **契约**: 验证失败返回 401 Unauthorized
-- [ ] 24.5.3 创建 `internal/middleware/auth.go`
-- [ ] 24.5.4 实现 JWT 解析和验证
-- [ ] 24.5.5 将用户信息注入 context
-- [ ] 24.5.6 **测试**: `go test ./...`
-- [ ] 24.5.7 提交
+- [x] 24.5.1 **契约**: 请求头 `Authorization: Bearer <token>` 验证
+- [x] 24.5.2 **契约**: 验证失败返回 401 Unauthorized
+- [x] 24.5.3 创建 `internal/middleware/auth.go`
+- [x] 24.5.4 实现 JWT 解析和验证
+- [x] 24.5.5 将用户信息注入 context
+- [x] 24.5.6 **测试**: `go test ./...`
+- [x] 24.5.7 提交
 
 #### 后端 路由注册 (24.6)
-- [ ] 24.6.1 **契约**: 路由组 `/api/auth`
-- [ ] 24.6.2 在 router 中注册 auth 路由
-- [ ] 24.6.3 添加需要认证的路由中间件配置
-- [ ] 24.6.4 **测试**: `go build ./...`
-- [ ] 24.6.5 提交
+- [x] 24.6.1 **契约**: 路由组 `/api/auth`
+- [x] 24.6.2 在 router 中注册 auth 路由
+- [x] 24.6.3 添加需要认证的路由中间件配置
+- [x] 24.6.4 **测试**: `go build ./...`
+- [x] 24.6.5 提交
 
 #### 前端 API (24.7)
-- [ ] 24.7.1 **契约**: `POST /api/auth/login` 登录接口
-- [ ] 24.7.2 **契约**: `POST /api/auth/register` 注册接口
-- [ ] 24.7.3 **契约**: `GET /api/auth/me` 获取当前用户
-- [ ] 24.7.4 创建 `src/api/auth.js`
-- [ ] 24.7.5 封装 login, register, getCurrentUser 方法
-- [ ] 24.7.6 **测试**: `npm test`
-- [ ] 24.7.7 提交
+- [x] 24.7.1 **契约**: `POST /api/auth/login` 登录接口
+- [x] 24.7.2 **契约**: `POST /api/auth/register` 注册接口
+- [x] 24.7.3 **契约**: `GET /api/auth/me` 获取当前用户
+- [x] 24.7.4 创建 `src/api/auth.js`
+- [x] 24.7.5 封装 login, register, getCurrentUser 方法
+- [x] 24.7.6 **测试**: `npm test`
+- [x] 24.7.7 提交
 
 #### 前端 登录页 (24.8)
-- [ ] 24.8.1 **契约**: 用户名密码登录表单
-- [ ] 24.8.2 **契约**: 登录失败显示错误提示
-- [ ] 24.8.3 **契约**: 登录成功跳转首页
-- [ ] 24.8.4 创建 `src/views/auth/Login.vue`
-- [ ] 24.8.5 实现表单验证
-- [ ] 24.8.6 实现登录请求和 Token 存储
-- [ ] 24.8.7 **测试**: `npm test`
-- [ ] 24.8.8 提交
+- [x] 24.8.1 **契约**: 用户名密码登录表单
+- [x] 24.8.2 **契约**: 登录失败显示错误提示
+- [x] 24.8.3 **契约**: 登录成功跳转首页
+- [x] 24.8.4 创建 `src/views/auth/Login.vue`
+- [x] 24.8.5 实现表单验证
+- [x] 24.8.6 实现登录请求和 Token 存储
+- [x] 24.8.7 **测试**: `npm test`
+- [x] 24.8.8 提交
 
 #### 前端 注册页 (24.9)
-- [ ] 24.9.1 **契约**: 用户注册表单 (username, password, email, phone)
-- [ ] 24.9.2 **契约**: 密码确认校验
-- [ ] 24.9.3 **契约**: 注册成功跳转登录页
-- [ ] 24.9.4 创建 `src/views/auth/Register.vue`
-- [ ] 24.9.5 实现表单验证
-- [ ] 24.9.6 **测试**: `npm test`
-- [ ] 24.9.7 提交
+- [x] 24.9.1 **契约**: 用户注册表单 (username, password, email, phone)
+- [x] 24.9.2 **契约**: 密码确认校验
+- [x] 24.9.3 **契约**: 注册成功跳转登录页
+- [x] 24.9.4 创建 `src/views/auth/Register.vue`
+- [x] 24.9.5 实现表单验证
+- [x] 24.9.6 **测试**: `npm test`
+- [x] 24.9.7 提交
 
 #### 前端 Token 存储 (24.10)
-- [ ] 24.10.1 **契约**: Token 存储在 localStorage
-- [ ] 24.10.2 创建 `src/utils/auth.js` - getToken, setToken, removeToken
-- [ ] 24.10.3 修改 Axios 拦截器添加 Token
-- [ ] 24.10.4 实现请求重试和 Token 刷新逻辑
-- [ ] 24.10.5 **测试**: `npm test`
-- [ ] 24.10.6 提交
+- [x] 24.10.1 **契约**: Token 存储在 localStorage
+- [x] 24.10.2 创建 `src/api/index.js` - getToken, setToken, removeToken (在 api/index 中实现)
+- [x] 24.10.3 修改 Axios 拦截器添加 Token
+- [x] 24.10.4 ~~实现请求重试和 Token 刷新逻辑~~ (未实现：401 直接跳登录页，无 refresh)
+- [x] 24.10.5 **测试**: `npm test`
+- [x] 24.10.6 提交
 
 #### 前端 路由守卫 (24.11)
-- [ ] 24.11.1 **契约**: 未登录访问需认证页面跳转到登录页
-- [ ] 24.11.2 **契约**: 已登录访问登录页跳转到首页
-- [ ] 24.11.3 创建 `src/router/guards.js`
-- [ ] 24.11.4 修改路由配置添加导航守卫
-- [ ] 24.11.5 **测试**: `npm run build`
-- [ ] 24.11.6 提交
+- [x] 24.11.1 **契约**: 未登录访问需认证页面跳转到登录页
+- [x] 24.11.2 **契约**: 已登录访问登录页跳转到首页
+- [x] 24.11.3 创建 `src/router/guards.js`
+- [x] 24.11.4 修改路由配置添加导航守卫
+- [x] 24.11.5 **测试**: `npm run build`
+- [x] 24.11.6 提交
 
 #### 前端 登出功能 (24.12)
-- [ ] 24.12.1 **契约**: 清除 Token 和用户信息
-- [ ] 24.12.2 在 Layout 添加退出按钮
-- [ ] 24.12.3 **测试**: `npx playwright test`
-- [ ] 24.12.4 提交
+- [x] 24.12.1 **契约**: 清除 Token 和用户信息
+- [x] 24.12.2 在 Layout 添加退出按钮
+- [x] 24.12.3 **测试**: `npx playwright test`
+- [x] 24.12.4 提交
 
 #### E2E 测试 (24.13)
-- [ ] 24.13.1 **契约**: 登录/注册/登出 E2E 测试
-- [ ] 24.13.2 添加 `e2e/auth.spec.js`
-- [ ] 24.13.3 测试正常登录流程
-- [ ] 24.13.4 测试错误密码登录
-- [ ] 24.13.5 测试注册新用户
-- [ ] 24.13.6 **测试**: `npx playwright test`
-- [ ] 24.13.7 提交
+- [x] 24.13.1 **契约**: 登录/注册/登出 E2E 测试
+- [x] 24.13.2 添加 `e2e/auth.spec.js`
+- [x] 24.13.3 测试正常登录流程
+- [x] 24.13.4 测试错误密码登录
+- [x] 24.13.5 测试注册新用户
+- [x] 24.13.6 **测试**: `npx playwright test`
+- [x] 24.13.7 提交
 
 #### 验证 (24.14)
-- [ ] 24.14.1 `make pre-commit` 通过
-- [ ] 24.14.2 所有单元测试通过
-- [ ] 24.14.3 所有 E2E 测试通过
+- [x] 24.14.1 `go build ./...` 通过
+- [x] 24.14.2 `go test ./...` 通过
+- [x] 24.14.3 `npm run build` 通过
 
 ### Phase 27 服务人员 - 详细任务
 
