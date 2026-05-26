@@ -607,8 +607,11 @@ curl http://localhost:8080/api/orders
 | phase1-7 | 后端 | 1-7 | 28 | 112 |
 | phase8 | 数据库 | 8 | 3 | 12 |
 | phase9-14 | 前端 | 9-14 | 10 | 40 |
-| phase15-18 | 完善项 | 15-18 | 14 | 56 |
-| **总计** | | | **55** | **220** |
+| phase15-17 | 完善项 | 15-17 | 14 | 56 |
+| phase18 | CI/CD | 18 | 3 | 12 |
+| phase19 | 开发清单 | 19 | 2 | 8 |
+| phase20 | 部署 | 20 | 3 | 12 |
+| **总计** | | | **63** | **252** |
 
 ---
 
@@ -621,7 +624,9 @@ curl http://localhost:8080/api/orders
 | Agent-Test | 单元测试覆盖率 | 15.1 - 15.3 |
 | Agent-Error | 错误处理 | 16.1 - 16.2 |
 | Agent-Log | 日志记录 | 17.1 - 17.2 |
-| Agent-Deploy | 部署文档 | 18.1 - 18.3 |
+| Agent-CI | CI/CD 配置 | 18.1 - 18.3 |
+| Agent-Checklist | 开发检查清单 | 19.1 - 19.2 |
+| Agent-Deploy | 部署文档 | 20.1 - 20.3 |
 
 ---
 
@@ -716,27 +721,89 @@ curl http://localhost:8080/api/orders
 
 ---
 
-## 十六、部署文档 (Phase 18)
+## 十六、CI/CD 配置 (Phase 18)
+
+> CI 包含：依赖安装、编译检查、单元测试、Lint、E2E 测试、预提交汇总
+
+### Phase 18: CI/CD 配置
+
+#### 18.1 CI workflow 配置
+- [ ] **契约**: `.github/workflows/ci.yml`
+- [ ] Jobs: deps, build, test-unit, lint, test-e2e, pre-commit
+- [ ] **测试**: push PR 时 CI 通过
+- [ ] 提交
+
+#### 18.2 Lint 门禁
+- [ ] **契约**: golangci-lint + ESLint
+- [ ] 本地无 golangci-lint 时降级到 gofmt
+- [ ] **测试**: CI lint job 通过
+- [ ] 提交
+
+#### 18.3 测试缓存和报告
+- [ ] **契约**: 测试结果和 E2E 报告上传到 artifacts
+- [ ] node_modules 缓存
+- [ ] **测试**: 报告可下载
+- [ ] 提交
+
+---
+
+## 十七、开发检查清单 (每次提交前必查)
+
+### 提交前检查项
+- [ ] `go build ./...` 通过
+- [ ] `go test ./...` 通过
+- [ ] `npm run build` 通过
+- [ ] `npm test` 通过
+- [ ] API 字段名与文档一致
+- [ ] git status 无意外修改
+
+### 本地 lint 检查
+```bash
+# Go lint (无 golangci-lint 时用 gofmt)
+make lint
+# 或
+cd oms && gofmt -l .
+
+# Frontend lint
+cd frontend && npm run lint
+```
+
+---
+
+## 十八、历史错误记录
+
+> 参照 `memory/oms-common-errors.md` 避免重复犯错
+
+常见错误类型：
+1. **API 响应解析**: 前端用 `res.users` 但后端返回 `res.data.users`
+2. **字段名不匹配**: `total_price` vs `total_amount`
+3. **缺少事务**: 订单创建和库存扣减未在同一事务
+4. **RowsAffected 未检查**: 并发下库存可能变负
+5. **cancelled 订单计入营收**: 需要跳过 cancelled 状态
+
+---
+
+## 十九、部署文档 (Phase 20)
 
 > 每任务遵循：**契约先行 → 编写文档 → 验证部署 → 提交**
 
-### Phase 18: 部署文档
+### Phase 20: 部署文档
 
-#### 18.1 Docker 配置
+#### 20.1 Docker 配置
 - [ ] **契约**: Dockerfile + docker-compose.yml
 - [ ] 创建 `Dockerfile` (Go 构建)
 - [ ] 创建 `docker-compose.yml` (Go + Vue + SQLite)
 - [ ] **测试**: `docker-compose up` 启动成功
 - [ ] 提交
 
-#### 18.2 环境变量配置
+#### 20.2 环境变量配置
 - [ ] **契约**: `.env.example` 模板
 - [ ] 创建 `oms/.env.example`
 - [ ] 创建 `frontend/.env.example`
 - [ ] **测试**: 按模板配置可正常运行
 - [ ] 提交
 
-#### 18.3 README 部署说明
+#### 20.3 README 部署说明
 - [ ] **契约**: 部署步骤清晰、可执行
 - [ ] 编写 `docs/DEPLOYMENT.md`
 - [ ] 包含：环境要求、本地部署、Docker 部署

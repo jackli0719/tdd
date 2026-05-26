@@ -11,7 +11,7 @@ import (
 
 var (
 	ErrProductNotFound   = errors.New("product not found")
-	ErrProductExists      = errors.New("product already exists")
+	ErrProductExists     = errors.New("product already exists")
 	ErrInsufficientStock = errors.New("insufficient stock")
 )
 
