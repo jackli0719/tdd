@@ -39,7 +39,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { getAddresses, deleteAddress as deleteAddressApi, setDefaultAddress } from '../../api/address'
 import AddressForm from './AddressForm.vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -51,15 +52,28 @@ const props = defineProps({
   },
 })
 
+const route = useRoute()
+
 const addresses = ref([])
 const loading = ref(false)
 const formVisible = ref(false)
 const currentAddress = ref(null)
+const effectiveUserId = ref(props.userId)
+
+onMounted(() => {
+  effectiveUserId.value = props.userId
+  loadAddresses()
+})
+
+watch(() => props.userId, (newId) => {
+  effectiveUserId.value = newId
+  loadAddresses()
+})
 
 const loadAddresses = async () => {
   loading.value = true
   try {
-    const res = await getAddresses(props.userId)
+    const res = await getAddresses(effectiveUserId.value)
     addresses.value = res.data?.addresses || []
   } catch (error) {
     ElMessage.error('加载地址列表失败')
@@ -80,7 +94,7 @@ const editAddress = (address) => {
 
 const setDefault = async (address) => {
   try {
-    await setDefaultAddress(address.id, props.userId)
+    await setDefaultAddress(address.id, effectiveUserId.value)
     ElMessage.success('设置成功')
     loadAddresses()
   } catch (error) {
@@ -107,10 +121,6 @@ const formatAddress = (row) => {
   const parts = [row.province, row.city, row.district, row.detail].filter(Boolean)
   return parts.join(' ') || '-'
 }
-
-onMounted(() => {
-  loadAddresses()
-})
 </script>
 
 <style scoped>

@@ -32,7 +32,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { createAddress, updateAddress } from '../../api/address'
 import { ElMessage } from 'element-plus'
 
@@ -49,6 +49,16 @@ const emit = defineEmits(['update:modelValue', 'success'])
 
 const visible = ref(props.modelValue)
 const loading = ref(false)
+const effectiveUserId = ref(Number(props.userId) || 1)
+
+onMounted(() => {
+  effectiveUserId.value = Number(props.userId) || 1
+})
+
+watch(() => props.userId, (newId) => {
+  effectiveUserId.value = Number(newId) || 1
+})
+
 const form = ref({
   name: '',
   phone: '',
@@ -102,7 +112,7 @@ const handleSubmit = async () => {
   loading.value = true
   try {
     const data = {
-      user_id: props.userId,
+      user_id: effectiveUserId.value,
       ...form.value,
     }
     if (isEdit.value) {

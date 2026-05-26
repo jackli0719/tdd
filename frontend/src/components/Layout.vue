@@ -25,6 +25,9 @@
         <el-menu-item index="/staff">
           <span>服务人员</span>
         </el-menu-item>
+        <el-menu-item index="/addresses">
+          <span>地址管理</span>
+        </el-menu-item>
         <el-menu-item index="/stats">
           <span>统计</span>
         </el-menu-item>
