@@ -471,8 +471,8 @@ GET /api/stats/orders
   "data": {
     "total": 100,
     "pending": 10,
-    "paid": 20,
-    "shipped": 30,
+    "confirmed": 20,
+    "in_service": 30,
     "completed": 35,
     "cancelled": 5
   }
@@ -492,8 +492,8 @@ GET /api/stats/revenue
   "data": {
     "total_revenue": 50000,
     "pending_revenue": 5000,
-    "paid_revenue": 10000,
-    "shipped_revenue": 15000,
+    "confirmed_revenue": 10000,
+    "in_service_revenue": 15000,
     "completed_revenue": 20000
   }
 }

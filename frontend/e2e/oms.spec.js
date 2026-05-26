@@ -111,6 +111,51 @@ test.describe('OMS Frontend E2E', () => {
     await expect(page.locator('text=创建订单')).toBeVisible()
   })
 
+  test('order - create and confirm order', async ({ page }) => {
+    await page.locator('.sidebar-menu').getByRole('menuitem', { name: '订单管理' }).click()
+    await expect(page.locator('.el-table')).toBeVisible()
+
+    // Create order
+    await page.getByRole('button', { name: '创建订单' }).click()
+    // Select user
+    await page.locator('.el-select').first().click()
+    await page.locator('.el-select-dropdown__item').first().click()
+    // Add product
+    await page.locator('.el-button', { hasText: '添加产品' }).click()
+    await page.locator('.el-select').nth(1).click()
+    await page.locator('.el-select-dropdown__item').first().click()
+    // Submit
+    await page.getByRole('button', { hasText: '提交' }).click()
+    // Verify success
+    await expect(page.getByText('创建成功')).toBeVisible()
+
+    // Confirm order (pending → confirmed)
+    const firstPending = page.locator('.el-tag', { hasText: '待确认' }).first()
+    if (await firstPending.isVisible()) {
+      await page.getByRole('button', { name: '确认' }).first().click()
+      await expect(page.getByText('状态更新成功')).toBeVisible()
+    }
+  })
+
+  test('order - state transitions', async ({ page }) => {
+    await page.locator('.sidebar-menu').getByRole('menuitem', { name: '订单管理' }).click()
+    await expect(page.locator('.el-table')).toBeVisible()
+
+    // Look for confirmed order to start service
+    const confirmedTag = page.locator('.el-tag', { hasText: '已确认' }).first()
+    if (await confirmedTag.isVisible()) {
+      await page.getByRole('button', { name: '开始服务' }).first().click()
+      await expect(page.getByText('状态更新成功')).toBeVisible()
+    }
+
+    // Look for in_service order to complete
+    const inServiceTag = page.locator('.el-tag', { hasText: '服务中' }).first()
+    if (await inServiceTag.isVisible()) {
+      await page.getByRole('button', { name: '完成' }).first().click()
+      await expect(page.getByText('状态更新成功')).toBeVisible()
+    }
+  })
+
   test('stats page loads', async ({ page }) => {
     await page.locator('.sidebar-menu').getByRole('menuitem', { name: '统计' }).click()
     await expect(page.locator('text=订单统计')).toBeVisible()
