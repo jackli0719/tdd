@@ -135,6 +135,15 @@ func (h *StaffHandler) UpdateStatus(c *gin.Context) {
 		return
 	}
 
+	// Validate status enum
+	switch req.Status {
+	case model.StaffStatusAvailable, model.StaffStatusBusy, model.StaffStatusOff:
+		// Valid
+	default:
+		response.Error(c, http.StatusBadRequest, "invalid status: must be available, busy, or off")
+		return
+	}
+
 	if err := h.svc.UpdateStatus(id, req.Status); err != nil {
 		if err == service.ErrStaffNotFound {
 			response.Error(c, http.StatusNotFound, "staff not found")

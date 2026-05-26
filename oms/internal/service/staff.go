@@ -66,6 +66,14 @@ func (s *StaffService) ListAvailable() ([]model.Staff, error) {
 
 // UpdateStatus updates a staff member's status
 func (s *StaffService) UpdateStatus(id int64, status model.StaffStatus) error {
+	// Validate status
+	switch status {
+	case model.StaffStatusAvailable, model.StaffStatusBusy, model.StaffStatusOff:
+		// Valid status
+	default:
+		return errors.New("invalid status: must be available, busy, or off")
+	}
+
 	staff, err := s.staffRepo.GetByID(id)
 	if err != nil {
 		return ErrStaffNotFound
