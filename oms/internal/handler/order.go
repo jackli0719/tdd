@@ -95,6 +95,10 @@ func (h *OrderHandler) Create(c *gin.Context) {
 			response.Error(c, http.StatusBadRequest, "staff is not found or not available")
 			return
 		}
+		if errors.Is(err, service.ErrSlotAlreadyBooked) {
+			response.Error(c, http.StatusBadRequest, "this time slot is already booked")
+			return
+		}
 		response.Error(c, http.StatusInternalServerError, err.Error())
 		return
 	}

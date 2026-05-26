@@ -17,14 +17,15 @@ const (
 
 // Order represents an order in the system
 type Order struct {
-	ID          int64       `json:"id" gorm:"primaryKey;autoIncrement"`
-	OrderNo     string      `json:"order_no" gorm:"type:varchar(32);not null;uniqueIndex:uk_order_no"`
-	UserID      int64       `json:"user_id" gorm:"not null;index:idx_user_id"`
-	StaffID     *int64      `json:"staff_id,omitempty" gorm:"index:idx_staff_id"`
-	TotalAmount float64     `json:"total_amount" gorm:"type:decimal(10,2);not null"`
-	Status      OrderStatus `json:"status" gorm:"type:varchar(20);not null;default:pending;index:idx_status"`
-	CreatedAt   time.Time   `json:"created_at" gorm:"autoCreateTime"`
-	UpdatedAt   time.Time   `json:"updated_at" gorm:"autoUpdateTime"`
+	ID              int64       `json:"id" gorm:"primaryKey;autoIncrement"`
+	OrderNo         string      `json:"order_no" gorm:"type:varchar(32);not null;uniqueIndex:uk_order_no"`
+	UserID          int64       `json:"user_id" gorm:"not null;index:idx_user_id"`
+	StaffID         *int64      `json:"staff_id,omitempty" gorm:"index:idx_staff_id"`
+	TotalAmount     float64     `json:"total_amount" gorm:"type:decimal(10,2);not null"`
+	Status          OrderStatus `json:"status" gorm:"type:varchar(20);not null;default:pending;index:idx_status"`
+	AppointmentTime *time.Time `json:"appointment_time,omitempty" gorm:"index:idx_appointment_time"`
+	CreatedAt       time.Time   `json:"created_at" gorm:"autoCreateTime"`
+	UpdatedAt       time.Time   `json:"updated_at" gorm:"autoUpdateTime"`
 
 	// Relations
 	Items []OrderItem `json:"items,omitempty" gorm:"foreignKey:OrderID"`
@@ -53,9 +54,10 @@ func (OrderItem) TableName() string {
 
 // CreateOrderRequest is the request body for creating an order
 type CreateOrderRequest struct {
-	UserID  int64                    `json:"user_id" binding:"required"`
-	StaffID *int64                  `json:"staff_id"`
-	Items   []CreateOrderItemRequest `json:"items" binding:"required,min=1,dive"`
+	UserID          int64                    `json:"user_id" binding:"required"`
+	StaffID         *int64                   `json:"staff_id"`
+	AppointmentTime *time.Time               `json:"appointment_time"`
+	Items           []CreateOrderItemRequest `json:"items" binding:"required,min=1,dive"`
 }
 
 // UpdateOrderRequest is the request body for updating an order

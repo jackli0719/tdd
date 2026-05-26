@@ -4,6 +4,7 @@ import (
 	"oms/internal/model"
 	"oms/internal/repository"
 	"testing"
+	"time"
 
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -474,5 +475,87 @@ func TestOrderService_Create_InsufficientStock(t *testing.T) {
 	})
 	if err != ErrInsufficientStock {
 		t.Errorf("expected ErrInsufficientStock, got %v", err)
+	}
+}
+
+func TestOrderService_Create_WithAppointmentTime(t *testing.T) {
+	db := setupOrderTestDB(t)
+	userRepo := repository.NewUserRepository(db)
+	productRepo := repository.NewProductRepository(db)
+	orderRepo := repository.NewOrderRepository(db)
+	staffRepo := repository.NewStaffRepository(db)
+	svc := NewOrderService(orderRepo, userRepo, productRepo, staffRepo)
+
+	// Create user
+	userRepo.Create(&model.User{Username: "testuser", Email: "test@example.com", Phone: "1234567890"})
+
+	// Create product
+	productRepo.Create(&model.Product{Name: "Test Product", Price: 99.99, Stock: 100})
+
+	// Create appointment time for tomorrow at 10:00
+	tomorrow := time.Now().AddDate(0, 0, 1)
+	appointmentTime := time.Date(tomorrow.Year(), tomorrow.Month(), tomorrow.Day(), 10, 0, 0, 0, time.Local)
+
+	// Create order with appointment time
+	order, err := svc.Create(&model.CreateOrderRequest{
+		UserID:          1,
+		AppointmentTime: &appointmentTime,
+		Items: []model.CreateOrderItemRequest{
+			{ProductID: 1, Quantity: 2},
+		},
+	})
+	if err != nil {
+		t.Fatalf("failed to create order: %v", err)
+	}
+
+	// Verify appointment time was saved
+	if order.AppointmentTime == nil {
+		t.Fatal("expected AppointmentTime to be set, got nil")
+	}
+	if order.AppointmentTime.Hour() != 10 {
+		t.Errorf("expected hour 10, got %d", order.AppointmentTime.Hour())
+	}
+}
+
+func TestOrderService_Create_DuplicateAppointmentTime(t *testing.T) {
+	db := setupOrderTestDB(t)
+	userRepo := repository.NewUserRepository(db)
+	productRepo := repository.NewProductRepository(db)
+	orderRepo := repository.NewOrderRepository(db)
+	staffRepo := repository.NewStaffRepository(db)
+	svc := NewOrderService(orderRepo, userRepo, productRepo, staffRepo)
+
+	// Create user
+	userRepo.Create(&model.User{Username: "testuser", Email: "test@example.com", Phone: "1234567890"})
+
+	// Create product
+	productRepo.Create(&model.Product{Name: "Test Product", Price: 99.99, Stock: 100})
+
+	// Create appointment time for tomorrow at 10:00
+	tomorrow := time.Now().AddDate(0, 0, 1)
+	appointmentTime := time.Date(tomorrow.Year(), tomorrow.Month(), tomorrow.Day(), 10, 0, 0, 0, time.Local)
+
+	// Create first order
+	_, err := svc.Create(&model.CreateOrderRequest{
+		UserID:          1,
+		AppointmentTime: &appointmentTime,
+		Items: []model.CreateOrderItemRequest{
+			{ProductID: 1, Quantity: 1},
+		},
+	})
+	if err != nil {
+		t.Fatalf("failed to create first order: %v", err)
+	}
+
+	// Try to create second order at the same hour
+	_, err = svc.Create(&model.CreateOrderRequest{
+		UserID:          1,
+		AppointmentTime: &appointmentTime,
+		Items: []model.CreateOrderItemRequest{
+			{ProductID: 1, Quantity: 1},
+		},
+	})
+	if err != ErrSlotAlreadyBooked {
+		t.Errorf("expected ErrSlotAlreadyBooked, got %v", err)
 	}
 }

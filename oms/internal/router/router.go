@@ -46,6 +46,7 @@ func Setup(r *gin.Engine, db *gorm.DB, jwtSecret string) {
 	authSvc := service.NewAuthService(userRepo, jwtSecret)
 	productSvc := service.NewProductService(productRepo)
 	orderSvc := service.NewOrderService(orderRepo, userRepo, productRepo, staffRepo)
+	slotSvc := service.NewSlotService(orderRepo)
 
 	// Handlers
 	userHandler := handler.NewUserHandler(userSvc)
@@ -53,6 +54,7 @@ func Setup(r *gin.Engine, db *gorm.DB, jwtSecret string) {
 	productHandler := handler.NewProductHandler(productSvc)
 	orderHandler := handler.NewOrderHandler(orderSvc)
 	statsHandler := handler.NewStatsHandler(orderSvc)
+	slotHandler := handler.NewSlotHandler(slotSvc)
 
 	// Auth middleware (for protected routes)
 	authMiddleware := middleware.AuthMiddleware(authSvc)
@@ -119,5 +121,8 @@ func Setup(r *gin.Engine, db *gorm.DB, jwtSecret string) {
 		// Stats routes
 		protected.GET("/stats/orders", statsHandler.OrderStats)
 		protected.GET("/stats/revenue", statsHandler.RevenueStats)
+
+		// Slot routes
+		protected.GET("/slots", slotHandler.List)
 	}
 }

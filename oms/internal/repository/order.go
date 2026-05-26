@@ -2,6 +2,7 @@ package repository
 
 import (
 	"oms/internal/model"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -17,6 +18,7 @@ type OrderRepository interface {
 	Delete(id int64) error
 	List(offset, limit int) ([]*model.Order, int64, error)
 	ListByUserID(userID int64, offset, limit int) ([]*model.Order, int64, error)
+	ListByDateRange(start, end time.Time) ([]*model.Order, int64, error)
 	AssignStaff(id int64, staffID *int64) error
 }
 
@@ -95,4 +97,17 @@ func (r *orderRepository) ListByUserID(userID int64, offset, limit int) ([]*mode
 
 func (r *orderRepository) AssignStaff(id int64, staffID *int64) error {
 	return r.db.Model(&model.Order{}).Where("id = ?", id).Update("staff_id", staffID).Error
+}
+
+func (r *orderRepository) ListByDateRange(start, end time.Time) ([]*model.Order, int64, error) {
+	var orders []*model.Order
+	var total int64
+
+	query := r.db.Model(&model.Order{}).Where("appointment_time >= ? AND appointment_time < ?", start, end)
+	query.Count(&total)
+	err := query.Where("appointment_time >= ? AND appointment_time < ?", start, end).Find(&orders).Error
+	if err != nil {
+		return nil, 0, err
+	}
+	return orders, total, nil
 }

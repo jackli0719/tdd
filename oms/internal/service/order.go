@@ -16,6 +16,7 @@ var (
 	ErrInvalidOrderState    = errors.New("invalid order state transition")
 	ErrStaffNotAvailable    = errors.New("staff is not available")
 	ErrAssignedStaffInvalid = errors.New("assigned staff not found or not available")
+	ErrSlotAlreadyBooked    = errors.New("this time slot is already booked")
 )
 
 // OrderService handles order business logic
@@ -110,13 +111,32 @@ func (s *orderService) Create(req *model.CreateOrderRequest) (*model.Order, erro
 	// Generate order number
 	orderNo := fmt.Sprintf("ORD%d", time.Now().UnixNano())
 
+	// Check for duplicate appointment time
+	if req.AppointmentTime != nil {
+		hourStart := req.AppointmentTime.Truncate(time.Hour)
+		hourEnd := hourStart.Add(time.Hour)
+		existingOrders, _, err := s.orderRepo.ListByDateRange(hourStart, hourEnd)
+		if err != nil {
+			return nil, err
+		}
+		for _, existing := range existingOrders {
+			if existing.AppointmentTime != nil {
+				existingHour := existing.AppointmentTime.Truncate(time.Hour)
+				if existingHour.Equal(hourStart) {
+					return nil, ErrSlotAlreadyBooked
+				}
+			}
+		}
+	}
+
 	order := &model.Order{
-		OrderNo:     orderNo,
-		UserID:      req.UserID,
-		StaffID:     req.StaffID,
-		TotalAmount: totalAmount,
-		Status:      model.OrderStatusPending,
-		Items:       items,
+		OrderNo:         orderNo,
+		UserID:          req.UserID,
+		StaffID:         req.StaffID,
+		TotalAmount:     totalAmount,
+		Status:          model.OrderStatusPending,
+		AppointmentTime: req.AppointmentTime,
+		Items:           items,
 	}
 
 	// Use transaction for order creation and stock decrement

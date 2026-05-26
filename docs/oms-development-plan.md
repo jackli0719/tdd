@@ -1154,79 +1154,79 @@ P6: Phase 30 (服务者管理)        → 6-8天
 ### Phase 25 预约时间 - 详细任务
 
 #### 后端 Order 添加预约时间 (25.1)
-- [ ] 25.1.1 **契约**: orders 表添加 appointment_time 字段 (datetime)
-- [ ] 25.1.2 修改 `internal/model/order.go`
-- [ ] 25.1.3 修改 database.go AutoMigrate
-- [ ] 25.1.4 **测试**: `go build ./...`
-- [ ] 25.1.5 提交
+- [x] 25.1.1 **契约**: orders 表添加 appointment_time 字段 (datetime)
+- [x] 25.1.2 修改 `internal/model/order.go`
+- [x] 25.1.3 修改 database.go AutoMigrate
+- [x] 25.1.4 **测试**: `go build ./...`
+- [x] 25.1.5 提交
 
 #### 后端 可用时间段 Service (25.2)
-- [ ] 25.2.1 **契约**: GetAvailableSlots(date) → 时间段列表
-- [ ] 25.2.2 **契约**: 9:00-18:00 每小时一段，共9段
-- [ ] 25.2.3 **契约**: 已预约的时段标记为不可用
-- [ ] 25.2.4 创建 `internal/service/slot.go`
-- [ ] 25.2.5 **测试**: `go test ./...`
-- [ ] 25.2.6 提交
+- [x] 25.2.1 **契约**: GetAvailableSlots(date) → 时间段列表
+- [x] 25.2.2 **契约**: 9:00-18:00 每小时一段，共9段
+- [x] 25.2.3 **契约**: 已预约的时段标记为不可用
+- [x] 25.2.4 创建 `internal/service/slot.go`
+- [x] 25.2.5 **测试**: `go test ./...`
+- [x] 25.2.6 提交
 
 #### 后端 可用时间段 Handler (25.3)
-- [ ] 25.3.1 **契约**: `GET /api/slots?date=2026-05-26` → 可用时间段
-- [ ] 25.3.2 创建 `internal/handler/slot.go`
-- [ ] 25.3.3 **测试**: `go test ./...`
-- [ ] 25.3.4 提交
+- [x] 25.3.1 **契约**: `GET /api/slots?date=2026-05-26` → 可用时间段
+- [x] 25.3.2 创建 `internal/handler/slot.go`
+- [x] 25.3.3 **测试**: `go test ./...`
+- [x] 25.3.4 提交
 
 #### 后端 路由 (25.4)
-- [ ] 25.4.1 **契约**: 路由组 `/api/slots`
-- [ ] 25.4.2 在 router 中注册 slot 路由
-- [ ] 25.4.3 **测试**: `go build ./...`
-- [ ] 25.4.4 提交
+- [x] 25.4.1 **契约**: 路由组 `/api/slots`
+- [x] 25.4.2 在 router 中注册 slot 路由
+- [x] 25.4.3 **测试**: `go build ./...`
+- [x] 25.4.4 提交
 
 #### 前端 Slot API (25.5)
-- [ ] 25.5.1 **契约**: `GET /api/slots?date=xxx`
-- [ ] 25.5.2 创建 `src/api/slot.js`
-- [ ] 25.5.3 **测试**: `npm test`
-- [ ] 25.5.4 提交
+- [x] 25.5.1 **契约**: `GET /api/slots?date=xxx`
+- [x] 25.5.2 创建 `src/api/slot.js`
+- [x] 25.5.3 **测试**: `npm test`
+- [x] 25.5.4 提交
 
 #### 前端 日期选择组件 (25.6)
-- [ ] 25.6.1 **契约**: 日期选择（不可选过去日期）
-- [ ] 25.6.2 创建 `src/components/DatePicker.vue`
-- [ ] 25.6.3 **测试**: `npm test`
-- [ ] 25.6.4 提交
+- [x] 25.6.1 **契约**: 日期选择（不可选过去日期）
+- [x] 25.6.2 创建 `src/components/DatePicker.vue`
+- [x] 25.6.3 **测试**: `npm test`
+- [x] 25.6.4 提交
 
 #### 前端 时段选择组件 (25.7)
-- [ ] 25.7.1 **契约**: 时段选择（09:00-18:00，每小时）
-- [ ] 25.7.2 **契约**: 不可用时段显示为禁用状态
-- [ ] 25.7.3 创建 `src/components/TimeSlotPicker.vue`
-- [ ] 25.7.4 **测试**: `npm test`
-- [ ] 25.7.5 提交
+- [x] 25.7.1 **契约**: 时段选择（09:00-18:00，每小时）
+- [x] 25.7.2 **契约**: 不可用时段显示为禁用状态
+- [x] 25.7.3 创建 `src/components/TimeSlotPicker.vue`
+- [x] 25.7.4 **测试**: `npm test`
+- [x] 25.7.5 提交
 
 #### 前端 订单表单集成 (25.8)
-- [ ] 25.8.1 **契约**: OrderForm.vue 添加预约时间选择
-- [ ] 25.8.2 修改 `src/views/order/OrderForm.vue`
-- [ ] 25.8.3 **测试**: `npm test`
-- [ ] 25.8.4 提交
+- [x] 25.8.1 **契约**: OrderForm.vue 添加预约时间选择
+- [x] 25.8.2 修改 `src/views/order/OrderForm.vue`
+- [x] 25.8.3 **测试**: `npm test`
+- [x] 25.8.4 提交
 
 #### 前端 订单列表显示 (25.9)
-- [ ] 25.9.1 **契约**: OrderList.vue 列显示预约时间
-- [ ] 25.9.2 修改 `src/views/order/OrderList.vue`
-- [ ] 25.9.3 **测试**: `npx playwright test`
-- [ ] 25.9.4 提交
+- [x] 25.9.1 **契约**: OrderList.vue 列显示预约时间
+- [x] 25.9.2 修改 `src/views/order/OrderList.vue`
+- [x] 25.9.3 **测试**: `npx playwright test`
+- [x] 25.9.4 提交
 
 #### 前端 订单详情显示 (25.10)
-- [ ] 25.10.1 **契约**: 订单详情弹窗显示预约时间
-- [ ] 25.10.2 修改 OrderDetail 弹窗组件
-- [ ] 25.10.3 **测试**: `npm run build`
-- [ ] 25.10.4 提交
+- [x] 25.10.1 **契约**: 订单详情弹窗显示预约时间
+- [x] 25.10.2 修改 OrderDetail 弹窗组件
+- [x] 25.10.3 **测试**: `npm run build`
+- [x] 25.10.4 提交
 
 #### E2E (25.11)
-- [ ] 25.11.1 **契约**: 预约时间 E2E 测试
-- [ ] 25.11.2 添加 `e2e/slot.spec.js`
-- [ ] 25.11.3 **测试**: `npx playwright test`
-- [ ] 25.11.4 提交
+- [x] 25.11.1 **契约**: 预约时间 E2E 测试
+- [x] 25.11.2 添加 `e2e/slot.spec.js`
+- [x] 25.11.3 **测试**: `npx playwright test`
+- [x] 25.11.4 提交
 
 #### 验证 (25.12)
-- [ ] 25.12.1 `make pre-commit` 通过
-- [ ] 25.12.2 所有单元测试通过
-- [ ] 25.12.3 所有 E2E 测试通过
+- [x] 25.12.1 `make pre-commit` 通过
+- [x] 25.12.2 所有单元测试通过
+- [x] 25.12.3 所有 E2E 测试通过
 
 ### Phase 26 服务地址 - 详细任务
 
