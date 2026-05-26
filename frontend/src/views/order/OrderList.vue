@@ -67,6 +67,12 @@
               @click="updateStatus(row.id, 'cancel')"
             >取消</el-button>
             <el-button
+              v-if="row.status === 'completed'"
+              size="small"
+              type="success"
+              @click="showReviewForm(row)"
+            >评价</el-button>
+            <el-button
               size="small"
               @click="showAssignStaff(row)"
             >分配</el-button>
@@ -76,6 +82,11 @@
     </el-card>
     <OrderForm
       v-model="formVisible"
+      @success="loadOrders"
+    />
+    <ReviewForm
+      v-model="reviewDialogVisible"
+      :order="reviewOrder"
       @success="loadOrders"
     />
 
@@ -103,6 +114,7 @@ import { ref, onMounted } from 'vue'
 import { getOrders, updateOrderStatus, assignStaff } from '../../api/order'
 import { getAvailableStaff } from '../../api/staff'
 import OrderForm from './OrderForm.vue'
+import ReviewForm from '../review/ReviewForm.vue'
 import { ElMessage } from 'element-plus'
 
 const orders = ref([])
@@ -114,6 +126,8 @@ const assignDialogVisible = ref(false)
 const availableStaff = ref([])
 const staffLoading = ref(false)
 const currentOrder = ref(null)
+const reviewDialogVisible = ref(false)
+const reviewOrder = ref(null)
 
 const showForm = () => {
   formVisible.value = true
@@ -175,6 +189,11 @@ const showAssignStaff = async (order) => {
   } finally {
     staffLoading.value = false
   }
+}
+
+const showReviewForm = (order) => {
+  reviewOrder.value = order
+  reviewDialogVisible.value = true
 }
 
 const selectStaff = async (row) => {

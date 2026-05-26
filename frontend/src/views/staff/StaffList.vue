@@ -22,6 +22,11 @@
             <el-tag :type="getStatusType(row.status)">{{ getStatusText(row.status) }}</el-tag>
           </template>
         </el-table-column>
+        <el-table-column label="评分">
+          <template #default="{ row }">
+            <span>{{ getReviewScore(row.id) }}</span>
+          </template>
+        </el-table-column>
         <el-table-column prop="created_at" label="创建时间">
           <template #default="{ row }">
             {{ formatDate(row.created_at) }}
@@ -64,6 +69,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { getStaffList, deleteStaff, updateStaffStatus } from '../../api/staff'
+import { getStaffReviewSummaries } from '../../api/review'
 import StaffForm from './StaffForm.vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
@@ -71,16 +77,31 @@ const staffs = ref([])
 const loading = ref(false)
 const formVisible = ref(false)
 const currentStaff = ref(null)
+const reviewSummaries = ref({})
 
 const loadStaffs = async () => {
   loading.value = true
   try {
     const res = await getStaffList()
     staffs.value = res.data?.staffs || []
+    await loadReviewSummaries()
   } catch (error) {
     ElMessage.error('加载人员列表失败')
   } finally {
     loading.value = false
+  }
+}
+
+const loadReviewSummaries = async () => {
+  try {
+    const res = await getStaffReviewSummaries()
+    const summaries = res.data?.summaries || []
+    reviewSummaries.value = summaries.reduce((acc, item) => {
+      acc[item.staff_id] = item
+      return acc
+    }, {})
+  } catch {
+    reviewSummaries.value = {}
   }
 }
 
@@ -130,6 +151,12 @@ const getStatusText = (status) => {
     off: '休息',
   }
   return texts[status] || status
+}
+
+const getReviewScore = (staffId) => {
+  const summary = reviewSummaries.value[staffId]
+  if (!summary || !summary.review_count) return '-'
+  return `${Number(summary.average_score).toFixed(1)} (${summary.review_count})`
 }
 
 const formatDate = (date) => {

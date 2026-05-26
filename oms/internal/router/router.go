@@ -40,6 +40,7 @@ func Setup(r *gin.Engine, db *gorm.DB, jwtSecret string) {
 	productRepo := repository.NewProductRepository(db)
 	orderRepo := repository.NewOrderRepository(db)
 	staffRepo := repository.NewStaffRepository(db)
+	reviewRepo := repository.NewReviewRepository(db)
 
 	// Services
 	userSvc := service.NewUserService(userRepo)
@@ -49,6 +50,7 @@ func Setup(r *gin.Engine, db *gorm.DB, jwtSecret string) {
 	slotSvc := service.NewSlotService(orderRepo)
 	addressRepo := repository.NewAddressRepository(db)
 	addressSvc := service.NewAddressService(addressRepo)
+	reviewSvc := service.NewReviewService(reviewRepo, orderRepo)
 
 	// Handlers
 	userHandler := handler.NewUserHandler(userSvc)
@@ -58,6 +60,7 @@ func Setup(r *gin.Engine, db *gorm.DB, jwtSecret string) {
 	statsHandler := handler.NewStatsHandler(orderSvc)
 	slotHandler := handler.NewSlotHandler(slotSvc)
 	addressHandler := handler.NewAddressHandler(addressSvc)
+	reviewHandler := handler.NewReviewHandler(reviewSvc)
 
 	// Auth middleware (for protected routes)
 	authMiddleware := middleware.AuthMiddleware(authSvc)
@@ -135,5 +138,11 @@ func Setup(r *gin.Engine, db *gorm.DB, jwtSecret string) {
 		protected.PUT("/addresses/:id", addressHandler.Update)
 		protected.DELETE("/addresses/:id", addressHandler.Delete)
 		protected.PUT("/addresses/:id/default", addressHandler.SetDefault)
+
+		// Review routes
+		protected.GET("/reviews", reviewHandler.List)
+		protected.GET("/reviews/staff-summary", reviewHandler.StaffSummary)
+		protected.GET("/reviews/:id", reviewHandler.Get)
+		protected.POST("/reviews", reviewHandler.Create)
 	}
 }

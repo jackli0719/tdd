@@ -1484,101 +1484,101 @@ test(phaseXX): add e2e and docs
 ### Phase 28 评价反馈 - 详细任务
 
 #### 契约定义 (28.0)
-- [ ] 28.0.1 **API 路径**:
+- [x] 28.0.1 **API 路径**:
   ```
   POST   /api/reviews              # 提交评价
   GET    /api/reviews/:id         # 评价详情
   GET    /api/reviews?order_id=x  # 订单评价查询
   GET    /api/reviews?staff_id=x  # 服务人员评价查询
   ```
-- [ ] 28.0.2 **Review 结构体**: id, order_id, user_id, staff_id, rating, comment, created_at
-- [ ] 28.0.3 **评分范围**: rating: 1-5 整数
-- [ ] 28.0.4 **页面入口**: `/reviews` - 评价列表页; 订单完成页入口评价按钮
-- [ ] 28.0.5 **约束**: completed 状态订单才能评价; 每个订单只能评价一次
+- [x] 28.0.2 **Review 结构体**: id, order_id, user_id, staff_id, rating, comment, created_at
+- [x] 28.0.3 **评分范围**: rating: 1-5 整数
+- [x] 28.0.4 **页面入口**: `/reviews` - 评价列表页; 订单完成页入口评价按钮
+- [x] 28.0.5 **约束**: completed 状态订单才能评价; 每个订单只能评价一次
 
 #### 后端 Model (28.1)
-- [ ] 28.1.1 **契约**: `Review` 结构体 (id, order_id, user_id, staff_id, rating, comment, created_at)
-- [ ] 28.1.2 **契约**: rating: 1-5 评分
-- [ ] 28.1.3 创建 `internal/model/review.go`
-- [ ] 28.1.4 **测试**: `go build ./...`
-- [ ] 28.1.5 提交
+- [x] 28.1.1 **契约**: `Review` 结构体 (id, order_id, user_id, staff_id, rating, comment, created_at)
+- [x] 28.1.2 **契约**: rating: 1-5 评分
+- [x] 28.1.3 创建 `internal/model/review.go`
+- [x] 28.1.4 **测试**: `go build ./...`
+- [x] 28.1.5 提交
 
 #### 后端 Repository (28.2)
-- [ ] 28.2.1 **契约**: Create, GetByID, GetByOrderID, ListByStaffID
-- [ ] 28.2.2 创建 `internal/repository/review.go`
-- [ ] 28.2.3 **测试**: `go test ./...`
-- [ ] 28.2.4 提交
+- [x] 28.2.1 **契约**: Create, GetByID, GetByOrderID, ListByStaffID
+- [x] 28.2.2 创建 `internal/repository/review.go`
+- [x] 28.2.3 **测试**: `go test ./...`
+- [x] 28.2.4 提交
 
 #### 后端 Service (28.3)
-- [ ] 28.3.1 **契约**: 提交评价、查询评价、平均评分计算
-- [ ] 28.3.2 创建 `internal/service/review.go`
-- [ ] 28.3.3 **测试**: `go test ./...`
-- [ ] 28.3.4 提交
+- [x] 28.3.1 **契约**: 提交评价、查询评价、平均评分计算
+- [x] 28.3.2 创建 `internal/service/review.go`
+- [x] 28.3.3 **测试**: `go test ./...`
+- [x] 28.3.4 提交
 
 #### 后端 Handler (28.4)
-- [ ] 28.4.1 **契约**: `POST /api/reviews` 提交评价
-- [ ] 28.4.2 **契约**: `GET /api/reviews/:id` 评价详情
-- [ ] 28.4.3 **契约**: `GET /api/reviews?order_id=x` 订单评价查询
-- [ ] 28.4.4 **契约**: `GET /api/reviews?staff_id=x` 服务人员评价查询
-- [ ] 28.4.5 创建 `internal/handler/review.go`
-- [ ] 28.4.6 **测试**: `go test ./...`
-- [ ] 28.4.7 提交
+- [x] 28.4.1 **契约**: `POST /api/reviews` 提交评价
+- [x] 28.4.2 **契约**: `GET /api/reviews/:id` 评价详情
+- [x] 28.4.3 **契约**: `GET /api/reviews?order_id=x` 订单评价查询
+- [x] 28.4.4 **契约**: `GET /api/reviews?staff_id=x` 服务人员评价查询
+- [x] 28.4.5 创建 `internal/handler/review.go`
+- [x] 28.4.6 **测试**: `go test ./...`
+- [x] 28.4.7 提交
 
 #### 后端 路由 (28.5)
-- [ ] 28.5.1 **契约**: 路由组 `/api/reviews`
-- [ ] 28.5.2 在 router 中注册 review 路由
-- [ ] 28.5.3 **测试**: `go build ./...`
-- [ ] 28.5.4 提交
+- [x] 28.5.1 **契约**: 路由组 `/api/reviews`
+- [x] 28.5.2 在 router 中注册 review 路由
+- [x] 28.5.3 **测试**: `go build ./...`
+- [x] 28.5.4 提交
 
 #### 后端 订单完成后可评价 (28.6)
-- [ ] 28.6.1 **契约**: completed 状态订单允许创建评价
-- [ ] 28.6.2 修改 review service 添加订单状态校验
-- [ ] 28.6.3 同一个订单只能评价一次
-- [ ] 28.6.4 **测试**: `go test ./...`
-- [ ] 28.6.5 提交
+- [x] 28.6.1 **契约**: completed 状态订单允许创建评价
+- [x] 28.6.2 修改 review service 添加订单状态校验
+- [x] 28.6.3 同一个订单只能评价一次
+- [x] 28.6.4 **测试**: `go test ./...`
+- [x] 28.6.5 提交
 
 #### 前端 API (28.7)
-- [ ] 28.7.1 **契约**: 评价 CRUD API
-- [ ] 28.7.2 创建 `src/api/review.js`
-- [ ] 28.7.3 **测试**: `npm test`
-- [ ] 28.7.4 提交
+- [x] 28.7.1 **契约**: 评价 CRUD API
+- [x] 28.7.2 创建 `src/api/review.js`
+- [x] 28.7.3 **测试**: `npm test`
+- [x] 28.7.4 提交
 
 #### 前端 评价表单弹窗 (28.8)
-- [ ] 28.8.1 **契约**: 星级评分(1-5星) + 文字评论
-- [ ] 28.8.2 创建 `src/views/review/ReviewForm.vue`
-- [ ] 28.8.3 **测试**: `npm test`
-- [ ] 28.8.4 提交
+- [x] 28.8.1 **契约**: 星级评分(1-5星) + 文字评论
+- [x] 28.8.2 创建 `src/views/review/ReviewForm.vue`
+- [x] 28.8.3 **测试**: `npm test`
+- [x] 28.8.4 提交
 
 #### 前端 订单完成入口评价 (28.9)
-- [ ] 28.9.1 **契约**: OrderList.vue completed 状态订单添加"评价"按钮
-- [ ] 28.9.2 修改 `src/views/order/OrderList.vue`
-- [ ] 28.9.3 **测试**: `npx playwright test`
-- [ ] 28.9.4 提交
+- [x] 28.9.1 **契约**: OrderList.vue completed 状态订单添加"评价"按钮
+- [x] 28.9.2 修改 `src/views/order/OrderList.vue`
+- [x] 28.9.3 **测试**: `npx playwright test`
+- [x] 28.9.4 提交
 
 #### 前端 评价列表展示 (28.10)
-- [ ] 28.10.1 **契约**: 评价列表展示 (可按服务人员筛选)
-- [ ] 28.10.2 创建 `src/views/review/ReviewList.vue`
-- [ ] 28.10.3 **测试**: `npm test`
-- [ ] 28.10.4 提交
+- [x] 28.10.1 **契约**: 评价列表展示 (可按服务人员筛选)
+- [x] 28.10.2 创建 `src/views/review/ReviewList.vue`
+- [x] 28.10.3 **测试**: `npm test`
+- [x] 28.10.4 提交
 
 #### 前端 服务人员评分展示 (28.11)
-- [ ] 28.11.1 **契约**: StaffList.vue 显示平均评分和评价数
-- [ ] 28.11.2 修改 `src/views/staff/StaffList.vue`
-- [ ] 28.11.3 **测试**: `npm run build`
-- [ ] 28.11.4 提交
+- [x] 28.11.1 **契约**: StaffList.vue 显示平均评分和评价数
+- [x] 28.11.2 修改 `src/views/staff/StaffList.vue`
+- [x] 28.11.3 **测试**: `npm run build`
+- [x] 28.11.4 提交
 
 #### E2E (28.12)
-- [ ] 28.12.1 **契约**: 评价功能 E2E 测试
-- [ ] 28.12.2 添加 `e2e/review.spec.js`
-- [ ] 28.12.3 **测试**: `npx playwright test`
-- [ ] 28.12.4 提交
+- [x] 28.12.1 **契约**: 评价功能 E2E 测试
+- [x] 28.12.2 添加 `e2e/review.spec.js`
+- [x] 28.12.3 **测试**: `npx playwright test`
+- [x] 28.12.4 提交
 
 #### 验证 (28.13)
-- [ ] 28.13.1 `go test ./...` 通过
-- [ ] 28.13.2 `npm run lint` 通过
-- [ ] 28.13.3 `npx playwright test e2e/review.spec.js` 通过
-- [ ] 28.13.4 文档 checklist 同步
-- [ ] 28.13.5 `git status` clean
+- [x] 28.13.1 `go test ./...` 通过
+- [x] 28.13.2 `npm run lint` 通过
+- [x] 28.13.3 `npx playwright test e2e/review.spec.js` 通过
+- [x] 28.13.4 文档 checklist 同步
+- [x] 28.13.5 `git status` clean
 
 ### Phase 29 商家管理 - 详细任务
 
