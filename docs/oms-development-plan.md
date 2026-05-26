@@ -1320,11 +1320,80 @@ P6: Phase 30 (服务者管理)        → 6-8天
 
 ---
 
+# 开发规范 (Phase 27+)
+
+> 每个 Phase 必须严格遵循以下开发门槛
+
+## 开发门槛
+
+### 1. 契约先定
+- [ ] API 路径定义清晰
+- [ ] 请求体/响应体结构明确
+- [ ] 状态流转规则明确
+- [ ] 页面入口定义清楚
+
+### 2. 后端闭环
+- [ ] Model 字段完整
+- [ ] Repository CRUD 完整
+- [ ] Service 业务逻辑完整（含校验）
+- [ ] Handler 处理函数完整
+- [ ] Router 路由注册正确
+- [ ] 单元测试通过
+- [ ] **不能只建字段不在 service 里保存**
+
+### 3. 前端闭环
+- [ ] API 封装完整
+- [ ] 页面组件完整
+- [ ] 菜单/路由配置正确
+- [ ] 表单校验完整
+- [ ] 列表展示完整
+- [ ] **不能只做组件但没有入口**
+
+### 4. E2E 必须真实独立
+- [ ] 每个 E2E 自己注册/登录
+- [ ] 自己创建测试数据
+- [ ] 不依赖 admin/admin123
+- [ ] 不依赖 user_id=1
+- [ ] 不依赖历史数据库
+
+### 5. 完成定义
+一个 Phase 只有在下面都通过后才算完成：
+- [ ] `go test ./...` 通过
+- [ ] `npm run lint` 通过
+- [ ] 对应 `e2e/*.spec.js` 通过
+- [ ] 文档 checklist 同步
+- [ ] `git status` clean
+
+### 6. 提交策略
+一个 Phase 最好 1-3 个提交：
+```
+feat(phaseXX): backend module name
+feat(phaseXX): frontend module name
+test(phaseXX): add e2e and docs
+```
+
+---
+
 # 三十二、待开发模块详细任务 (Phase 27-33)
 
 详细任务拆分如下：
 
 ### Phase 27 服务人员 - 详细任务
+
+#### 契约定义 (27.0)
+- [ ] 27.0.1 **API 路径**:
+  ```
+  GET    /api/staff              # 人员列表
+  GET    /api/staff/:id          # 人员详情
+  POST   /api/staff              # 新增人员
+  PUT    /api/staff/:id          # 更新人员
+  DELETE /api/staff/:id          # 删除人员
+  PUT    /api/staff/:id/status   # 更新状态 (available/busy/off)
+  ```
+- [ ] 27.0.2 **Staff 结构体**: id, name, phone, avatar, status, created_at, updated_at
+- [ ] 27.0.3 **状态枚举**: available(空闲), busy(忙碌), off(休息)
+- [ ] 27.0.4 **页面入口**: `/staff` - 服务人员管理页面
+- [ ] 27.0.5 **关联**: orders.staff_id 外键关联
 
 #### 后端 Model (27.1)
 - [ ] 27.1.1 **契约**: `Staff` 结构体 (id, name, phone, avatar, status, created_at, updated_at)
@@ -1406,12 +1475,26 @@ P6: Phase 30 (服务者管理)        → 6-8天
 - [ ] 27.12.4 提交
 
 #### 验证 (27.13)
-- [ ] 27.13.1 `go build ./...` 通过
-- [ ] 27.13.2 `go test ./...` 通过
-- [ ] 27.13.3 `npm run build` 通过
-- [ ] 27.13.4 E2E 测试通过
+- [ ] 27.13.1 `go test ./...` 通过
+- [ ] 27.13.2 `npm run lint` 通过
+- [ ] 27.13.3 `npx playwright test e2e/staff.spec.js` 通过
+- [ ] 27.13.4 文档 checklist 同步
+- [ ] 27.13.5 `git status` clean
 
 ### Phase 28 评价反馈 - 详细任务
+
+#### 契约定义 (28.0)
+- [ ] 28.0.1 **API 路径**:
+  ```
+  POST   /api/reviews              # 提交评价
+  GET    /api/reviews/:id         # 评价详情
+  GET    /api/reviews?order_id=x  # 订单评价查询
+  GET    /api/reviews?staff_id=x  # 服务人员评价查询
+  ```
+- [ ] 28.0.2 **Review 结构体**: id, order_id, user_id, staff_id, rating, comment, created_at
+- [ ] 28.0.3 **评分范围**: rating: 1-5 整数
+- [ ] 28.0.4 **页面入口**: `/reviews` - 评价列表页; 订单完成页入口评价按钮
+- [ ] 28.0.5 **约束**: completed 状态订单才能评价; 每个订单只能评价一次
 
 #### 后端 Model (28.1)
 - [ ] 28.1.1 **契约**: `Review` 结构体 (id, order_id, user_id, staff_id, rating, comment, created_at)
@@ -1491,12 +1574,30 @@ P6: Phase 30 (服务者管理)        → 6-8天
 - [ ] 28.12.4 提交
 
 #### 验证 (28.13)
-- [ ] 28.13.1 `go build ./...` 通过
-- [ ] 28.13.2 `go test ./...` 通过
-- [ ] 28.13.3 `npm run build` 通过
-- [ ] 28.13.4 E2E 测试通过
+- [ ] 28.13.1 `go test ./...` 通过
+- [ ] 28.13.2 `npm run lint` 通过
+- [ ] 28.13.3 `npx playwright test e2e/review.spec.js` 通过
+- [ ] 28.13.4 文档 checklist 同步
+- [ ] 28.13.5 `git status` clean
 
 ### Phase 29 商家管理 - 详细任务
+
+#### 契约定义 (29.0)
+- [ ] 29.0.1 **API 路径**:
+  ```
+  GET    /api/merchants              # 商家列表
+  GET    /api/merchants/:id          # 商家详情
+  POST   /api/merchants              # 商家入驻申请
+  PUT    /api/merchants/:id          # 更新商家信息
+  DELETE /api/merchants/:id          # 删除商家
+  PUT    /api/merchants/:id/approve  # 审核通过
+  PUT    /api/merchants/:id/reject   # 审核拒绝
+  PUT    /api/merchants/:id/suspend  # 停用商家
+  ```
+- [ ] 29.0.2 **Merchant 结构体**: id, name, logo, phone, province, city, district, detail, status, created_at, updated_at
+- [ ] 29.0.3 **状态枚举**: pending(待审核), approved(已审核), rejected(已拒绝), suspended(已停用)
+- [ ] 29.0.4 **页面入口**: `/merchants` - 商家管理页面
+- [ ] 29.0.5 **关联**: products.merchant_id 外键关联
 
 #### 后端 Model (29.1)
 - [ ] 29.1.1 **契约**: `Merchant` 结构体 (id, name, logo, phone, province, city, district, detail, status, created_at, updated_at)
@@ -1579,12 +1680,30 @@ P6: Phase 30 (服务者管理)        → 6-8天
 - [ ] 29.12.4 提交
 
 #### 验证 (29.13)
-- [ ] 29.13.1 `go build ./...` 通过
-- [ ] 29.13.2 `go test ./...` 通过
-- [ ] 29.13.3 `npm run build` 通过
-- [ ] 29.13.4 E2E 测试通过
+- [ ] 29.13.1 `go test ./...` 通过
+- [ ] 29.13.2 `npm run lint` 通过
+- [ ] 29.13.3 `npx playwright test e2e/merchant.spec.js` 通过
+- [ ] 29.13.4 文档 checklist 同步
+- [ ] 29.13.5 `git status` clean
 
 ### Phase 30 服务者管理 - 详细任务
+
+#### 契约定义 (30.0)
+- [ ] 30.0.1 **API 路径**:
+  ```
+  GET    /api/providers              # 服务者列表
+  GET    /api/providers/:id          # 服务者详情
+  POST   /api/providers              # 服务者入驻申请
+  PUT    /api/providers/:id          # 更新服务者信息
+  DELETE /api/providers/:id         # 删除服务者
+  PUT    /api/providers/:id/approve  # 审核通过
+  PUT    /api/providers/:id/reject   # 审核拒绝
+  PUT    /api/providers/:id/suspend  # 停用服务者
+  ```
+- [ ] 30.0.2 **Provider 结构体**: id, merchant_id, name, phone, avatar, id_card, status, created_at, updated_at
+- [ ] 30.0.3 **状态枚举**: pending(待审核), approved(已审核), rejected(已拒绝), suspended(已停用)
+- [ ] 30.0.4 **页面入口**: `/providers` - 服务者管理页面; 商家详情页旗下服务者入口
+- [ ] 30.0.5 **关联**: staff.provider_id 外键关联
 
 #### 后端 Model (30.1)
 - [ ] 30.1.1 **契约**: `Provider` 结构体 (id, merchant_id, name, phone, avatar, id_card, status, created_at, updated_at)
@@ -1667,12 +1786,35 @@ P6: Phase 30 (服务者管理)        → 6-8天
 - [ ] 30.12.4 提交
 
 #### 验证 (30.13)
-- [ ] 30.13.1 `go build ./...` 通过
-- [ ] 30.13.2 `go test ./...` 通过
-- [ ] 30.13.3 `npm run build` 通过
-- [ ] 30.13.4 E2E 测试通过
+- [ ] 30.13.1 `go test ./...` 通过
+- [ ] 30.13.2 `npm run lint` 通过
+- [ ] 30.13.3 `npx playwright test e2e/provider.spec.js` 通过
+- [ ] 30.13.4 文档 checklist 同步
+- [ ] 30.13.5 `git status` clean
 
 ### Phase 31 系统管理 - 详细任务
+
+#### 契约定义 (31.0)
+- [ ] 31.0.1 **角色 API 路径**:
+  ```
+  GET    /api/roles                    # 角色列表
+  GET    /api/roles/:id                # 角色详情(含权限)
+  POST   /api/roles                    # 创建角色
+  PUT    /api/roles/:id                # 更新角色
+  DELETE /api/roles/:id                # 删除角色
+  PUT    /api/roles/:id/permissions    # 分配权限
+  ```
+- [ ] 31.0.2 **操作日志 API 路径**:
+  ```
+  GET    /api/operation-logs           # 日志列表
+  ```
+- [ ] 31.0.3 **系统配置 API 路径**:
+  ```
+  GET    /api/system-configs            # 配置列表
+  PUT    /api/system-configs/:id        # 更新配置
+  ```
+- [ ] 31.0.4 **页面入口**: `/roles` - 角色管理; `/operation-logs` - 操作日志; `/system-configs` - 系统配置
+- [ ] 31.0.5 **中间件**: audit.go 中间件记录关键操作
 
 #### 后端 Role Model (31.1)
 - [ ] 31.1.1 **契约**: `Role` 结构体 (id, name, code, description, created_at, updated_at)
@@ -1804,12 +1946,41 @@ P6: Phase 30 (服务者管理)        → 6-8天
 - [ ] 31.20.4 提交
 
 #### 验证 (31.21)
-- [ ] 31.21.1 `go build ./...` 通过
-- [ ] 31.21.2 `go test ./...` 通过
-- [ ] 31.21.3 `npm run build` 通过
-- [ ] 31.21.4 E2E 测试通过
+- [ ] 31.21.1 `go test ./...` 通过
+- [ ] 31.21.2 `npm run lint` 通过
+- [ ] 31.21.3 `npx playwright test e2e/role.spec.js` 通过
+- [ ] 31.21.4 文档 checklist 同步
+- [ ] 31.21.5 `git status` clean
 
 ### Phase 32 财务管理 - 详细任务
+
+#### 契约定义 (32.0)
+- [ ] 32.0.1 **收款 API 路径**:
+  ```
+  POST   /api/payments              # 记录收款
+  GET    /api/payments              # 收款列表
+  ```
+- [ ] 32.0.2 **对账 API 路径**:
+  ```
+  GET    /api/reconciliations      # 对账列表
+  POST   /api/reconciliations/generate  # 生成对账单
+  ```
+- [ ] 32.0.3 **退款 API 路径**:
+  ```
+  GET    /api/refunds              # 退款列表
+  GET    /api/refunds/:id          # 退款详情
+  POST   /api/refunds              # 申请退款
+  PUT    /api/refunds/:id/approve  # 批准退款
+  PUT    /api/refunds/:id/reject   # 拒绝退款
+  PUT    /api/refunds/:id/complete # 完成退款
+  ```
+- [ ] 32.0.4 **发票 API 路径**:
+  ```
+  GET    /api/invoices             # 发票列表
+  POST   /api/invoices             # 申请开票
+  PUT    /api/invoices/:id/issue   # 开票
+  ```
+- [ ] 32.0.5 **页面入口**: `/payments` - 收款记录; `/reconciliations` - 对账; `/refunds` - 退款; `/invoices` - 发票
 
 #### 后端 收款记录 Model (32.1)
 - [ ] 32.1.1 **契约**: `Payment` 结构体 (id, order_id, order_no, user_id, amount, payment_method, transaction_no, paid_at, created_at)
@@ -1947,14 +2118,43 @@ P6: Phase 30 (服务者管理)        → 6-8天
 - [ ] 32.20.4 提交
 
 #### 验证 (32.21)
-- [ ] 32.21.1 `go build ./...` 通过
-- [ ] 32.21.2 `go test ./...` 通过
-- [ ] 32.21.3 `npm run build` 通过
-- [ ] 32.21.4 E2E 测试通过
+- [ ] 32.21.1 `go test ./...` 通过
+- [ ] 32.21.2 `npm run lint` 通过
+- [ ] 32.21.3 `npx playwright test e2e/payment.spec.js e2e/refund.spec.js` 通过
+- [ ] 32.21.4 文档 checklist 同步
+- [ ] 32.21.5 `git status` clean
 
 ### Phase 33 价格策略配置 - 详细任务
 
-#### 后端 定价规则 Model (33.1)
+#### 契约定义 (33.0)
+- [ ] 33.0.1 **定价规则 API 路径**:
+  ```
+  GET    /api/price-rules              # 规则列表
+  GET    /api/price-rules/:id           # 规则详情
+  POST   /api/price-rules              # 创建规则
+  PUT    /api/price-rules/:id           # 更新规则
+  DELETE /api/price-rules/:id           # 删除规则
+  GET    /api/price-rules/calculate    # 计算价格
+  ```
+- [ ] 33.0.2 **折扣活动 API 路径**:
+  ```
+  GET    /api/discounts                # 活动列表
+  POST   /api/discounts                # 创建活动
+  PUT    /api/discounts/:id             # 更新活动
+  PUT    /api/discounts/:id/enable     # 启用活动
+  PUT    /api/discounts/:id/disable    # 禁用活动
+  ```
+- [ ] 33.0.3 **优惠券 API 路径**:
+  ```
+  GET    /api/coupons                  # 优惠券列表
+  POST   /api/coupons                  # 创建优惠券
+  POST   /api/coupons/generate          # 生成优惠券码
+  POST   /api/coupons/claim            # 用户领取优惠券
+  GET    /api/coupons/my               # 我的优惠券
+  POST   /api/coupons/validate         # 校验优惠券
+  ```
+- [ ] 33.0.4 **页面入口**: `/price-rules` - 定价规则; `/discounts` - 折扣活动; `/coupons` - 优惠券
+- [ ] 33.0.5 **价格计算**: OrderForm.vue 显示原价/折扣/优惠券/最终价格
 - [ ] 33.1.1 **契约**: `PriceRule` 结构体 (id, name, rule_type, product_id, category_id, base_price, unit_price, min_quantity, created_at, updated_at)
 - [ ] 33.1.2 **契约**: rule_type: fixed, time-based, quantity-based
 - [ ] 33.1.3 创建 `internal/model/price_rule.go`
@@ -2089,7 +2289,8 @@ P6: Phase 30 (服务者管理)        → 6-8天
 - [ ] 33.18.4 提交
 
 #### 验证 (33.19)
-- [ ] 33.19.1 `go build ./...` 通过
-- [ ] 33.19.2 `go test ./...` 通过
-- [ ] 33.19.3 `npm run build` 通过
-- [ ] 33.19.4 E2E 测试通过
+- [ ] 33.19.1 `go test ./...` 通过
+- [ ] 33.19.2 `npm run lint` 通过
+- [ ] 33.19.3 `npx playwright test e2e/price-rule.spec.js e2e/coupon.spec.js` 通过
+- [ ] 33.19.4 文档 checklist 同步
+- [ ] 33.19.5 `git status` clean
