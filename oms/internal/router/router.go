@@ -58,54 +58,54 @@ func Setup(r *gin.Engine, db *gorm.DB, jwtSecret string) {
 
 	// API routes
 	api := r.Group("/api")
+
+	// Auth routes (public - no auth required)
+	api.POST("/auth/login", authHandler.Login)
+	api.POST("/auth/register", authHandler.Register)
+
+	// Protected routes - all require JWT authentication
+	protected := api.Group("")
+	protected.Use(authMiddleware)
 	{
-		// Auth routes (public)
-		api.POST("/auth/login", authHandler.Login)
-		api.POST("/auth/register", authHandler.Register)
+		// Auth
+		protected.GET("/auth/me", authHandler.Me)
 
-		// Auth routes (protected)
-		auth := api.Group("/auth")
-		auth.Use(authMiddleware)
-		{
-			auth.GET("/me", authHandler.Me)
-		}
-
-		// Category routes (public for now - can be protected later)
+		// Category routes
 		categoryRepo := repository.NewCategoryRepository(db)
 		categorySvc := service.NewCategoryService(categoryRepo)
 		categoryHandler := handler.NewCategoryHandler(categorySvc)
-		api.GET("/categories", categoryHandler.List)
-		api.GET("/categories/:id", categoryHandler.Get)
-		api.POST("/categories", categoryHandler.Create)
-		api.PUT("/categories/:id", categoryHandler.Update)
-		api.DELETE("/categories/:id", categoryHandler.Delete)
+		protected.GET("/categories", categoryHandler.List)
+		protected.GET("/categories/:id", categoryHandler.Get)
+		protected.POST("/categories", categoryHandler.Create)
+		protected.PUT("/categories/:id", categoryHandler.Update)
+		protected.DELETE("/categories/:id", categoryHandler.Delete)
 
-		// User routes (public - admin access)
-		api.GET("/users", userHandler.List)
-		api.GET("/users/:id", userHandler.Get)
-		api.POST("/users", userHandler.Create)
-		api.PUT("/users/:id", userHandler.Update)
-		api.DELETE("/users/:id", userHandler.Delete)
+		// User routes
+		protected.GET("/users", userHandler.List)
+		protected.GET("/users/:id", userHandler.Get)
+		protected.POST("/users", userHandler.Create)
+		protected.PUT("/users/:id", userHandler.Update)
+		protected.DELETE("/users/:id", userHandler.Delete)
 
-		// Product routes (public for now)
-		api.GET("/products", productHandler.List)
-		api.GET("/products/:id", productHandler.Get)
-		api.POST("/products", productHandler.Create)
-		api.PUT("/products/:id", productHandler.Update)
-		api.DELETE("/products/:id", productHandler.Delete)
+		// Product routes
+		protected.GET("/products", productHandler.List)
+		protected.GET("/products/:id", productHandler.Get)
+		protected.POST("/products", productHandler.Create)
+		protected.PUT("/products/:id", productHandler.Update)
+		protected.DELETE("/products/:id", productHandler.Delete)
 
-		// Order routes (public for now)
-		api.GET("/orders", orderHandler.List)
-		api.GET("/orders/:id", orderHandler.Get)
-		api.POST("/orders", orderHandler.Create)
-		api.DELETE("/orders/:id", orderHandler.Delete)
-		api.POST("/orders/:id/confirm", orderHandler.Paid)
-		api.POST("/orders/:id/start", orderHandler.Ship)
-		api.POST("/orders/:id/complete", orderHandler.Complete)
-		api.POST("/orders/:id/cancel", orderHandler.Cancel)
+		// Order routes
+		protected.GET("/orders", orderHandler.List)
+		protected.GET("/orders/:id", orderHandler.Get)
+		protected.POST("/orders", orderHandler.Create)
+		protected.DELETE("/orders/:id", orderHandler.Delete)
+		protected.POST("/orders/:id/confirm", orderHandler.Paid)
+		protected.POST("/orders/:id/start", orderHandler.Ship)
+		protected.POST("/orders/:id/complete", orderHandler.Complete)
+		protected.POST("/orders/:id/cancel", orderHandler.Cancel)
 
-		// Stats routes (public for now)
-		api.GET("/stats/orders", statsHandler.OrderStats)
-		api.GET("/stats/revenue", statsHandler.RevenueStats)
+		// Stats routes
+		protected.GET("/stats/orders", statsHandler.OrderStats)
+		protected.GET("/stats/revenue", statsHandler.RevenueStats)
 	}
 }
