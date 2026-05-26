@@ -97,7 +97,7 @@ test.describe('Staff E2E', () => {
     await expect(page.getByText('状态更新成功')).toBeVisible()
   })
 
-  test('filter staff by status', async ({ page }) => {
+  test('filter staff by status', async ({ page }, testInfo) => {
     const token = await getToken(page)
     const timestamp = Date.now()
     const availableName = `available_${timestamp}`
@@ -125,7 +125,7 @@ test.describe('Staff E2E', () => {
     await expect(page.locator('.el-table__body').getByText(availableName)).not.toBeVisible()
   })
 
-  test('assign available staff to order', async ({ page }) => {
+  test('assign available staff to order', async ({ page }, testInfo) => {
     const token = await getToken(page)
     const me = await apiGet(page, token, '/auth/me')
     const timestamp = Date.now()
