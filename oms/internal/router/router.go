@@ -99,8 +99,8 @@ func Setup(r *gin.Engine, db *gorm.DB, jwtSecret string) {
 		protected.GET("/orders/:id", orderHandler.Get)
 		protected.POST("/orders", orderHandler.Create)
 		protected.DELETE("/orders/:id", orderHandler.Delete)
-		protected.POST("/orders/:id/confirm", orderHandler.Paid)
-		protected.POST("/orders/:id/start", orderHandler.Ship)
+		protected.POST("/orders/:id/paid", orderHandler.Paid)
+		protected.POST("/orders/:id/ship", orderHandler.Ship)
 		protected.POST("/orders/:id/complete", orderHandler.Complete)
 		protected.POST("/orders/:id/cancel", orderHandler.Cancel)
 
