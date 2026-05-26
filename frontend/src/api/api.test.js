@@ -175,6 +175,36 @@ describe('Order Form Validation', () => {
   })
 })
 
+describe('Time Formatting', () => {
+  const formatTime = (date) => {
+    const now = date || new Date()
+    const year = now.getFullYear()
+    const month = String(now.getMonth() + 1).padStart(2, '0')
+    const day = String(now.getDate()).padStart(2, '0')
+    const hours = String(now.getHours()).padStart(2, '0')
+    const minutes = String(now.getMinutes()).padStart(2, '0')
+    const seconds = String(now.getSeconds()).padStart(2, '0')
+    return `${year}/${month}/${day} ${hours}:${minutes}:${seconds}`
+  }
+
+  it('should format time with zero padding', () => {
+    const date = new Date(2026, 0, 5, 9, 5, 7) // 2026/01/05 09:05:07
+    const result = formatTime(date)
+    expect(result).toBe('2026/01/05 09:05:07')
+  })
+
+  it('should format time with double digit values', () => {
+    const date = new Date(2026, 11, 25, 14, 30, 45) // 2026/12/25 14:30:45
+    const result = formatTime(date)
+    expect(result).toBe('2026/12/25 14:30:45')
+  })
+
+  it('should format current time when no date provided', () => {
+    const result = formatTime()
+    expect(result).toMatch(/^\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}$/)
+  })
+})
+
 describe('Date Formatting', () => {
   const formatDate = (date) => {
     if (!date) return '-'

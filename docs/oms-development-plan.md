@@ -611,7 +611,9 @@ curl http://localhost:8080/api/orders
 | phase18 | CI/CD | 18 | 3 | 12 |
 | phase19 | 开发清单 | 19 | 2 | 8 |
 | phase20 | 部署 | 20 | 3 | 12 |
-| **总计** | | | **63** | **252** |
+| phase21 | 仪表盘增强 | 21 | 1 | 6 |
+| phase22 | 品类管理 | 22 | 6 | 24 |
+| **总计** | | | **70** | **282** |
 
 ---
 
@@ -627,6 +629,7 @@ curl http://localhost:8080/api/orders
 | Agent-CI | CI/CD 配置 | 18.1 - 18.3 |
 | Agent-Checklist | 开发检查清单 | 19.1 - 19.2 |
 | Agent-Deploy | 部署文档 | 20.1 - 20.3 |
+| Agent-Category | 品类管理 | 22.1 - 22.6 |
 
 ---
 
@@ -808,4 +811,73 @@ cd frontend && npm run lint
 - [ ] 编写 `docs/DEPLOYMENT.md`
 - [ ] 包含：环境要求、本地部署、Docker 部署
 - [ ] **测试**: 文档可读性检查
+- [ ] 提交
+
+---
+
+## 二十一、仪表盘增强 (Phase 21)
+
+> 不需要后端 API，纯前端功能
+
+### Phase 21: 仪表盘添加当前时间显示
+
+#### 21.1 添加日期时间显示
+- [ ] **契约**: 纯前端展示，不需要 API
+- [ ] 前端: 在 `Dashboard.vue` 顶部添加时间卡片
+- [ ] 样式: 36px 大字体，视觉清晰
+- [ ] 功能: 每秒更新，显示年/月/日 时:分:秒
+- [ ] **验证**: `make pre-commit` 通过
+- [ ] 提交
+
+---
+
+## 二十二、品类管理 (Phase 22)
+
+> 产品管理升级为品类管理，一个品类可包含多个产品
+> 例如：品类"家政"下有"4小时保洁"、"深度清洗"等产品
+
+### Phase 22: 品类管理模块
+
+#### 22.1 后端 - 品类 Model
+- [ ] **契约**: `Category` 结构体
+- [ ] 创建 `internal/model/category.go`
+- [ ] **字段**: id, name, description, created_at, updated_at
+- [ ] **测试**: `go build ./...`
+- [ ] 提交
+
+#### 22.2 后端 - 品类 CRUD
+- [ ] **契约**: repository/service/handler/router
+- [ ] 创建 `internal/repository/category.go`
+- [ ] 创建 `internal/service/category.go`
+- [ ] 创建 `internal/handler/category.go`
+- [ ] 添加路由 `/api/categories`
+- [ ] **测试**: `go test ./...`
+- [ ] 提交
+
+#### 22.3 后端 - 产品关联品类
+- [ ] **契约**: products 表添加 category_id 外键
+- [ ] 修改 `internal/model/product.go` 添加 CategoryID
+- [ ] 修改 API 契约文档
+- [ ] **测试**: `go test ./...`
+- [ ] 提交
+
+#### 22.4 前端 - 品类管理页面
+- [ ] **契约**: 品类 CRUD 页面
+- [ ] 创建 `src/views/category/CategoryList.vue`
+- [ ] 创建 `src/views/category/CategoryForm.vue`
+- [ ] 创建 `src/api/category.js`
+- [ ] **测试**: `npm test`
+- [ ] 提交
+
+#### 22.5 前端 - 产品管理关联品类
+- [ ] **契约**: 产品列表/表单显示所属品类
+- [ ] 修改 `ProductList.vue` 和 `ProductForm.vue`
+- [ ] 修改 `src/api/product.js`
+- [ ] **测试**: `npm test` + `npx playwright test`
+- [ ] 提交
+
+#### 22.6 E2E 测试
+- [ ] **契约**: 品类和产品 E2E 测试
+- [ ] 添加 `e2e/category.spec.js`
+- [ ] **测试**: `npx playwright test`
 - [ ] 提交
