@@ -114,4 +114,34 @@ test.describe('Auth E2E', () => {
     // Should redirect to login
     await expect(page).toHaveURL(/\/login/)
   })
+
+  test('logout clears token and redirects to login', async ({ page }) => {
+    // Register and login
+    await page.goto('/register')
+    const username = 'logoutuser_' + timestamp
+    await page.getByLabel('用户名').fill(username)
+    await page.getByLabel('密码').fill(testPassword)
+    await page.getByLabel('邮箱').fill('logout' + timestamp + '@example.com')
+    await page.getByLabel('手机号').fill(testPhone)
+    await page.getByRole('button', { name: '注册' }).click()
+    await expect(page).toHaveURL(/\/login/)
+
+    await page.getByLabel('用户名').fill(username)
+    await page.getByLabel('密码').fill(testPassword)
+    await page.getByRole('button', { name: '登录' }).click()
+    await expect(page).toHaveURL(/\/dashboard/)
+
+    // Verify logged in
+    await expect(page.locator('text=用户总数')).toBeVisible()
+
+    // Click logout button
+    await page.getByRole('button', { name: '退出登录' }).click()
+
+    // Should redirect to login
+    await expect(page).toHaveURL(/\/login/)
+
+    // Token should be cleared - trying to access protected page should redirect
+    await page.goto('/dashboard')
+    await expect(page).toHaveURL(/\/login/)
+  })
 })
