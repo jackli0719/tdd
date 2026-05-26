@@ -28,3 +28,18 @@ type Staff struct {
 func (Staff) TableName() string {
 	return "staff"
 }
+
+// CreateStaffRequest is the request body for creating a staff member
+type CreateStaffRequest struct {
+	Name   string `json:"name" binding:"required,min=1,max=50"`
+	Phone  string `json:"phone" binding:"omitempty,max=20"`
+	Status string `json:"status" binding:"omitempty,oneof=available busy off"`
+}
+
+// UpdateStaffRequest is the request body for updating a staff member
+type UpdateStaffRequest struct {
+	ID     int64  `json:"id"`
+	Name   string `json:"name" binding:"omitempty,min=1,max=50"`
+	Phone  string `json:"phone" binding:"omitempty,max=20"`
+	Status string `json:"status" binding:"omitempty,oneof=available busy off"`
+}

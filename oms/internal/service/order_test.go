@@ -17,6 +17,11 @@ func setupOrderTestDB(t *testing.T) *gorm.DB {
 	if err != nil {
 		t.Fatalf("failed to open test db: %v", err)
 	}
+	sqlDB, err := db.DB()
+	if err != nil {
+		t.Fatalf("failed to get sql db: %v", err)
+	}
+	sqlDB.SetMaxOpenConns(1)
 
 	err = db.AutoMigrate(&model.User{}, &model.Product{}, &model.Order{}, &model.OrderItem{}, &model.Staff{})
 	if err != nil {
@@ -317,6 +322,89 @@ func TestOrderService_Delete_InvalidState(t *testing.T) {
 	err := svc.Delete(order.ID)
 	if err != ErrInvalidOrderState {
 		t.Errorf("expected ErrInvalidOrderState, got %v", err)
+	}
+}
+
+func TestOrderService_AssignStaffMarksStaffBusy(t *testing.T) {
+	db := setupOrderTestDB(t)
+	userRepo := repository.NewUserRepository(db)
+	productRepo := repository.NewProductRepository(db)
+	orderRepo := repository.NewOrderRepository(db)
+	staffRepo := repository.NewStaffRepository(db)
+	svc := NewOrderService(orderRepo, userRepo, productRepo, staffRepo)
+
+	userRepo.Create(&model.User{Username: "testuser", Email: "test@example.com", Phone: "1234567890"})
+	productRepo.Create(&model.Product{Name: "Test Product", Price: 99.99, Stock: 100})
+	staffRepo.Create(&model.Staff{Name: "Staff A", Status: model.StaffStatusAvailable})
+
+	order, err := svc.Create(&model.CreateOrderRequest{
+		UserID: 1,
+		Items: []model.CreateOrderItemRequest{
+			{ProductID: 1, Quantity: 1},
+		},
+	})
+	if err != nil {
+		t.Fatalf("failed to create order: %v", err)
+	}
+
+	staffID := int64(1)
+	if err := svc.AssignStaff(order.ID, &staffID); err != nil {
+		t.Fatalf("failed to assign staff: %v", err)
+	}
+
+	staff, err := staffRepo.GetByID(staffID)
+	if err != nil {
+		t.Fatalf("failed to get staff: %v", err)
+	}
+	if staff.Status != model.StaffStatusBusy {
+		t.Fatalf("staff status = %s, want %s", staff.Status, model.StaffStatusBusy)
+	}
+
+	available, err := staffRepo.ListAvailable()
+	if err != nil {
+		t.Fatalf("failed to list available staff: %v", err)
+	}
+	if len(available) != 0 {
+		t.Fatalf("available staff count = %d, want 0", len(available))
+	}
+}
+
+func TestOrderService_UnassignStaffMarksStaffAvailable(t *testing.T) {
+	db := setupOrderTestDB(t)
+	userRepo := repository.NewUserRepository(db)
+	productRepo := repository.NewProductRepository(db)
+	orderRepo := repository.NewOrderRepository(db)
+	staffRepo := repository.NewStaffRepository(db)
+	svc := NewOrderService(orderRepo, userRepo, productRepo, staffRepo)
+
+	userRepo.Create(&model.User{Username: "testuser", Email: "test@example.com", Phone: "1234567890"})
+	productRepo.Create(&model.Product{Name: "Test Product", Price: 99.99, Stock: 100})
+	staffRepo.Create(&model.Staff{Name: "Staff A", Status: model.StaffStatusAvailable})
+
+	order, err := svc.Create(&model.CreateOrderRequest{
+		UserID: 1,
+		Items: []model.CreateOrderItemRequest{
+			{ProductID: 1, Quantity: 1},
+		},
+	})
+	if err != nil {
+		t.Fatalf("failed to create order: %v", err)
+	}
+
+	staffID := int64(1)
+	if err := svc.AssignStaff(order.ID, &staffID); err != nil {
+		t.Fatalf("failed to assign staff: %v", err)
+	}
+	if err := svc.AssignStaff(order.ID, nil); err != nil {
+		t.Fatalf("failed to unassign staff: %v", err)
+	}
+
+	staff, err := staffRepo.GetByID(staffID)
+	if err != nil {
+		t.Fatalf("failed to get staff: %v", err)
+	}
+	if staff.Status != model.StaffStatusAvailable {
+		t.Fatalf("staff status = %s, want %s", staff.Status, model.StaffStatusAvailable)
 	}
 }
 

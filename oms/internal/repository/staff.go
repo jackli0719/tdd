@@ -13,6 +13,7 @@ type StaffRepository interface {
 	Update(staff *model.Staff) error
 	Delete(id int64) error
 	List(page, pageSize int) ([]model.Staff, int64, error)
+	ListByStatus(status model.StaffStatus, page, pageSize int) ([]model.Staff, int64, error)
 	ListAvailable() ([]model.Staff, error)
 }
 
@@ -64,4 +65,18 @@ func (r *staffRepository) ListAvailable() ([]model.Staff, error) {
 		return nil, err
 	}
 	return staffs, nil
+}
+
+func (r *staffRepository) ListByStatus(status model.StaffStatus, page, pageSize int) ([]model.Staff, int64, error) {
+	var staffs []model.Staff
+	var total int64
+
+	query := r.db.Model(&model.Staff{}).Where("status = ?", status)
+	query.Count(&total)
+
+	offset := (page - 1) * pageSize
+	if err := query.Offset(offset).Limit(pageSize).Order("id DESC").Find(&staffs).Error; err != nil {
+		return nil, 0, err
+	}
+	return staffs, total, nil
 }

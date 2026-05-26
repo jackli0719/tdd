@@ -32,13 +32,20 @@ func (h *StaffHandler) List(c *gin.Context) {
 	var err error
 
 	if status != "" {
-		// Filter by status - only available staff
-		if status != string(model.StaffStatusAvailable) {
-			response.Error(c, http.StatusBadRequest, "only 'available' status is allowed for filtering")
+		// Validate status enum
+		validStatuses := []model.StaffStatus{model.StaffStatusAvailable, model.StaffStatusBusy, model.StaffStatusOff}
+		valid := false
+		for _, s := range validStatuses {
+			if model.StaffStatus(status) == s {
+				valid = true
+				break
+			}
+		}
+		if !valid {
+			response.Error(c, http.StatusBadRequest, "invalid status: must be available, busy, or off")
 			return
 		}
-		staffs, err = h.svc.ListAvailable()
-		total = int64(len(staffs))
+		staffs, total, err = h.svc.ListByStatus(model.StaffStatus(status), page, pageSize)
 	} else {
 		var staffList []model.Staff
 		staffList, total, err = h.svc.List(page, pageSize)
@@ -76,19 +83,22 @@ func (h *StaffHandler) Get(c *gin.Context) {
 
 // Create handles POST /api/staff
 func (h *StaffHandler) Create(c *gin.Context) {
-	var req model.Staff
+	var req model.CreateStaffRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		response.Error(c, http.StatusBadRequest, "invalid request: "+err.Error())
 		return
 	}
 
-	// Validate name
-	if req.Name == "" {
-		response.Error(c, http.StatusBadRequest, "name cannot be empty")
-		return
+	staff := &model.Staff{
+		Name:   req.Name,
+		Phone:  req.Phone,
+		Status: model.StaffStatus(req.Status),
+	}
+	if staff.Status == "" {
+		staff.Status = model.StaffStatusAvailable
 	}
 
-	if err := h.svc.Create(&req); err != nil {
+	if err := h.svc.Create(staff); err != nil {
 		if err == service.ErrEmptyName {
 			response.Error(c, http.StatusBadRequest, "name cannot be empty")
 			return
@@ -101,7 +111,7 @@ func (h *StaffHandler) Create(c *gin.Context) {
 		return
 	}
 
-	response.Success(c, req)
+	response.Success(c, staff)
 }
 
 // Update handles PUT /api/staff/:id
@@ -112,20 +122,14 @@ func (h *StaffHandler) Update(c *gin.Context) {
 		return
 	}
 
-	var req model.Staff
+	var req model.UpdateStaffRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		response.Error(c, http.StatusBadRequest, "invalid request: "+err.Error())
 		return
 	}
 
-	// Validate name
-	if req.Name == "" {
-		response.Error(c, http.StatusBadRequest, "name cannot be empty")
-		return
-	}
-
 	req.ID = id
-	if err := h.svc.Update(&req); err != nil {
+	if err := h.svc.Update(req.ID, req.Name, req.Phone, req.Status); err != nil {
 		if err == service.ErrStaffNotFound {
 			response.Error(c, http.StatusNotFound, "staff not found")
 			return
@@ -142,7 +146,7 @@ func (h *StaffHandler) Update(c *gin.Context) {
 		return
 	}
 
-	response.Success(c, req)
+	response.Success(c, nil)
 }
 
 // Delete handles DELETE /api/staff/:id

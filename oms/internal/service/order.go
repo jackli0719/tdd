@@ -12,9 +12,9 @@ import (
 )
 
 var (
-	ErrOrderNotFound      = errors.New("order not found")
-	ErrInvalidOrderState  = errors.New("invalid order state transition")
-	ErrStaffNotAvailable  = errors.New("staff is not available")
+	ErrOrderNotFound        = errors.New("order not found")
+	ErrInvalidOrderState    = errors.New("invalid order state transition")
+	ErrStaffNotAvailable    = errors.New("staff is not available")
 	ErrAssignedStaffInvalid = errors.New("assigned staff not found or not available")
 )
 
@@ -167,7 +167,7 @@ func (s *orderService) List(page, pageSize int) ([]*model.Order, int64, error) {
 
 func (s *orderService) AssignStaff(orderID int64, staffID *int64) error {
 	// Verify order exists
-	_, err := s.orderRepo.GetByID(orderID)
+	order, err := s.orderRepo.GetByID(orderID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return ErrOrderNotFound
@@ -175,21 +175,49 @@ func (s *orderService) AssignStaff(orderID int64, staffID *int64) error {
 		return err
 	}
 
+	var currentStaff *model.Staff
+	if order.StaffID != nil && (staffID == nil || *order.StaffID != *staffID) {
+		currentStaff, err = s.staffRepo.GetByID(*order.StaffID)
+		if err != nil {
+			return err
+		}
+	}
+
+	var newStaff *model.Staff
 	// Verify staff if provided
 	if staffID != nil {
-		staff, err := s.staffRepo.GetByID(*staffID)
+		newStaff, err = s.staffRepo.GetByID(*staffID)
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				return ErrAssignedStaffInvalid
 			}
 			return err
 		}
-		if staff.Status != model.StaffStatusAvailable {
+		if newStaff.Status != model.StaffStatusAvailable {
 			return ErrAssignedStaffInvalid
 		}
 	}
 
-	return s.orderRepo.AssignStaff(orderID, staffID)
+	tx := s.orderRepo.DB().Begin()
+	if currentStaff != nil {
+		currentStaff.Status = model.StaffStatusAvailable
+		if err := tx.Save(currentStaff).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+	if newStaff != nil {
+		newStaff.Status = model.StaffStatusBusy
+		if err := tx.Save(newStaff).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+	if err := tx.Model(&model.Order{}).Where("id = ?", orderID).Update("staff_id", staffID).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+	return tx.Commit().Error
 }
 
 func (s *orderService) Delete(id int64) error {

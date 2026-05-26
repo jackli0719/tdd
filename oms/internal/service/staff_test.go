@@ -88,24 +88,34 @@ func TestStaffService_Update(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		staff   *model.Staff
+		id      int64
+		nameArg string
+		phone   string
+		status  string
 		wantErr bool
 		errType error
 	}{
 		{
 			name:    "valid update",
-			staff:   &model.Staff{ID: staff.ID, Name: "新名字", Phone: "13900139000", Status: model.StaffStatusBusy},
+			id:      staff.ID,
+			nameArg: "新名字",
+			phone:   "13900139000",
+			status:  string(model.StaffStatusBusy),
 			wantErr: false,
 		},
 		{
 			name:    "empty name",
-			staff:   &model.Staff{ID: staff.ID, Name: "", Phone: "13900139000"},
+			id:      staff.ID,
+			nameArg: "",
+			phone:   "13900139000",
 			wantErr: true,
 			errType: ErrEmptyName,
 		},
 		{
 			name:    "not found",
-			staff:   &model.Staff{ID: 99999, Name: "不存在", Phone: "13900139000"},
+			id:      99999,
+			nameArg: "不存在",
+			phone:   "13900139000",
 			wantErr: true,
 			errType: ErrStaffNotFound,
 		},
@@ -113,7 +123,7 @@ func TestStaffService_Update(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := svc.Update(tt.staff)
+			err := svc.Update(tt.id, tt.nameArg, tt.phone, tt.status)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Update() error = %v, wantErr %v", err, tt.wantErr)
 				return

@@ -6,14 +6,15 @@ const getNextUsername = () => `staff_${Date.now()}_${++userId}`
 test.describe('Staff E2E', () => {
   const testPassword = 'password123'
 
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page }, testInfo) => {
     // Register and login
     const username = getNextUsername()
+    const phone = `138${String(testInfo.workerIndex).padStart(2, '0')}${String(Date.now()).slice(-6)}`
     await page.goto('/register')
     await page.getByLabel('用户名').fill(username)
     await page.getByLabel('密码').fill(testPassword)
     await page.getByLabel('邮箱').fill(username + '@example.com')
-    await page.getByLabel('手机号').fill('13800138000')
+    await page.getByLabel('手机号').fill(phone)
     await page.getByRole('button', { name: '注册' }).click()
     await expect(page).toHaveURL(/\/login/)
 
@@ -85,19 +86,39 @@ test.describe('Staff E2E', () => {
     await page.getByLabel('姓名').fill(delName)
     await page.getByLabel('手机号').fill('13800138004')
     await page.locator('.el-dialog__footer button').filter({ hasText: '确定' }).click()
+
+    // Wait for toast to appear then disappear before creating second staff
     await expect(page.getByText('创建成功')).toBeVisible()
+    await expect(page.getByText('创建成功')).not.toBeVisible({ timeout: 5000 })
 
-    // Verify staff appears in list before delete
+    // Also add another staff so we can verify count decrements
+    const otherName = 'other_' + Date.now()
+    await page.getByRole('button', { name: '添加人员' }).click()
+    await page.getByLabel('姓名').fill(otherName)
+    await page.getByLabel('手机号').fill('13800138005')
+    await page.locator('.el-dialog__footer button').filter({ hasText: '确定' }).click()
+
+    // Wait for toast to appear then disappear
+    await expect(page.getByText('创建成功')).toBeVisible()
+    await expect(page.getByText('创建成功')).not.toBeVisible({ timeout: 5000 })
+
+    // Verify both staff appear in list before delete
     await expect(page.locator('.el-table__body').getByText(delName)).toBeVisible()
+    await expect(page.locator('.el-table__body').getByText(otherName)).toBeVisible()
 
-    // Delete staff - accept dialog and click delete
-    page.on('dialog', dialog => dialog.accept())
-    await page.locator('.el-table__body tr').first().locator('button').filter({ hasText: '删除' }).click()
+    // Delete the target staff and confirm the Element Plus message box
+    const targetRow = page.getByRole('row', { name: new RegExp(delName) })
+    await targetRow.getByRole('button', { name: '删除' }).click()
+    await expect(page.getByText('确定要删除该人员吗？')).toBeVisible()
+    await page.locator('.el-message-box__btns .el-button--primary').click()
 
     // Verify delete success message
     await expect(page.getByText('删除成功')).toBeVisible({ timeout: 5000 })
 
     // Verify staff no longer in list
     await expect(page.locator('.el-table__body').getByText(delName)).not.toBeVisible({ timeout: 5000 })
+
+    // Verify other staff still in list
+    await expect(page.locator('.el-table__body').getByText(otherName)).toBeVisible()
   })
 })

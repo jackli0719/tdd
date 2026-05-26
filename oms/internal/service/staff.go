@@ -50,21 +50,30 @@ func (s *StaffService) GetByID(id int64) (*model.Staff, error) {
 }
 
 // Update updates a staff member
-func (s *StaffService) Update(staff *model.Staff) error {
+func (s *StaffService) Update(id int64, name, phone, status string) error {
 	// Validate name
-	if staff.Name == "" {
+	if name == "" {
 		return ErrEmptyName
 	}
 	// Validate status if provided
-	if staff.Status != "" && staff.Status != model.StaffStatusAvailable && staff.Status != model.StaffStatusBusy && staff.Status != model.StaffStatusOff {
+	if status != "" && status != string(model.StaffStatusAvailable) && status != string(model.StaffStatusBusy) && status != string(model.StaffStatusOff) {
 		return ErrInvalidStatus
 	}
-	existing, err := s.staffRepo.GetByID(staff.ID)
+	existing, err := s.staffRepo.GetByID(id)
 	if err != nil {
 		return ErrStaffNotFound
 	}
-	staff.CreatedAt = existing.CreatedAt
-	return s.staffRepo.Update(staff)
+	if name != "" {
+		existing.Name = name
+	}
+	if phone != "" {
+		existing.Phone = phone
+	}
+	if status != "" {
+		existing.Status = model.StaffStatus(status)
+	}
+	existing.CreatedAt = existing.CreatedAt
+	return s.staffRepo.Update(existing)
 }
 
 // Delete deletes a staff member
@@ -84,6 +93,11 @@ func (s *StaffService) List(page, pageSize int) ([]model.Staff, int64, error) {
 // ListAvailable returns all available staff members
 func (s *StaffService) ListAvailable() ([]model.Staff, error) {
 	return s.staffRepo.ListAvailable()
+}
+
+// ListByStatus returns a paginated list of staff members filtered by status
+func (s *StaffService) ListByStatus(status model.StaffStatus, page, pageSize int) ([]model.Staff, int64, error) {
+	return s.staffRepo.ListByStatus(status, page, pageSize)
 }
 
 // UpdateStatus updates a staff member's status

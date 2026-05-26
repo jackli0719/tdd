@@ -20,6 +20,11 @@
             <el-tag :type="getStatusType(row.status)">{{ getStatusText(row.status) }}</el-tag>
           </template>
         </el-table-column>
+        <el-table-column prop="staff_id" label="服务人员">
+          <template #default="{ row }">
+            {{ row.staff_id || '-' }}
+          </template>
+        </el-table-column>
         <el-table-column prop="created_at" label="创建时间">
           <template #default="{ row }">
             {{ formatDate(row.created_at) }}
@@ -51,6 +56,10 @@
               type="danger"
               @click="updateStatus(row.id, 'cancel')"
             >取消</el-button>
+            <el-button
+              size="small"
+              @click="showAssignStaff(row)"
+            >分配</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -59,18 +68,42 @@
       v-model="formVisible"
       @success="loadOrders"
     />
+
+    <!-- Assign Staff Dialog -->
+    <el-dialog v-model="assignDialogVisible" title="分配服务人员" width="500px">
+      <el-table :data="availableStaff" v-loading="staffLoading" @row-click="selectStaff">
+        <el-table-column prop="id" label="ID" width="80" />
+        <el-table-column prop="name" label="姓名" />
+        <el-table-column prop="phone" label="手机号" />
+        <el-table-column prop="status" label="状态">
+          <template #default="{ row }">
+            <el-tag :type="row.status === 'available' ? 'success' : 'info'">{{ row.status }}</el-tag>
+          </template>
+        </el-table-column>
+      </el-table>
+      <template #footer>
+        <el-button @click="assignDialogVisible = false">取消</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { getOrders, updateOrderStatus } from '../../api/order'
+import { getOrders, updateOrderStatus, assignStaff } from '../../api/order'
+import { getAvailableStaff } from '../../api/staff'
 import OrderForm from './OrderForm.vue'
 import { ElMessage } from 'element-plus'
 
 const orders = ref([])
 const loading = ref(false)
 const formVisible = ref(false)
+
+// Assign staff dialog
+const assignDialogVisible = ref(false)
+const availableStaff = ref([])
+const staffLoading = ref(false)
+const currentOrder = ref(null)
 
 const showForm = () => {
   formVisible.value = true
@@ -117,6 +150,32 @@ const updateStatus = async (id, action) => {
     loadOrders()
   } catch (error) {
     ElMessage.error(error.message || '状态更新失败')
+  }
+}
+
+const showAssignStaff = async (order) => {
+  currentOrder.value = order
+  assignDialogVisible.value = true
+  staffLoading.value = true
+  try {
+    const res = await getAvailableStaff()
+    availableStaff.value = res.data.staffs || []
+  } catch (error) {
+    ElMessage.error('加载服务人员列表失败')
+  } finally {
+    staffLoading.value = false
+  }
+}
+
+const selectStaff = async (row) => {
+  if (!currentOrder.value) return
+  try {
+    await assignStaff(currentOrder.value.id, row.id)
+    ElMessage.success('分配成功')
+    assignDialogVisible.value = false
+    loadOrders()
+  } catch (error) {
+    ElMessage.error(error.message || '分配失败')
   }
 }
 
