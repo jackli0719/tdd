@@ -45,6 +45,49 @@ test.describe('Auth E2E', () => {
     await expect(page).toHaveURL(/\/dashboard/)
   })
 
+  test('authenticated pages load protected module data', async ({ page }) => {
+    await page.goto('/register')
+    const username = 'moduleuser_' + timestamp
+    const email = 'module' + timestamp + '@example.com'
+    await page.getByLabel('用户名').fill(username)
+    await page.getByLabel('密码').fill(testPassword)
+    await page.getByLabel('邮箱').fill(email)
+    await page.getByLabel('手机号').fill(testPhone)
+    await page.getByRole('button', { name: '注册' }).click()
+    await expect(page).toHaveURL(/\/login/)
+
+    await page.getByLabel('用户名').fill(username)
+    await page.getByLabel('密码').fill(testPassword)
+    await page.getByRole('button', { name: '登录' }).click()
+    await expect(page).toHaveURL(/\/dashboard/)
+
+    const sidebar = page.locator('.sidebar-menu')
+    const loadingErrors = page.locator('text=/加载.*失败/')
+
+    await expect(page.locator('text=用户总数')).toBeVisible()
+    await expect(loadingErrors).toHaveCount(0)
+
+    await sidebar.getByRole('menuitem', { name: '用户管理' }).click()
+    await expect(page.locator('.el-table')).toBeVisible()
+    await expect(loadingErrors).toHaveCount(0)
+
+    await sidebar.getByRole('menuitem', { name: '品类管理' }).click()
+    await expect(page.locator('.el-table')).toBeVisible()
+    await expect(loadingErrors).toHaveCount(0)
+
+    await sidebar.getByRole('menuitem', { name: '产品管理' }).click()
+    await expect(page.locator('.el-table')).toBeVisible()
+    await expect(loadingErrors).toHaveCount(0)
+
+    await sidebar.getByRole('menuitem', { name: '订单管理' }).click()
+    await expect(page.locator('.el-table')).toBeVisible()
+    await expect(loadingErrors).toHaveCount(0)
+
+    await sidebar.getByRole('menuitem', { name: '统计' }).click()
+    await expect(page.locator('text=订单统计')).toBeVisible()
+    await expect(loadingErrors).toHaveCount(0)
+  })
+
   test('login with wrong password fails', async ({ page }) => {
     // Register first
     await page.goto('/register')

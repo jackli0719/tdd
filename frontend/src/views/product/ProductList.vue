@@ -11,7 +11,7 @@
             style="width: 200px; margin-right: 10px"
             @change="loadProducts"
           >
-            <el-option label="全部" :value="null" />
+            <el-option label="全部" value="" />
             <el-option
               v-for="cat in categories"
               :key="cat.id"
@@ -66,7 +66,7 @@ const categories = ref([])
 const loading = ref(false)
 const formVisible = ref(false)
 const currentProduct = ref(null)
-const categoryId = ref(null)
+const categoryId = ref('')
 
 const loadCategories = async () => {
   try {

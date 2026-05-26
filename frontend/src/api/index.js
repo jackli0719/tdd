@@ -1,4 +1,4 @@
-/* global localStorage */
+/* global localStorage, window */
 import axios from 'axios'
 
 const api = axios.create({
@@ -31,6 +31,12 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response.data,
   (error) => {
+    if (error.response?.status === 401) {
+      removeToken()
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login'
+      }
+    }
     const message = error.response?.data?.message || error.message || 'Request failed'
     return Promise.reject(new Error(message))
   }
