@@ -55,6 +55,12 @@ test.describe('OMS Frontend E2E', () => {
     await expect(page.locator('text=添加产品')).toBeVisible()
   })
 
+  test('category list page loads', async ({ page }) => {
+    await page.locator('.sidebar-menu').getByRole('menuitem', { name: '品类管理' }).click()
+    await expect(page.locator('.el-table')).toBeVisible()
+    await expect(page.locator('text=添加品类')).toBeVisible()
+  })
+
   test('order list page loads', async ({ page }) => {
     await page.locator('.sidebar-menu').getByRole('menuitem', { name: '订单管理' }).click()
     await expect(page.locator('.el-table')).toBeVisible()

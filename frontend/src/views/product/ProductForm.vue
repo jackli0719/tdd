@@ -5,17 +5,24 @@
     width="500px"
   >
     <el-form :model="form" label-width="80px">
-      <el-form-item label="名称">
+      <el-form-item label="品类" required>
+        <el-select v-model="form.category_id" placeholder="请选择品类" style="width: 100%">
+          <el-option
+            v-for="cat in categories"
+            :key="cat.id"
+            :label="cat.name"
+            :value="cat.id"
+          />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="名称" required>
         <el-input v-model="form.name" />
       </el-form-item>
-      <el-form-item label="价格">
+      <el-form-item label="价格" required>
         <el-input v-model="form.price" type="number" />
       </el-form-item>
       <el-form-item label="库存">
         <el-input v-model="form.stock" type="number" />
-      </el-form-item>
-      <el-form-item label="描述">
-        <el-input v-model="form.description" type="textarea" rows="3" />
       </el-form-item>
     </el-form>
     <template #footer>
@@ -33,6 +40,10 @@ import { ElMessage } from 'element-plus'
 const props = defineProps({
   modelValue: Boolean,
   product: Object,
+  categories: {
+    type: Array,
+    default: () => [],
+  },
 })
 
 const emit = defineEmits(['update:modelValue', 'success'])
@@ -40,23 +51,23 @@ const emit = defineEmits(['update:modelValue', 'success'])
 const visible = ref(props.modelValue)
 const loading = ref(false)
 const form = ref({
+  category_id: null,
   name: '',
   price: '',
   stock: '',
-  description: '',
 })
 
 watch(() => props.modelValue, (val) => {
   visible.value = val
   if (val && props.product) {
     form.value = {
+      category_id: props.product.category_id || null,
       name: props.product.name || '',
       price: props.product.price || '',
       stock: props.product.stock || '',
-      description: props.product.description || '',
     }
   } else if (val) {
-    form.value = { name: '', price: '', stock: '', description: '' }
+    form.value = { category_id: null, name: '', price: '', stock: '' }
   }
 })
 
@@ -65,16 +76,17 @@ watch(visible, (val) => {
 })
 
 const handleSubmit = async () => {
-  if (!form.value.name || !form.value.price) {
+  if (!form.value.category_id || !form.value.name || !form.value.price) {
     ElMessage.warning('请填写必填字段')
     return
   }
   loading.value = true
   try {
     const data = {
-      ...form.value,
+      category_id: Number(form.value.category_id),
+      name: form.value.name,
       price: Number(form.value.price),
-      stock: Number(form.value.stock),
+      stock: Number(form.value.stock) || 0,
     }
     if (props.product) {
       await updateProduct(props.product.id, data)
