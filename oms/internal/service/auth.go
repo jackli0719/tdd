@@ -28,8 +28,8 @@ func NewAuthService(userRepo repository.UserRepository, jwtSecret string) *AuthS
 
 // LoginResponse is the response for successful login
 type LoginResponse struct {
-	Token string       `json:"token"`
-	User  model.User  `json:"user"`
+	Token string     `json:"token"`
+	User  model.User `json:"user"`
 }
 
 // Login authenticates a user and returns a JWT token
@@ -109,9 +109,24 @@ func (s *AuthService) ValidateToken(tokenString string) (int64, string, error) {
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		userID := int64(claims["user_id"].(float64))
-		username := claims["username"].(string)
-		return userID, username, nil
+		userIDVal, hasUserID := claims["user_id"]
+		usernameVal, hasUsername := claims["username"]
+
+		if !hasUserID || !hasUsername {
+			return 0, "", errors.New("令牌缺少必要字段")
+		}
+
+		userID, ok := userIDVal.(float64)
+		if !ok {
+			return 0, "", errors.New("令牌用户ID格式错误")
+		}
+
+		username, ok := usernameVal.(string)
+		if !ok {
+			return 0, "", errors.New("令牌用户名格式错误")
+		}
+
+		return int64(userID), username, nil
 	}
 
 	return 0, "", errors.New("令牌无效")
@@ -124,5 +139,5 @@ func (s *AuthService) GenerateTokenForUser(userID int64, username string) (strin
 
 var (
 	ErrUnauthorized = errors.New("未授权")
-	ErrInvalidToken  = errors.New("无效的令牌")
+	ErrInvalidToken = errors.New("无效的令牌")
 )

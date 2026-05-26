@@ -22,9 +22,10 @@ func (User) TableName() string {
 
 // CreateUserRequest is the request body for creating a user
 type CreateUserRequest struct {
-	Username string `json:"username" binding:"required,min=3,max=50"`
-	Email    string `json:"email" binding:"required,email"`
-	Phone    string `json:"phone" binding:"required"`
+	Username string  `json:"username" binding:"required,min=3,max=50"`
+	Email    string  `json:"email" binding:"required,email"`
+	Phone    string  `json:"phone" binding:"required"`
+	Password *string `json:"password"` // Optional, for admin-created users
 }
 
 // UpdateUserRequest is the request body for updating a user
