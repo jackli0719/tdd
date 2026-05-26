@@ -30,6 +30,9 @@
     <el-container>
       <el-header class="header">
         <h2>订单管理系统</h2>
+        <div class="header-actions">
+          <el-button type="danger" size="small" @click="handleLogout">退出登录</el-button>
+        </div>
       </el-header>
       <el-main class="main-content">
         <router-view />
@@ -40,10 +43,17 @@
 
 <script setup>
 import { computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
+import { removeToken } from '../api/auth'
 
 const route = useRoute()
+const router = useRouter()
 const currentRoute = computed(() => route.path)
+
+const handleLogout = () => {
+  removeToken()
+  router.push('/login')
+}
 </script>
 
 <style scoped>
@@ -90,6 +100,7 @@ const currentRoute = computed(() => route.path)
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
   display: flex;
   align-items: center;
+  justify-content: space-between;
   padding: 0 20px;
 }
 
@@ -97,6 +108,11 @@ const currentRoute = computed(() => route.path)
   margin: 0;
   font-size: 18px;
   color: #303133;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
 }
 
 .main-content {
