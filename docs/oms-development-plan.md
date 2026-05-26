@@ -946,3 +946,362 @@ P6: Phase 30 (服务者管理)        → 6-8天
 | M3: 增强功能 | Phase 26,28,31日志完成 | 第3个月 |
 | M4: 商家运营 | Phase 29,32,33 完成 | 第4个月 |
 | M5: 完整系统 | Phase 30,31配置项完成 | 第5个月 |
+
+---
+
+## 三十五、待开发模块详细任务拆分
+
+### Phase 24 登录认证 - 详细任务
+
+#### 后端 Model (24.1)
+- [ ] 24.1.1 **契约**: User Model 添加 Password 字段 (bcrypt加密)
+- [ ] 24.1.2 创建 `internal/model/user.go` - 添加 Password, Salt 字段
+- [ ] 24.1.3 **测试**: `go build ./...`
+- [ ] 24.1.4 提交
+
+#### 后端 Repository (24.2)
+- [ ] 24.2.1 **契约**: FindByUsername 返回 password 字段用于验证
+- [ ] 24.2.2 修改 `internal/repository/user.go` - FindByUsername 方法
+- [ ] 24.2.3 **测试**: `go test ./...`
+- [ ] 24.2.4 提交
+
+#### 后端 Auth Service (24.3)
+- [ ] 24.3.1 **契约**: Login(username, password) → (token, error)
+- [ ] 24.3.2 **契约**: Register(username, password, email, phone) → (user, error)
+- [ ] 24.3.3 创建 `internal/service/auth.go`
+- [ ] 24.3.4 实现密码 bcrypt 校验
+- [ ] 24.3.5 实现 JWT Token 生成
+- [ ] 24.3.6 **测试**: `go test ./...`
+- [ ] 24.3.7 提交
+
+#### 后端 Auth Handler (24.4)
+- [ ] 24.4.1 **契约**: `POST /api/auth/login` → `{username, password}` → `{token, user}`
+- [ ] 24.4.2 **契约**: `POST /api/auth/register` → `{username, password, email, phone}` → `{user}`
+- [ ] 24.4.3 **契约**: `GET /api/auth/me` → 获取当前用户信息
+- [ ] 24.4.4 创建 `internal/handler/auth.go`
+- [ ] 24.4.5 实现登录处理函数
+- [ ] 24.4.6 实现注册处理函数
+- [ ] 24.4.7 实现获取当前用户处理函数
+- [ ] 24.4.8 **测试**: `go test ./...`
+- [ ] 24.4.9 提交
+
+#### 后端 JWT 中间件 (24.5)
+- [ ] 24.5.1 **契约**: 请求头 `Authorization: Bearer <token>` 验证
+- [ ] 24.5.2 **契约**: 验证失败返回 401 Unauthorized
+- [ ] 24.5.3 创建 `internal/middleware/auth.go`
+- [ ] 24.5.4 实现 JWT 解析和验证
+- [ ] 24.5.5 将用户信息注入 context
+- [ ] 24.5.6 **测试**: `go test ./...`
+- [ ] 24.5.7 提交
+
+#### 后端 路由注册 (24.6)
+- [ ] 24.6.1 **契约**: 路由组 `/api/auth`
+- [ ] 24.6.2 在 router 中注册 auth 路由
+- [ ] 24.6.3 添加需要认证的路由中间件配置
+- [ ] 24.6.4 **测试**: `go build ./...`
+- [ ] 24.6.5 提交
+
+#### 前端 API (24.7)
+- [ ] 24.7.1 **契约**: `POST /api/auth/login` 登录接口
+- [ ] 24.7.2 **契约**: `POST /api/auth/register` 注册接口
+- [ ] 24.7.3 **契约**: `GET /api/auth/me` 获取当前用户
+- [ ] 24.7.4 创建 `src/api/auth.js`
+- [ ] 24.7.5 封装 login, register, getCurrentUser 方法
+- [ ] 24.7.6 **测试**: `npm test`
+- [ ] 24.7.7 提交
+
+#### 前端 登录页 (24.8)
+- [ ] 24.8.1 **契约**: 用户名密码登录表单
+- [ ] 24.8.2 **契约**: 登录失败显示错误提示
+- [ ] 24.8.3 **契约**: 登录成功跳转首页
+- [ ] 24.8.4 创建 `src/views/auth/Login.vue`
+- [ ] 24.8.5 实现表单验证
+- [ ] 24.8.6 实现登录请求和 Token 存储
+- [ ] 24.8.7 **测试**: `npm test`
+- [ ] 24.8.8 提交
+
+#### 前端 注册页 (24.9)
+- [ ] 24.9.1 **契约**: 用户注册表单 (username, password, email, phone)
+- [ ] 24.9.2 **契约**: 密码确认校验
+- [ ] 24.9.3 **契约**: 注册成功跳转登录页
+- [ ] 24.9.4 创建 `src/views/auth/Register.vue`
+- [ ] 24.9.5 实现表单验证
+- [ ] 24.9.6 **测试**: `npm test`
+- [ ] 24.9.7 提交
+
+#### 前端 Token 存储 (24.10)
+- [ ] 24.10.1 **契约**: Token 存储在 localStorage
+- [ ] 24.10.2 创建 `src/utils/auth.js` - getToken, setToken, removeToken
+- [ ] 24.10.3 修改 Axios 拦截器添加 Token
+- [ ] 24.10.4 实现请求重试和 Token 刷新逻辑
+- [ ] 24.10.5 **测试**: `npm test`
+- [ ] 24.10.6 提交
+
+#### 前端 路由守卫 (24.11)
+- [ ] 24.11.1 **契约**: 未登录访问需认证页面跳转到登录页
+- [ ] 24.11.2 **契约**: 已登录访问登录页跳转到首页
+- [ ] 24.11.3 创建 `src/router/guards.js`
+- [ ] 24.11.4 修改路由配置添加导航守卫
+- [ ] 24.11.5 **测试**: `npm run build`
+- [ ] 24.11.6 提交
+
+#### 前端 登出功能 (24.12)
+- [ ] 24.12.1 **契约**: 清除 Token 和用户信息
+- [ ] 24.12.2 在 Layout 添加退出按钮
+- [ ] 24.12.3 **测试**: `npx playwright test`
+- [ ] 24.12.4 提交
+
+#### E2E 测试 (24.13)
+- [ ] 24.13.1 **契约**: 登录/注册/登出 E2E 测试
+- [ ] 24.13.2 添加 `e2e/auth.spec.js`
+- [ ] 24.13.3 测试正常登录流程
+- [ ] 24.13.4 测试错误密码登录
+- [ ] 24.13.5 测试注册新用户
+- [ ] 24.13.6 **测试**: `npx playwright test`
+- [ ] 24.13.7 提交
+
+#### 验证 (24.14)
+- [ ] 24.14.1 `make pre-commit` 通过
+- [ ] 24.14.2 所有单元测试通过
+- [ ] 24.14.3 所有 E2E 测试通过
+
+### Phase 27 服务人员 - 详细任务
+
+#### 后端 Model (27.1)
+- [ ] 27.1.1 **契约**: `Staff` 结构体 (id, name, phone, avatar, status, created_at, updated_at)
+- [ ] 27.1.2 **契约**: status: available(空闲), busy(忙碌), off(休息)
+- [ ] 27.1.3 创建 `internal/model/staff.go`
+- [ ] 27.1.4 **测试**: `go build ./...`
+- [ ] 27.1.5 提交
+
+#### 后端 Repository (27.2)
+- [ ] 27.2.1 **契约**: Create, GetByID, Update, Delete, List, ListAvailable
+- [ ] 27.2.2 创建 `internal/repository/staff.go`
+- [ ] 27.2.3 **测试**: `go test ./...`
+- [ ] 27.2.4 提交
+
+#### 后端 Service (27.3)
+- [ ] 27.3.1 **契约**: 人员列表、可分配人员筛选
+- [ ] 27.3.2 创建 `internal/service/staff.go`
+- [ ] 27.3.3 **测试**: `go test ./...`
+- [ ] 27.3.4 提交
+
+#### 后端 Handler (27.4)
+- [ ] 27.4.1 **契约**: `GET /api/staff` 人员列表
+- [ ] 27.4.2 **契约**: `GET /api/staff/:id` 人员详情
+- [ ] 27.4.3 **契约**: `POST /api/staff` 新增人员
+- [ ] 27.4.4 **契约**: `PUT /api/staff/:id` 更新人员
+- [ ] 27.4.5 **契约**: `DELETE /api/staff/:id` 删除人员
+- [ ] 27.4.6 **契约**: `PUT /api/staff/:id/status` 更新状态
+- [ ] 27.4.7 创建 `internal/handler/staff.go`
+- [ ] 27.4.8 **测试**: `go test ./...`
+- [ ] 27.4.9 提交
+
+#### 后端 路由 (27.5)
+- [ ] 27.5.1 **契约**: 路由组 `/api/staff`
+- [ ] 27.5.2 在 router 中注册 staff 路由
+- [ ] 27.5.3 **测试**: `go build ./...`
+- [ ] 27.5.4 提交
+
+#### 后端 Order 添加 StaffID (27.6)
+- [ ] 27.6.1 **契约**: orders 表添加 staff_id 字段 (bigint, nullable)
+- [ ] 27.6.2 修改 `internal/model/order.go`
+- [ ] 27.6.3 修改 order Create 和 Update 方法
+- [ ] 27.6.4 **测试**: `go test ./...`
+- [ ] 27.6.5 提交
+
+#### 前端 API (27.7)
+- [ ] 27.7.1 **契约**: CRUD + 状态更新 API
+- [ ] 27.7.2 创建 `src/api/staff.js`
+- [ ] 27.7.3 **测试**: `npm test`
+- [ ] 27.7.4 提交
+
+#### 前端 列表页 (27.8)
+- [ ] 27.8.1 **契约**: 人员列表展示 + 状态筛选
+- [ ] 27.8.2 创建 `src/views/staff/StaffList.vue`
+- [ ] 27.8.3 **测试**: `npm test`
+- [ ] 27.8.4 提交
+
+#### 前端 表单弹窗 (27.9)
+- [ ] 27.9.1 **契约**: 新增/编辑人员表单
+- [ ] 27.9.2 创建 `src/views/staff/StaffForm.vue`
+- [ ] 27.9.3 **测试**: `npm test`
+- [ ] 27.9.4 提交
+
+#### 前端 订单分配 (27.10)
+- [ ] 27.10.1 **契约**: 订单详情选择服务人员
+- [ ] 27.10.2 修改 `src/views/order/OrderDetail.vue`
+- [ ] 27.10.3 **测试**: `npx playwright test`
+- [ ] 27.10.4 提交
+
+#### 前端 状态切换 (27.11)
+- [ ] 27.11.1 **契约**: 人员状态切换 (空闲/忙碌/休息)
+- [ ] 27.11.2 StaffList.vue 添加状态切换按钮
+- [ ] 27.11.3 **测试**: `npm run build`
+- [ ] 27.11.4 提交
+
+#### E2E (27.12)
+- [ ] 27.12.1 **契约**: 服务人员 E2E 测试
+- [ ] 27.12.2 添加 `e2e/staff.spec.js`
+- [ ] 27.12.3 **测试**: `npx playwright test`
+- [ ] 27.12.4 提交
+
+#### 验证 (27.13)
+- [ ] 27.13.1 `make pre-commit` 通过
+- [ ] 27.13.2 所有单元测试通过
+- [ ] 27.13.3 所有 E2E 测试通过
+
+### Phase 25 预约时间 - 详细任务
+
+#### 后端 Order 添加预约时间 (25.1)
+- [ ] 25.1.1 **契约**: orders 表添加 appointment_time 字段 (datetime)
+- [ ] 25.1.2 修改 `internal/model/order.go`
+- [ ] 25.1.3 修改 database.go AutoMigrate
+- [ ] 25.1.4 **测试**: `go build ./...`
+- [ ] 25.1.5 提交
+
+#### 后端 可用时间段 Service (25.2)
+- [ ] 25.2.1 **契约**: GetAvailableSlots(date) → 时间段列表
+- [ ] 25.2.2 **契约**: 9:00-18:00 每小时一段，共9段
+- [ ] 25.2.3 **契约**: 已预约的时段标记为不可用
+- [ ] 25.2.4 创建 `internal/service/slot.go`
+- [ ] 25.2.5 **测试**: `go test ./...`
+- [ ] 25.2.6 提交
+
+#### 后端 可用时间段 Handler (25.3)
+- [ ] 25.3.1 **契约**: `GET /api/slots?date=2026-05-26` → 可用时间段
+- [ ] 25.3.2 创建 `internal/handler/slot.go`
+- [ ] 25.3.3 **测试**: `go test ./...`
+- [ ] 25.3.4 提交
+
+#### 后端 路由 (25.4)
+- [ ] 25.4.1 **契约**: 路由组 `/api/slots`
+- [ ] 25.4.2 在 router 中注册 slot 路由
+- [ ] 25.4.3 **测试**: `go build ./...`
+- [ ] 25.4.4 提交
+
+#### 前端 Slot API (25.5)
+- [ ] 25.5.1 **契约**: `GET /api/slots?date=xxx`
+- [ ] 25.5.2 创建 `src/api/slot.js`
+- [ ] 25.5.3 **测试**: `npm test`
+- [ ] 25.5.4 提交
+
+#### 前端 日期选择组件 (25.6)
+- [ ] 25.6.1 **契约**: 日期选择（不可选过去日期）
+- [ ] 25.6.2 创建 `src/components/DatePicker.vue`
+- [ ] 25.6.3 **测试**: `npm test`
+- [ ] 25.6.4 提交
+
+#### 前端 时段选择组件 (25.7)
+- [ ] 25.7.1 **契约**: 时段选择（09:00-18:00，每小时）
+- [ ] 25.7.2 **契约**: 不可用时段显示为禁用状态
+- [ ] 25.7.3 创建 `src/components/TimeSlotPicker.vue`
+- [ ] 25.7.4 **测试**: `npm test`
+- [ ] 25.7.5 提交
+
+#### 前端 订单表单集成 (25.8)
+- [ ] 25.8.1 **契约**: OrderForm.vue 添加预约时间选择
+- [ ] 25.8.2 修改 `src/views/order/OrderForm.vue`
+- [ ] 25.8.3 **测试**: `npm test`
+- [ ] 25.8.4 提交
+
+#### 前端 订单列表显示 (25.9)
+- [ ] 25.9.1 **契约**: OrderList.vue 列显示预约时间
+- [ ] 25.9.2 修改 `src/views/order/OrderList.vue`
+- [ ] 25.9.3 **测试**: `npx playwright test`
+- [ ] 25.9.4 提交
+
+#### 前端 订单详情显示 (25.10)
+- [ ] 25.10.1 **契约**: 订单详情弹窗显示预约时间
+- [ ] 25.10.2 修改 OrderDetail 弹窗组件
+- [ ] 25.10.3 **测试**: `npm run build`
+- [ ] 25.10.4 提交
+
+#### E2E (25.11)
+- [ ] 25.11.1 **契约**: 预约时间 E2E 测试
+- [ ] 25.11.2 添加 `e2e/slot.spec.js`
+- [ ] 25.11.3 **测试**: `npx playwright test`
+- [ ] 25.11.4 提交
+
+#### 验证 (25.12)
+- [ ] 25.12.1 `make pre-commit` 通过
+- [ ] 25.12.2 所有单元测试通过
+- [ ] 25.12.3 所有 E2E 测试通过
+
+### Phase 26 服务地址 - 详细任务
+
+#### 后端 Model (26.1)
+- [ ] 26.1.1 **契约**: `Address` 结构体 (id, user_id, name, phone, province, city, district, detail, is_default, created_at, updated_at)
+- [ ] 26.1.2 创建 `internal/model/address.go`
+- [ ] 26.1.3 **测试**: `go build ./...`
+- [ ] 26.1.4 提交
+
+#### 后端 Repository (26.2)
+- [ ] 26.2.1 **契约**: Create, GetByID, Update, Delete, ListByUserID, SetDefault
+- [ ] 26.2.2 创建 `internal/repository/address.go`
+- [ ] 26.2.3 **测试**: `go test ./...`
+- [ ] 26.2.4 提交
+
+#### 后端 Service (26.3)
+- [ ] 26.3.1 **契约**: 用户地址列表、默认地址设置
+- [ ] 26.3.2 创建 `internal/service/address.go`
+- [ ] 26.3.3 **测试**: `go test ./...`
+- [ ] 26.3.4 提交
+
+#### 后端 Handler (26.4)
+- [ ] 26.4.1 **契约**: `GET /api/addresses` 用户地址列表
+- [ ] 26.4.2 **契约**: `GET /api/addresses/:id` 地址详情
+- [ ] 26.4.3 **契约**: `POST /api/addresses` 新增地址
+- [ ] 26.4.4 **契约**: `PUT /api/addresses/:id` 更新地址
+- [ ] 26.4.5 **契约**: `DELETE /api/addresses/:id` 删除地址
+- [ ] 26.4.6 **契约**: `PUT /api/addresses/:id/default` 设为默认地址
+- [ ] 26.4.7 创建 `internal/handler/address.go`
+- [ ] 26.4.8 **测试**: `go test ./...`
+- [ ] 26.4.9 提交
+
+#### 后端 路由 (26.5)
+- [ ] 26.5.1 **契约**: 路由组 `/api/addresses`
+- [ ] 26.5.2 在 router 中注册 address 路由
+- [ ] 26.5.3 **测试**: `go build ./...`
+- [ ] 26.5.4 提交
+
+#### 前端 API (26.6)
+- [ ] 26.6.1 **契约**: CRUD + 设置默认 API
+- [ ] 26.6.2 创建 `src/api/address.js`
+- [ ] 26.6.3 **测试**: `npm test`
+- [ ] 26.6.4 提交
+
+#### 前端 列表页 (26.7)
+- [ ] 26.7.1 **契约**: 地址列表展示、默认地址标记
+- [ ] 26.7.2 创建 `src/views/address/AddressList.vue`
+- [ ] 26.7.3 **测试**: `npm test`
+- [ ] 26.7.4 提交
+
+#### 前端 表单弹窗 (26.8)
+- [ ] 26.8.1 **契约**: 新增/编辑地址表单
+- [ ] 26.8.2 创建 `src/views/address/AddressForm.vue`
+- [ ] 26.8.3 **测试**: `npm test`
+- [ ] 26.8.4 提交
+
+#### 前端 订单表单集成 (26.9)
+- [ ] 26.9.1 **契约**: OrderForm.vue 添加服务地址选择
+- [ ] 26.9.2 修改 `src/views/order/OrderForm.vue`
+- [ ] 26.9.3 **测试**: `npx playwright test`
+- [ ] 26.9.4 提交
+
+#### 前端 手动输入地址 (26.10)
+- [ ] 26.10.1 **契约**: 无地址时支持手动输入地址
+- [ ] 26.10.2 OrderForm.vue 添加手动输入模式
+- [ ] 26.10.3 **测试**: `npm test`
+- [ ] 26.10.4 提交
+
+#### E2E (26.11)
+- [ ] 26.11.1 **契约**: 地址管理 E2E 测试
+- [ ] 26.11.2 添加 `e2e/address.spec.js`
+- [ ] 26.11.3 **测试**: `npx playwright test`
+- [ ] 26.11.4 提交
+
+#### 验证 (26.12)
+- [ ] 26.12.1 `make pre-commit` 通过
+- [ ] 26.12.2 所有单元测试通过
+- [ ] 26.12.3 所有 E2E 测试通过
