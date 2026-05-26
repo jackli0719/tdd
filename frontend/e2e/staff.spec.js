@@ -1,7 +1,27 @@
 import { test, expect } from '@playwright/test'
 
 let userId = 0
+const apiBase = 'http://127.0.0.1:8080/api'
 const getNextUsername = () => `staff_${Date.now()}_${++userId}`
+
+const getToken = async (page) => page.evaluate(() => localStorage.getItem('auth_token'))
+
+const apiGet = async (page, token, path) => {
+  const res = await page.request.get(`${apiBase}${path}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  expect(res.ok()).toBeTruthy()
+  return res.json()
+}
+
+const apiPost = async (page, token, path, data) => {
+  const res = await page.request.post(`${apiBase}${path}`, {
+    headers: { Authorization: `Bearer ${token}` },
+    data,
+  })
+  expect(res.ok()).toBeTruthy()
+  return res.json()
+}
 
 test.describe('Staff E2E', () => {
   const testPassword = 'password123'
@@ -77,6 +97,73 @@ test.describe('Staff E2E', () => {
     // Change status to busy - use first row's button
     await page.locator('.el-table__body tr').first().locator('button').filter({ hasText: '设为忙碌' }).click()
     await expect(page.getByText('状态更新成功')).toBeVisible()
+  })
+
+  test('filter staff by status', async ({ page }) => {
+    const token = await getToken(page)
+    const timestamp = Date.now()
+    const availableName = `available_${timestamp}`
+    const busyName = `busy_${timestamp}`
+
+    await apiPost(page, token, '/staff', {
+      name: availableName,
+      phone: `136${String(timestamp).slice(-8)}`,
+      status: 'available',
+    })
+    await apiPost(page, token, '/staff', {
+      name: busyName,
+      phone: `135${String(timestamp).slice(-8)}`,
+      status: 'busy',
+    })
+
+    await page.goto('/staff')
+    await expect(page.locator('.el-table__body').getByText(availableName)).toBeVisible()
+    await expect(page.locator('.el-table__body').getByText(busyName)).toBeVisible()
+
+    await page.locator('.status-filter').click()
+    await page.getByRole('option', { name: '忙碌' }).click()
+
+    await expect(page.locator('.el-table__body').getByText(busyName)).toBeVisible()
+    await expect(page.locator('.el-table__body').getByText(availableName)).not.toBeVisible()
+  })
+
+  test('assign available staff to order', async ({ page }) => {
+    const token = await getToken(page)
+    const me = await apiGet(page, token, '/auth/me')
+    const timestamp = Date.now()
+    const category = await apiPost(page, token, '/categories', {
+      name: `分配品类${timestamp}`,
+      description: 'phase27 e2e',
+    })
+    const product = await apiPost(page, token, '/products', {
+      category_id: category.data.id,
+      name: `分配产品${timestamp}`,
+      price: 88,
+      stock: 10,
+    })
+    const staff = await apiPost(page, token, '/staff', {
+      name: `分配人员${timestamp}`,
+      phone: `134${String(timestamp).slice(-8)}`,
+      status: 'available',
+    })
+    const order = await apiPost(page, token, '/orders', {
+      user_id: me.data.user_id,
+      address: 'Phase27 分配测试地址',
+      items: [{ product_id: product.data.id, quantity: 1 }],
+    })
+
+    await page.goto('/orders')
+    const targetRow = page.locator('.el-table__body tr').first()
+    await expect(targetRow.locator('td').first()).toContainText(String(order.data.id))
+    await targetRow.getByRole('button', { name: '分配' }).click()
+
+    const dialog = page.getByRole('dialog', { name: '分配服务人员' })
+    await expect(dialog).toBeVisible()
+    await dialog.getByRole('row', { name: new RegExp(staff.data.name) }).click()
+    await dialog.getByRole('button', { name: '确定' }).click()
+
+    await expect(page.locator('.el-message').first().getByText('分配成功')).toBeVisible()
+    await expect(targetRow).toContainText(String(staff.data.id))
   })
 
   test('delete staff', async ({ page }) => {

@@ -91,6 +91,7 @@ func TestStaffService_Update(t *testing.T) {
 		id      int64
 		nameArg string
 		phone   string
+		avatar  string
 		status  string
 		wantErr bool
 		errType error
@@ -100,6 +101,7 @@ func TestStaffService_Update(t *testing.T) {
 			id:      staff.ID,
 			nameArg: "新名字",
 			phone:   "13900139000",
+			avatar:  "https://example.com/avatar.png",
 			status:  string(model.StaffStatusBusy),
 			wantErr: false,
 		},
@@ -123,13 +125,19 @@ func TestStaffService_Update(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := svc.Update(tt.id, tt.nameArg, tt.phone, tt.status)
+			err := svc.Update(tt.id, tt.nameArg, tt.phone, tt.avatar, tt.status)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Update() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if tt.wantErr && err != tt.errType {
 				t.Errorf("Update() error = %v, want %v", err, tt.errType)
+			}
+			if !tt.wantErr && tt.avatar != "" {
+				updated, _ := svc.GetByID(tt.id)
+				if updated.Avatar != tt.avatar {
+					t.Errorf("Update() avatar = %s, want %s", updated.Avatar, tt.avatar)
+				}
 			}
 		})
 	}
@@ -209,11 +217,11 @@ func TestStaffService_List(t *testing.T) {
 	}
 
 	tests := []struct {
-		name       string
-		page       int
-		pageSize   int
-		wantCount  int
-		wantTotal  int64
+		name      string
+		page      int
+		pageSize  int
+		wantCount int
+		wantTotal int64
 	}{
 		{"first page", 1, 2, 2, 5},
 		{"second page", 2, 2, 2, 5},

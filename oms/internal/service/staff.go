@@ -50,7 +50,7 @@ func (s *StaffService) GetByID(id int64) (*model.Staff, error) {
 }
 
 // Update updates a staff member
-func (s *StaffService) Update(id int64, name, phone, status string) error {
+func (s *StaffService) Update(id int64, name, phone, avatar, status string) error {
 	// Validate name
 	if name == "" {
 		return ErrEmptyName
@@ -69,6 +69,7 @@ func (s *StaffService) Update(id int64, name, phone, status string) error {
 	if phone != "" {
 		existing.Phone = phone
 	}
+	existing.Avatar = avatar
 	if status != "" {
 		existing.Status = model.StaffStatus(status)
 	}

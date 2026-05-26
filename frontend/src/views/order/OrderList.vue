@@ -91,8 +91,13 @@
     />
 
     <!-- Assign Staff Dialog -->
-    <el-dialog v-model="assignDialogVisible" title="分配服务人员" width="500px">
-      <el-table :data="availableStaff" v-loading="staffLoading" @row-click="selectStaff">
+    <el-dialog v-model="assignDialogVisible" title="分配服务人员" width="500px" @close="resetAssignDialog">
+      <el-table
+        :data="availableStaff"
+        v-loading="staffLoading"
+        highlight-current-row
+        @row-click="selectStaff"
+      >
         <el-table-column prop="id" label="ID" width="80" />
         <el-table-column prop="name" label="姓名" />
         <el-table-column prop="phone" label="手机号" />
@@ -104,6 +109,8 @@
       </el-table>
       <template #footer>
         <el-button @click="assignDialogVisible = false">取消</el-button>
+        <el-button v-if="currentOrder?.staff_id" type="danger" @click="unassignStaff">取消分配</el-button>
+        <el-button type="primary" :disabled="!selectedStaffId" @click="confirmAssignStaff">确定</el-button>
       </template>
     </el-dialog>
   </div>
@@ -126,6 +133,7 @@ const assignDialogVisible = ref(false)
 const availableStaff = ref([])
 const staffLoading = ref(false)
 const currentOrder = ref(null)
+const selectedStaffId = ref(null)
 const reviewDialogVisible = ref(false)
 const reviewOrder = ref(null)
 
@@ -179,6 +187,7 @@ const updateStatus = async (id, action) => {
 
 const showAssignStaff = async (order) => {
   currentOrder.value = order
+  selectedStaffId.value = null
   assignDialogVisible.value = true
   staffLoading.value = true
   try {
@@ -196,16 +205,38 @@ const showReviewForm = (order) => {
   reviewDialogVisible.value = true
 }
 
-const selectStaff = async (row) => {
+const selectStaff = (row) => {
+  selectedStaffId.value = row.id
+}
+
+const confirmAssignStaff = async () => {
   if (!currentOrder.value) return
   try {
-    await assignStaff(currentOrder.value.id, row.id)
+    await assignStaff(currentOrder.value.id, selectedStaffId.value)
     ElMessage.success('分配成功')
     assignDialogVisible.value = false
     loadOrders()
   } catch (error) {
     ElMessage.error(error.message || '分配失败')
   }
+}
+
+const unassignStaff = async () => {
+  if (!currentOrder.value) return
+  try {
+    await assignStaff(currentOrder.value.id, null)
+    ElMessage.success('取消分配成功')
+    assignDialogVisible.value = false
+    loadOrders()
+  } catch (error) {
+    ElMessage.error(error.message || '取消分配失败')
+  }
+}
+
+const resetAssignDialog = () => {
+  currentOrder.value = null
+  selectedStaffId.value = null
+  availableStaff.value = []
 }
 
 const formatDate = (date) => {

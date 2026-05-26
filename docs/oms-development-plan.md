@@ -1140,8 +1140,8 @@ P6: Phase 30 (服务者管理)        → 6-8天
 - [x] 27.9.4 提交
 
 #### 前端 订单分配 (27.10)
-- [x] 27.10.1 **契约**: 订单详情选择服务人员 (已实现分配 API)
-- [x] 27.10.2 修改 `src/views/order/OrderDetail.vue` (UI 待实现)
+- [x] 27.10.1 **契约**: 订单列表选择服务人员
+- [x] 27.10.2 修改 `src/views/order/OrderList.vue` 分配弹窗
 - [x] 27.10.3 **测试**: `npx playwright test`
 - [x] 27.10.4 提交
 
@@ -1381,7 +1381,7 @@ test(phaseXX): add e2e and docs
 ### Phase 27 服务人员 - 详细任务
 
 #### 契约定义 (27.0)
-- [ ] 27.0.1 **API 路径**:
+- [x] 27.0.1 **API 路径**:
   ```
   GET    /api/staff              # 人员列表
   GET    /api/staff/:id          # 人员详情
@@ -1390,96 +1390,96 @@ test(phaseXX): add e2e and docs
   DELETE /api/staff/:id          # 删除人员
   PUT    /api/staff/:id/status   # 更新状态 (available/busy/off)
   ```
-- [ ] 27.0.2 **Staff 结构体**: id, name, phone, avatar, status, created_at, updated_at
-- [ ] 27.0.3 **状态枚举**: available(空闲), busy(忙碌), off(休息)
-- [ ] 27.0.4 **页面入口**: `/staff` - 服务人员管理页面
-- [ ] 27.0.5 **关联**: orders.staff_id 外键关联
+- [x] 27.0.2 **Staff 结构体**: id, name, phone, avatar, status, created_at, updated_at
+- [x] 27.0.3 **状态枚举**: available(空闲), busy(忙碌), off(休息)
+- [x] 27.0.4 **页面入口**: `/staff` - 服务人员管理页面
+- [x] 27.0.5 **关联**: orders.staff_id 外键关联
 
 #### 后端 Model (27.1)
-- [ ] 27.1.1 **契约**: `Staff` 结构体 (id, name, phone, avatar, status, created_at, updated_at)
-- [ ] 27.1.2 **契约**: status: available(空闲), busy(忙碌), off(休息)
-- [ ] 27.1.3 创建 `internal/model/staff.go`
-- [ ] 27.1.4 **测试**: `go build ./...`
-- [ ] 27.1.5 提交
+- [x] 27.1.1 **契约**: `Staff` 结构体 (id, name, phone, avatar, status, created_at, updated_at)
+- [x] 27.1.2 **契约**: status: available(空闲), busy(忙碌), off(休息)
+- [x] 27.1.3 创建 `internal/model/staff.go`
+- [x] 27.1.4 **测试**: `go build ./...`
+- [x] 27.1.5 提交
 
 #### 后端 Repository (27.2)
-- [ ] 27.2.1 **契约**: Create, GetByID, Update, Delete, List, ListAvailable
-- [ ] 27.2.2 创建 `internal/repository/staff.go`
-- [ ] 27.2.3 **测试**: `go test ./...`
-- [ ] 27.2.4 提交
+- [x] 27.2.1 **契约**: Create, GetByID, Update, Delete, List, ListAvailable
+- [x] 27.2.2 创建 `internal/repository/staff.go`
+- [x] 27.2.3 **测试**: `go test ./...`
+- [x] 27.2.4 提交
 
 #### 后端 Service (27.3)
-- [ ] 27.3.1 **契约**: 人员列表、可分配人员筛选
-- [ ] 27.3.2 创建 `internal/service/staff.go`
-- [ ] 27.3.3 **测试**: `go test ./...`
-- [ ] 27.3.4 提交
+- [x] 27.3.1 **契约**: 人员列表、可分配人员筛选
+- [x] 27.3.2 创建 `internal/service/staff.go`
+- [x] 27.3.3 **测试**: `go test ./...`
+- [x] 27.3.4 提交
 
 #### 后端 Handler (27.4)
-- [ ] 27.4.1 **契约**: `GET /api/staff` 人员列表
-- [ ] 27.4.2 **契约**: `GET /api/staff/:id` 人员详情
-- [ ] 27.4.3 **契约**: `POST /api/staff` 新增人员
-- [ ] 27.4.4 **契约**: `PUT /api/staff/:id` 更新人员
-- [ ] 27.4.5 **契约**: `DELETE /api/staff/:id` 删除人员
-- [ ] 27.4.6 **契约**: `PUT /api/staff/:id/status` 更新状态
-- [ ] 27.4.7 创建 `internal/handler/staff.go`
-- [ ] 27.4.8 **测试**: `go test ./...`
-- [ ] 27.4.9 提交
+- [x] 27.4.1 **契约**: `GET /api/staff` 人员列表
+- [x] 27.4.2 **契约**: `GET /api/staff/:id` 人员详情
+- [x] 27.4.3 **契约**: `POST /api/staff` 新增人员
+- [x] 27.4.4 **契约**: `PUT /api/staff/:id` 更新人员
+- [x] 27.4.5 **契约**: `DELETE /api/staff/:id` 删除人员
+- [x] 27.4.6 **契约**: `PUT /api/staff/:id/status` 更新状态
+- [x] 27.4.7 创建 `internal/handler/staff.go`
+- [x] 27.4.8 **测试**: `go test ./...`
+- [x] 27.4.9 提交
 
 #### 后端 路由 (27.5)
-- [ ] 27.5.1 **契约**: 路由组 `/api/staff`
-- [ ] 27.5.2 在 router 中注册 staff 路由
-- [ ] 27.5.3 **测试**: `go build ./...`
-- [ ] 27.5.4 提交
+- [x] 27.5.1 **契约**: 路由组 `/api/staff`
+- [x] 27.5.2 在 router 中注册 staff 路由
+- [x] 27.5.3 **测试**: `go build ./...`
+- [x] 27.5.4 提交
 
 #### 后端 Order 添加 StaffID (27.6)
-- [ ] 27.6.1 **契约**: orders 表添加 staff_id 字段 (bigint, nullable)
-- [ ] 27.6.2 修改 `internal/model/order.go`
-- [ ] 27.6.3 修改 order Create 和 Update 方法
-- [ ] 27.6.4 **测试**: `go test ./...`
-- [ ] 27.6.5 提交
+- [x] 27.6.1 **契约**: orders 表添加 staff_id 字段 (bigint, nullable)
+- [x] 27.6.2 修改 `internal/model/order.go`
+- [x] 27.6.3 修改 order Create 和 Update 方法
+- [x] 27.6.4 **测试**: `go test ./...`
+- [x] 27.6.5 提交
 
 #### 前端 API (27.7)
-- [ ] 27.7.1 **契约**: CRUD + 状态更新 API
-- [ ] 27.7.2 创建 `src/api/staff.js`
-- [ ] 27.7.3 **测试**: `npm test`
-- [ ] 27.7.4 提交
+- [x] 27.7.1 **契约**: CRUD + 状态更新 API
+- [x] 27.7.2 创建 `src/api/staff.js`
+- [x] 27.7.3 **测试**: `npm test`
+- [x] 27.7.4 提交
 
 #### 前端 列表页 (27.8)
-- [ ] 27.8.1 **契约**: 人员列表展示 + 状态筛选
-- [ ] 27.8.2 创建 `src/views/staff/StaffList.vue`
-- [ ] 27.8.3 **测试**: `npm test`
-- [ ] 27.8.4 提交
+- [x] 27.8.1 **契约**: 人员列表展示 + 状态筛选
+- [x] 27.8.2 创建 `src/views/staff/StaffList.vue`
+- [x] 27.8.3 **测试**: `npm test`
+- [x] 27.8.4 提交
 
 #### 前端 表单弹窗 (27.9)
-- [ ] 27.9.1 **契约**: 新增/编辑人员表单
-- [ ] 27.9.2 创建 `src/views/staff/StaffForm.vue`
-- [ ] 27.9.3 **测试**: `npm test`
-- [ ] 27.9.4 提交
+- [x] 27.9.1 **契约**: 新增/编辑人员表单
+- [x] 27.9.2 创建 `src/views/staff/StaffForm.vue`
+- [x] 27.9.3 **测试**: `npm test`
+- [x] 27.9.4 提交
 
 #### 前端 订单分配 (27.10)
-- [ ] 27.10.1 **契约**: 订单详情选择服务人员
-- [ ] 27.10.2 修改 `src/views/order/OrderDetail.vue`
-- [ ] 27.10.3 **测试**: `npx playwright test`
-- [ ] 27.10.4 提交
+- [x] 27.10.1 **契约**: 订单列表选择服务人员
+- [x] 27.10.2 修改 `src/views/order/OrderList.vue` 分配弹窗
+- [x] 27.10.3 **测试**: `npx playwright test`
+- [x] 27.10.4 提交
 
 #### 前端 状态切换 (27.11)
-- [ ] 27.11.1 **契约**: 人员状态切换 (空闲/忙碌/休息)
-- [ ] 27.11.2 StaffList.vue 添加状态切换按钮
-- [ ] 27.11.3 **测试**: `npm run build`
-- [ ] 27.11.4 提交
+- [x] 27.11.1 **契约**: 人员状态切换 (空闲/忙碌/休息)
+- [x] 27.11.2 StaffList.vue 添加状态切换按钮
+- [x] 27.11.3 **测试**: `npm run build`
+- [x] 27.11.4 提交
 
 #### E2E (27.12)
-- [ ] 27.12.1 **契约**: 服务人员 E2E 测试
-- [ ] 27.12.2 添加 `e2e/staff.spec.js`
-- [ ] 27.12.3 **测试**: `npx playwright test`
-- [ ] 27.12.4 提交
+- [x] 27.12.1 **契约**: 服务人员 E2E 测试
+- [x] 27.12.2 添加 `e2e/staff.spec.js`
+- [x] 27.12.3 **测试**: `npx playwright test`
+- [x] 27.12.4 提交
 
 #### 验证 (27.13)
-- [ ] 27.13.1 `go test ./...` 通过
-- [ ] 27.13.2 `npm run lint` 通过
-- [ ] 27.13.3 `npx playwright test e2e/staff.spec.js` 通过
-- [ ] 27.13.4 文档 checklist 同步
-- [ ] 27.13.5 `git status` clean
+- [x] 27.13.1 `go test ./...` 通过
+- [x] 27.13.2 `npm run lint` 通过
+- [x] 27.13.3 `npx playwright test e2e/staff.spec.js` 通过
+- [x] 27.13.4 文档 checklist 同步
+- [x] 27.13.5 `git status` clean
 
 ### Phase 28 评价反馈 - 详细任务
 

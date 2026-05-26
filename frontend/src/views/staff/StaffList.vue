@@ -4,7 +4,21 @@
       <template #header>
         <div class="card-header">
           <span>服务人员管理</span>
-          <el-button type="primary" @click="showForm(null)">添加人员</el-button>
+          <div class="header-actions">
+            <el-select
+              v-model="statusFilter"
+              clearable
+              placeholder="全部状态"
+              class="status-filter"
+              @change="loadStaffs"
+              @clear="loadStaffs"
+            >
+              <el-option label="空闲" value="available" />
+              <el-option label="忙碌" value="busy" />
+              <el-option label="休息" value="off" />
+            </el-select>
+            <el-button type="primary" @click="showForm(null)">添加人员</el-button>
+          </div>
         </div>
       </template>
       <el-table :data="staffs" v-loading="loading">
@@ -78,11 +92,13 @@ const loading = ref(false)
 const formVisible = ref(false)
 const currentStaff = ref(null)
 const reviewSummaries = ref({})
+const statusFilter = ref('')
 
 const loadStaffs = async () => {
   loading.value = true
   try {
-    const res = await getStaffList()
+    const params = statusFilter.value ? { status: statusFilter.value } : undefined
+    const res = await getStaffList(params)
     staffs.value = res.data?.staffs || []
     await loadReviewSummaries()
   } catch (error) {
@@ -174,5 +190,16 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-filter {
+  width: 140px;
 }
 </style>

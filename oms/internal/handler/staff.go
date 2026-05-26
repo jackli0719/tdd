@@ -92,6 +92,7 @@ func (h *StaffHandler) Create(c *gin.Context) {
 	staff := &model.Staff{
 		Name:   req.Name,
 		Phone:  req.Phone,
+		Avatar: req.Avatar,
 		Status: model.StaffStatus(req.Status),
 	}
 	if staff.Status == "" {
@@ -129,7 +130,7 @@ func (h *StaffHandler) Update(c *gin.Context) {
 	}
 
 	req.ID = id
-	if err := h.svc.Update(req.ID, req.Name, req.Phone, req.Status); err != nil {
+	if err := h.svc.Update(req.ID, req.Name, req.Phone, req.Avatar, req.Status); err != nil {
 		if err == service.ErrStaffNotFound {
 			response.Error(c, http.StatusNotFound, "staff not found")
 			return

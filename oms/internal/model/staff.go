@@ -33,6 +33,7 @@ func (Staff) TableName() string {
 type CreateStaffRequest struct {
 	Name   string `json:"name" binding:"required,min=1,max=50"`
 	Phone  string `json:"phone" binding:"omitempty,max=20"`
+	Avatar string `json:"avatar" binding:"omitempty,max=255"`
 	Status string `json:"status" binding:"omitempty,oneof=available busy off"`
 }
 
@@ -41,5 +42,6 @@ type UpdateStaffRequest struct {
 	ID     int64  `json:"id"`
 	Name   string `json:"name" binding:"omitempty,min=1,max=50"`
 	Phone  string `json:"phone" binding:"omitempty,max=20"`
+	Avatar string `json:"avatar" binding:"omitempty,max=255"`
 	Status string `json:"status" binding:"omitempty,oneof=available busy off"`
 }
