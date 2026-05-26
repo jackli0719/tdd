@@ -80,6 +80,17 @@ func Setup(r *gin.Engine, db *gorm.DB, jwtSecret string) {
 		protected.PUT("/categories/:id", categoryHandler.Update)
 		protected.DELETE("/categories/:id", categoryHandler.Delete)
 
+		// Staff routes
+		staffRepo := repository.NewStaffRepository(db)
+		staffSvc := service.NewStaffService(staffRepo)
+		staffHandler := handler.NewStaffHandler(staffSvc)
+		protected.GET("/staff", staffHandler.List)
+		protected.GET("/staff/:id", staffHandler.Get)
+		protected.POST("/staff", staffHandler.Create)
+		protected.PUT("/staff/:id", staffHandler.Update)
+		protected.DELETE("/staff/:id", staffHandler.Delete)
+		protected.PUT("/staff/:id/status", staffHandler.UpdateStatus)
+
 		// User routes
 		protected.GET("/users", userHandler.List)
 		protected.GET("/users/:id", userHandler.Get)
