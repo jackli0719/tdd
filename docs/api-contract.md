@@ -376,19 +376,19 @@ GET /api/orders?page=1&page_size=10
 }
 ```
 
-### 订单状态说明
+### 订单状态说明（上门服务模式）
 | 状态 | 说明 |
 |------|------|
-| pending | 待支付 |
-| paid | 已支付 |
-| shipped | 已发货 |
+| pending | 待确认 |
+| confirmed | 已确认（待服务） |
+| in_service | 服务中 |
 | completed | 已完成 |
 | cancelled | 已取消 |
 
 ### 状态转换规则
-- pending → paid / cancelled
-- paid → shipped / cancelled
-- shipped → completed
+- pending → confirmed / cancelled
+- confirmed → in_service / cancelled
+- in_service → completed
 - completed → (终态)
 - cancelled → (终态)
 
@@ -437,11 +437,13 @@ DELETE /api/orders/:id
 
 ### 订单状态操作
 ```
-POST /api/orders/:id/paid    # 支付
-POST /api/orders/:id/ship    # 发货
-POST /api/orders/:id/complete # 完成
-POST /api/orders/:id/cancel  # 取消
+POST /api/orders/:id/confirm  # 确认订单
+POST /api/orders/:id/start    # 开始服务
+POST /api/orders/:id/complete # 完成服务
+POST /api/orders/:id/cancel   # 取消订单
 ```
+
+**约束**: 只能删除 pending 状态的订单
 
 **响应**:
 ```json

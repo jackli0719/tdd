@@ -26,12 +26,13 @@ type ProductService interface {
 }
 
 type productService struct {
-	repo repository.ProductRepository
+	repo         repository.ProductRepository
+	categoryRepo repository.CategoryRepository
 }
 
 // NewProductService creates a new ProductService
-func NewProductService(repo repository.ProductRepository) ProductService {
-	return &productService{repo: repo}
+func NewProductService(repo repository.ProductRepository, categoryRepo repository.CategoryRepository) ProductService {
+	return &productService{repo: repo, categoryRepo: categoryRepo}
 }
 
 func (s *productService) Create(req *model.CreateProductRequest) (*model.Product, error) {
@@ -39,6 +40,14 @@ func (s *productService) Create(req *model.CreateProductRequest) (*model.Product
 	if _, err := s.repo.GetByName(req.Name); err == nil {
 		return nil, ErrProductExists
 	} else if !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, err
+	}
+
+	// Check if category exists
+	if _, err := s.categoryRepo.GetByID(req.CategoryID); err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrCategoryNotFound
+		}
 		return nil, err
 	}
 
@@ -83,9 +92,19 @@ func (s *productService) Update(id int64, req *model.UpdateProductRequest) (*mod
 		}
 	}
 
+	// Check if category exists if being updated
+	if req.CategoryID != nil && *req.CategoryID != product.CategoryID {
+		if _, err := s.categoryRepo.GetByID(*req.CategoryID); err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return nil, ErrCategoryNotFound
+			}
+			return nil, err
+		}
+	}
+
 	// Update fields
-	if req.CategoryID > 0 {
-		product.CategoryID = req.CategoryID
+	if req.CategoryID != nil {
+		product.CategoryID = *req.CategoryID
 	}
 	if req.Name != "" {
 		product.Name = req.Name
@@ -93,8 +112,8 @@ func (s *productService) Update(id int64, req *model.UpdateProductRequest) (*mod
 	if req.Price > 0 {
 		product.Price = req.Price
 	}
-	if req.Stock >= 0 {
-		product.Stock = req.Stock
+	if req.Stock != nil {
+		product.Stock = *req.Stock
 	}
 
 	if err := s.repo.Update(product); err != nil {

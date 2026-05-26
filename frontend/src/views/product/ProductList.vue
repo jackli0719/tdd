@@ -24,7 +24,11 @@
       </template>
       <el-table :data="products" v-loading="loading">
         <el-table-column prop="id" label="ID" width="80" />
-        <el-table-column prop="category_id" label="品类ID" width="100" />
+        <el-table-column prop="category_id" label="品类" width="120">
+          <template #default="{ row }">
+            {{ getCategoryName(row.category_id) }}
+          </template>
+        </el-table-column>
         <el-table-column prop="name" label="名称" />
         <el-table-column prop="price" label="价格">
           <template #default="{ row }">
@@ -111,6 +115,11 @@ const handleDelete = async (id) => {
       ElMessage.error('删除失败')
     }
   }
+}
+
+const getCategoryName = (categoryId) => {
+  const cat = categories.value.find(c => c.id === categoryId)
+  return cat ? cat.name : '-'
 }
 
 const formatDate = (date) => {

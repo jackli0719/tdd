@@ -613,7 +613,8 @@ curl http://localhost:8080/api/orders
 | phase20 | 部署 | 20 | 3 | 12 |
 | phase21 | 仪表盘增强 | 21 | 1 | 6 |
 | phase22 | 品类管理 | 22 | 6 | 24 |
-| **总计** | | | **70** | **282** |
+| phase23 | 上门服务订单 | 23 | 9 | 36 |
+| **总计** | | | **79** | **318** |
 
 ---
 
@@ -881,3 +882,65 @@ cd frontend && npm run lint
 - [ ] 添加 `e2e/category.spec.js`
 - [ ] **测试**: `npx playwright test`
 - [ ] 提交
+
+---
+
+## 二十三、订单状态改为上门服务模式 (Phase 23)
+
+> 服务行业（家政、上门保洁等）订单状态不同于电商
+
+### Phase 23: 上门服务订单状态
+
+#### 23.1 后端 - 修改订单状态常量
+- [ ] **契约**: 新状态 pending/confirmed/in_service/completed/cancelled
+- [ ] 修改 `internal/model/order.go` - OrderStatus 常量
+- [ ] **测试**: `go build ./...`
+- [ ] 提交
+
+#### 23.2 后端 - 修改状态流转逻辑
+- [ ] **契约**: pending → confirmed → in_service → completed
+- [ ] 修改 `internal/service/order.go` - 状态转换方法
+- [ ] 移除 paid/shipped 相关方法，改用 confirmed/in_service
+- [ ] **测试**: `go test ./...`
+- [ ] 提交
+
+#### 23.3 后端 - 修改 Handler 路由
+- [ ] **契约**: /orders/:id/confirm, /orders/:id/start, /orders/:id/complete
+- [ ] 修改 `internal/handler/order.go`
+- [ ] **测试**: `go test ./...`
+- [ ] 提交
+
+#### 23.4 后端 - 修改统计 API
+- [ ] **契约**: 统计按新状态分组
+- [ ] 修改 `internal/handler/stats.go` 和 `internal/service/order.go`
+- [ ] **测试**: `go test ./...`
+- [ ] 提交
+
+#### 23.5 前端 - 修改订单列表状态显示
+- [ ] **契约**: 新状态映射
+- [ ] pending→待确认, confirmed→已确认, in_service→服务中, completed→已完成, cancelled→已取消
+- [ ] 修改 `OrderList.vue`
+- [ ] **测试**: `npm test`
+- [ ] 提交
+
+#### 23.6 前端 - 修改订单表单状态操作
+- [ ] **契约**: 新状态按钮操作
+- [ ] 修改 `OrderForm.vue` - 确认、开始服务、完成操作
+- [ ] **测试**: `npm test` + `npx playwright test`
+- [ ] 提交
+
+#### 23.7 API 契约文档更新
+- [ ] **契约**: 更新 `docs/api-contract.md`
+- [ ] 更新订单状态说明和状态流转图
+- [ ] 提交
+
+#### 23.8 E2E 测试
+- [ ] **契约**: 新状态 E2E 测试
+- [ ] 修改 `e2e/oms.spec.js` 订单相关测试
+- [ ] **测试**: `npx playwright test`
+- [ ] 提交
+
+#### 23.9 验证
+- [ ] `make pre-commit` 通过
+- [ ] 所有单元测试通过
+- [ ] 所有 E2E 测试通过

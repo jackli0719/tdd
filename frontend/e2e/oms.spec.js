@@ -61,6 +61,50 @@ test.describe('OMS Frontend E2E', () => {
     await expect(page.locator('text=添加品类')).toBeVisible()
   })
 
+  test('category - create new category', async ({ page }) => {
+    await page.locator('.sidebar-menu').getByRole('menuitem', { name: '品类管理' }).click()
+    await expect(page.locator('.el-table')).toBeVisible()
+
+    // Click add button
+    await page.getByRole('button', { name: '添加品类' }).click()
+    // Fill form
+    await page.getByLabel('名称').fill('测试品类_' + Date.now())
+    await page.getByLabel('描述').fill('这是一个测试描述')
+    // Submit
+    await page.getByRole('button', { name: '提交' }).click()
+    // Verify success
+    await expect(page.getByText('保存成功')).toBeVisible()
+  })
+
+  test('category - edit existing category', async ({ page }) => {
+    await page.locator('.sidebar-menu').getByRole('menuitem', { name: '品类管理' }).click()
+    await expect(page.locator('.el-table')).toBeVisible()
+
+    // Click first edit button
+    await page.getByRole('button', { name: '编辑' }).first().click()
+    // Modify name
+    await page.getByLabel('名称').fill('修改后品类_' + Date.now())
+    // Submit
+    await page.getByRole('button', { name: '提交' }).click()
+    // Verify success
+    await expect(page.getByText('保存成功')).toBeVisible()
+  })
+
+  test('category - delete category', async ({ page }) => {
+    await page.locator('.sidebar-menu').getByRole('menuitem', { name: '品类管理' }).click()
+    await expect(page.locator('.el-table')).toBeVisible()
+
+    // Get initial row count
+    const initialRows = await page.locator('.el-table tbody tr').count()
+
+    // Click first delete button
+    await page.getByRole('button', { name: '删除' }).first().click()
+    // Confirm dialog
+    await page.getByRole('button', { name: '确定' }).click()
+    // Verify success
+    await expect(page.getByText('删除成功')).toBeVisible()
+  })
+
   test('order list page loads', async ({ page }) => {
     await page.locator('.sidebar-menu').getByRole('menuitem', { name: '订单管理' }).click()
     await expect(page.locator('.el-table')).toBeVisible()

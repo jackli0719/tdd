@@ -96,3 +96,50 @@ func TestCategoryService_Delete_WithProducts(t *testing.T) {
 		t.Errorf("expected ErrCategoryHasProducts, got %v", err)
 	}
 }
+
+func TestCategoryService_Update_ClearDescription(t *testing.T) {
+	db := setupCategoryTestDB(t)
+	repo := repository.NewCategoryRepository(db)
+	svc := NewCategoryService(repo)
+
+	created, _ := svc.Create(&model.CreateCategoryRequest{
+		Name:        "家政",
+		Description: "家政服务类",
+	})
+
+	// Update with empty description - should clear it
+	emptyDesc := ""
+	_, err := svc.Update(created.ID, &model.UpdateCategoryRequest{
+		Description: &emptyDesc,
+	})
+	if err != nil {
+		t.Fatalf("failed to update category: %v", err)
+	}
+
+	found, _ := svc.GetByID(created.ID)
+	if found.Description != "" {
+		t.Errorf("expected empty description, got '%s'", found.Description)
+	}
+}
+
+func TestCategoryService_Update_SetDescription(t *testing.T) {
+	db := setupCategoryTestDB(t)
+	repo := repository.NewCategoryRepository(db)
+	svc := NewCategoryService(repo)
+
+	created, _ := svc.Create(&model.CreateCategoryRequest{
+		Name: "家政",
+	})
+
+	newDesc := "家政服务类"
+	updated, err := svc.Update(created.ID, &model.UpdateCategoryRequest{
+		Description: &newDesc,
+	})
+	if err != nil {
+		t.Fatalf("failed to update category: %v", err)
+	}
+
+	if updated.Description != "家政服务类" {
+		t.Errorf("expected description '家政服务类', got '%s'", updated.Description)
+	}
+}

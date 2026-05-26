@@ -84,8 +84,9 @@ func (s *categoryService) Update(id int64, req *model.UpdateCategoryRequest) (*m
 	if req.Name != "" {
 		category.Name = req.Name
 	}
-	if req.Description != "" {
-		category.Description = req.Description
+	// nil Description means clear, empty string means clear
+	if req.Description != nil {
+		category.Description = *req.Description
 	}
 
 	if err := s.repo.Update(category); err != nil {

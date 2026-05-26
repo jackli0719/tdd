@@ -18,6 +18,9 @@ func Setup(r *gin.Engine, db *gorm.DB) {
 	// Logger middleware
 	r.Use(middleware.Logger())
 
+	// CORS middleware
+	r.Use(middleware.CORS())
+
 	// Health check
 	r.GET("/health", func(c *gin.Context) {
 		if db == nil {
@@ -60,7 +63,7 @@ func Setup(r *gin.Engine, db *gorm.DB) {
 
 		// Product routes
 		productRepo := repository.NewProductRepository(db)
-		productSvc := service.NewProductService(productRepo)
+		productSvc := service.NewProductService(productRepo, categoryRepo)
 		productHandler := handler.NewProductHandler(productSvc)
 		api.GET("/products", productHandler.List)
 		api.GET("/products/:id", productHandler.Get)

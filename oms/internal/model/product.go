@@ -30,8 +30,8 @@ type CreateProductRequest struct {
 
 // UpdateProductRequest is the request body for updating a product
 type UpdateProductRequest struct {
-	CategoryID int64   `json:"category_id" binding:"omitempty"`
+	CategoryID *int64  `json:"category_id" binding:"omitempty"`
 	Name       string  `json:"name" binding:"omitempty,min=1,max=100"`
 	Price      float64 `json:"price" binding:"omitempty,gt=0"`
-	Stock      int     `json:"stock" binding:"omitempty,gte=0"`
+	Stock      *int    `json:"stock" binding:"omitempty,gte=0"`
 }
