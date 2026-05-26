@@ -136,11 +136,108 @@ DELETE /api/users/:id
 
 ---
 
+## 品类管理
+
+### 品类列表
+```
+GET /api/categories?page=1&page_size=10
+```
+
+**响应**:
+```json
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "categories": [
+      {
+        "id": 1,
+        "name": "家政",
+        "description": "家政服务类",
+        "created_at": "2026-05-25T10:00:00+08:00",
+        "updated_at": "2026-05-25T10:00:00+08:00"
+      }
+    ],
+    "total": 10,
+    "page": 1
+  }
+}
+```
+
+### 获取单个品类
+```
+GET /api/categories/:id
+```
+
+**响应**:
+```json
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "id": 1,
+    "name": "家政",
+    "description": "家政服务类",
+    "created_at": "2026-05-25T10:00:00+08:00",
+    "updated_at": "2026-05-25T10:00:00+08:00"
+  }
+}
+```
+
+### 创建品类
+```
+POST /api/categories
+```
+
+**请求体**:
+```json
+{
+  "name": "家政",
+  "description": "家政服务类"
+}
+```
+
+**响应**: 同获取单个品类
+
+### 更新品类
+```
+PUT /api/categories/:id
+```
+
+**请求体**:
+```json
+{
+  "name": "家政服务",
+  "description": "家政服务类目"
+}
+```
+
+**响应**: 同获取单个品类
+
+### 删除品类
+```
+DELETE /api/categories/:id
+```
+
+**约束**: 品类下有产品时不能删除
+
+**响应**:
+```json
+{
+  "code": 0,
+  "message": "success",
+  "data": null
+}
+```
+
+---
+
 ## 产品管理
 
 ### 产品列表
 ```
 GET /api/products?page=1&page_size=10
+GET /api/products?category_id=1  # 按品类筛选
 ```
 
 **响应**:
@@ -152,6 +249,7 @@ GET /api/products?page=1&page_size=10
     "products": [
       {
         "id": 1,
+        "category_id": 1,
         "name": "空调清洗",
         "price": 98,
         "stock": 95,
@@ -177,6 +275,7 @@ GET /api/products/:id
   "message": "success",
   "data": {
     "id": 1,
+    "category_id": 1,
     "name": "空调清洗",
     "price": 98,
     "stock": 95,
@@ -194,6 +293,7 @@ POST /api/products
 **请求体**:
 ```json
 {
+  "category_id": 1,
   "name": "空调清洗",
   "price": 98,
   "stock": 100
@@ -210,6 +310,7 @@ PUT /api/products/:id
 **请求体**:
 ```json
 {
+  "category_id": 1,
   "name": "空调深度清洗",
   "price": 128,
   "stock": 80

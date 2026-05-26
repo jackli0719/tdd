@@ -57,7 +57,7 @@ func TestProductHandler_Create(t *testing.T) {
 	svc := service.NewProductService(repo)
 	r := setupProductRouter(svc)
 
-	body := `{"name":"Test Product","price":99.99,"stock":100}`
+	body := `{"category_id":1,"name":"Test Product","price":99.99,"stock":100}`
 	req, _ := http.NewRequest("POST", "/api/products", bytes.NewBufferString(body))
 	req.Header.Set("Content-Type", "application/json")
 	w := httptest.NewRecorder()
@@ -82,9 +82,10 @@ func TestProductHandler_List(t *testing.T) {
 
 	// Create a product first
 	svc.Create(&model.CreateProductRequest{
-		Name:  "Test Product",
-		Price: 99.99,
-		Stock: 100,
+		CategoryID: 1,
+		Name:       "Test Product",
+		Price:      99.99,
+		Stock:      100,
 	})
 
 	req, _ := http.NewRequest("GET", "/api/products?page=1&page_size=10", nil)

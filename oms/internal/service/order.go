@@ -12,8 +12,11 @@ import (
 )
 
 var (
-	ErrOrderNotFound     = errors.New("order not found")
-	ErrInvalidOrderState = errors.New("invalid order state transition")
+	ErrOrderNotFound        = errors.New("order not found")
+	ErrInvalidOrderState    = errors.New("invalid order state transition")
+	ErrStaffNotAvailable    = errors.New("staff is not available")
+	ErrAssignedStaffInvalid = errors.New("assigned staff not found or not available")
+	ErrSlotAlreadyBooked    = errors.New("this time slot is already booked")
 )
 
 // OrderService handles order business logic
@@ -22,6 +25,7 @@ type OrderService interface {
 	GetByID(id int64) (*model.Order, error)
 	List(page, pageSize int) ([]*model.Order, int64, error)
 	Delete(id int64) error
+	AssignStaff(orderID int64, staffID *int64) error
 
 	// State transitions
 	Paid(id int64) error
@@ -34,6 +38,7 @@ type orderService struct {
 	orderRepo   repository.OrderRepository
 	userRepo    repository.UserRepository
 	productRepo repository.ProductRepository
+	staffRepo   repository.StaffRepository
 }
 
 // NewOrderService creates a new OrderService
@@ -41,11 +46,13 @@ func NewOrderService(
 	orderRepo repository.OrderRepository,
 	userRepo repository.UserRepository,
 	productRepo repository.ProductRepository,
+	staffRepo repository.StaffRepository,
 ) OrderService {
 	return &orderService{
 		orderRepo:   orderRepo,
 		userRepo:    userRepo,
 		productRepo: productRepo,
+		staffRepo:   staffRepo,
 	}
 }
 
@@ -57,6 +64,20 @@ func (s *orderService) Create(req *model.CreateOrderRequest) (*model.Order, erro
 			return nil, ErrUserNotFound
 		}
 		return nil, err
+	}
+
+	// Verify staff if provided
+	if req.StaffID != nil {
+		staff, err := s.staffRepo.GetByID(*req.StaffID)
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return nil, ErrAssignedStaffInvalid
+			}
+			return nil, err
+		}
+		if staff.Status != model.StaffStatusAvailable {
+			return nil, ErrAssignedStaffInvalid
+		}
 	}
 
 	// Calculate total and verify products
@@ -90,12 +111,34 @@ func (s *orderService) Create(req *model.CreateOrderRequest) (*model.Order, erro
 	// Generate order number
 	orderNo := fmt.Sprintf("ORD%d", time.Now().UnixNano())
 
+	// Check for duplicate appointment time
+	if req.AppointmentTime != nil {
+		hourStart := req.AppointmentTime.Truncate(time.Hour)
+		hourEnd := hourStart.Add(time.Hour)
+		existingOrders, _, err := s.orderRepo.ListByDateRange(hourStart, hourEnd)
+		if err != nil {
+			return nil, err
+		}
+		for _, existing := range existingOrders {
+			if existing.AppointmentTime != nil {
+				existingHour := existing.AppointmentTime.Truncate(time.Hour)
+				if existingHour.Equal(hourStart) {
+					return nil, ErrSlotAlreadyBooked
+				}
+			}
+		}
+	}
+
 	order := &model.Order{
-		OrderNo:     orderNo,
-		UserID:      req.UserID,
-		TotalAmount: totalAmount,
-		Status:      model.OrderStatusPending,
-		Items:       items,
+		OrderNo:         orderNo,
+		UserID:          req.UserID,
+		StaffID:         req.StaffID,
+		AddressID:       req.AddressID,
+		Address:         req.Address,
+		TotalAmount:     totalAmount,
+		Status:          model.OrderStatusPending,
+		AppointmentTime: req.AppointmentTime,
+		Items:           items,
 	}
 
 	// Use transaction for order creation and stock decrement
@@ -103,6 +146,20 @@ func (s *orderService) Create(req *model.CreateOrderRequest) (*model.Order, erro
 	if err := s.orderRepo.CreateTx(tx, order); err != nil {
 		tx.Rollback()
 		return nil, err
+	}
+
+	if req.StaffID != nil {
+		result := tx.Model(&model.Staff{}).
+			Where("id = ? AND status = ?", *req.StaffID, model.StaffStatusAvailable).
+			Update("status", model.StaffStatusBusy)
+		if result.Error != nil {
+			tx.Rollback()
+			return nil, result.Error
+		}
+		if result.RowsAffected == 0 {
+			tx.Rollback()
+			return nil, ErrAssignedStaffInvalid
+		}
 	}
 
 	// Decrement stock for each item
@@ -142,6 +199,61 @@ func (s *orderService) List(page, pageSize int) ([]*model.Order, int64, error) {
 
 	offset := (page - 1) * pageSize
 	return s.orderRepo.List(offset, pageSize)
+}
+
+func (s *orderService) AssignStaff(orderID int64, staffID *int64) error {
+	// Verify order exists
+	order, err := s.orderRepo.GetByID(orderID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return ErrOrderNotFound
+		}
+		return err
+	}
+
+	var currentStaff *model.Staff
+	if order.StaffID != nil && (staffID == nil || *order.StaffID != *staffID) {
+		currentStaff, err = s.staffRepo.GetByID(*order.StaffID)
+		if err != nil {
+			return err
+		}
+	}
+
+	var newStaff *model.Staff
+	// Verify staff if provided
+	if staffID != nil {
+		newStaff, err = s.staffRepo.GetByID(*staffID)
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return ErrAssignedStaffInvalid
+			}
+			return err
+		}
+		if newStaff.Status != model.StaffStatusAvailable {
+			return ErrAssignedStaffInvalid
+		}
+	}
+
+	tx := s.orderRepo.DB().Begin()
+	if currentStaff != nil {
+		currentStaff.Status = model.StaffStatusAvailable
+		if err := tx.Save(currentStaff).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+	if newStaff != nil {
+		newStaff.Status = model.StaffStatusBusy
+		if err := tx.Save(newStaff).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+	if err := tx.Model(&model.Order{}).Where("id = ?", orderID).Update("staff_id", staffID).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+	return tx.Commit().Error
 }
 
 func (s *orderService) Delete(id int64) error {

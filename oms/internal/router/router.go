@@ -11,7 +11,7 @@ import (
 )
 
 // Setup configures all routes
-func Setup(r *gin.Engine, db *gorm.DB) {
+func Setup(r *gin.Engine, db *gorm.DB, jwtSecret string) {
 	// Recovery middleware must be first to catch panics
 	r.Use(middleware.Recovery())
 
@@ -35,45 +35,114 @@ func Setup(r *gin.Engine, db *gorm.DB) {
 		return
 	}
 
+	// Repositories
+	userRepo := repository.NewUserRepository(db)
+	productRepo := repository.NewProductRepository(db)
+	orderRepo := repository.NewOrderRepository(db)
+	staffRepo := repository.NewStaffRepository(db)
+	reviewRepo := repository.NewReviewRepository(db)
+
+	// Services
+	userSvc := service.NewUserService(userRepo)
+	authSvc := service.NewAuthService(userRepo, jwtSecret)
+	productSvc := service.NewProductService(productRepo)
+	orderSvc := service.NewOrderService(orderRepo, userRepo, productRepo, staffRepo)
+	slotSvc := service.NewSlotService(orderRepo)
+	addressRepo := repository.NewAddressRepository(db)
+	addressSvc := service.NewAddressService(addressRepo)
+	reviewSvc := service.NewReviewService(reviewRepo, orderRepo)
+
+	// Handlers
+	userHandler := handler.NewUserHandler(userSvc)
+	authHandler := handler.NewAuthHandler(authSvc)
+	productHandler := handler.NewProductHandler(productSvc)
+	orderHandler := handler.NewOrderHandler(orderSvc)
+	statsHandler := handler.NewStatsHandler(orderSvc)
+	slotHandler := handler.NewSlotHandler(slotSvc)
+	addressHandler := handler.NewAddressHandler(addressSvc)
+	reviewHandler := handler.NewReviewHandler(reviewSvc)
+
+	// Auth middleware (for protected routes)
+	authMiddleware := middleware.AuthMiddleware(authSvc)
+
 	// API routes
 	api := r.Group("/api")
+
+	// Auth routes (public - no auth required)
+	api.POST("/auth/login", authHandler.Login)
+	api.POST("/auth/register", authHandler.Register)
+
+	// Protected routes - all require JWT authentication
+	protected := api.Group("")
+	protected.Use(authMiddleware)
 	{
+		// Auth
+		protected.GET("/auth/me", authHandler.Me)
+
+		// Category routes
+		categoryRepo := repository.NewCategoryRepository(db)
+		categorySvc := service.NewCategoryService(categoryRepo)
+		categoryHandler := handler.NewCategoryHandler(categorySvc)
+		protected.GET("/categories", categoryHandler.List)
+		protected.GET("/categories/:id", categoryHandler.Get)
+		protected.POST("/categories", categoryHandler.Create)
+		protected.PUT("/categories/:id", categoryHandler.Update)
+		protected.DELETE("/categories/:id", categoryHandler.Delete)
+
+		// Staff routes
+		staffSvc := service.NewStaffService(staffRepo)
+		staffHandler := handler.NewStaffHandler(staffSvc)
+		protected.GET("/staff", staffHandler.List)
+		protected.GET("/staff/:id", staffHandler.Get)
+		protected.POST("/staff", staffHandler.Create)
+		protected.PUT("/staff/:id", staffHandler.Update)
+		protected.DELETE("/staff/:id", staffHandler.Delete)
+		protected.PUT("/staff/:id/status", staffHandler.UpdateStatus)
+
 		// User routes
-		userRepo := repository.NewUserRepository(db)
-		userSvc := service.NewUserService(userRepo)
-		userHandler := handler.NewUserHandler(userSvc)
-		api.GET("/users", userHandler.List)
-		api.GET("/users/:id", userHandler.Get)
-		api.POST("/users", userHandler.Create)
-		api.PUT("/users/:id", userHandler.Update)
-		api.DELETE("/users/:id", userHandler.Delete)
+		protected.GET("/users", userHandler.List)
+		protected.GET("/users/:id", userHandler.Get)
+		protected.POST("/users", userHandler.Create)
+		protected.PUT("/users/:id", userHandler.Update)
+		protected.DELETE("/users/:id", userHandler.Delete)
 
 		// Product routes
-		productRepo := repository.NewProductRepository(db)
-		productSvc := service.NewProductService(productRepo)
-		productHandler := handler.NewProductHandler(productSvc)
-		api.GET("/products", productHandler.List)
-		api.GET("/products/:id", productHandler.Get)
-		api.POST("/products", productHandler.Create)
-		api.PUT("/products/:id", productHandler.Update)
-		api.DELETE("/products/:id", productHandler.Delete)
+		protected.GET("/products", productHandler.List)
+		protected.GET("/products/:id", productHandler.Get)
+		protected.POST("/products", productHandler.Create)
+		protected.PUT("/products/:id", productHandler.Update)
+		protected.DELETE("/products/:id", productHandler.Delete)
 
 		// Order routes
-		orderRepo := repository.NewOrderRepository(db)
-		orderSvc := service.NewOrderService(orderRepo, userRepo, productRepo)
-		orderHandler := handler.NewOrderHandler(orderSvc)
-		api.GET("/orders", orderHandler.List)
-		api.GET("/orders/:id", orderHandler.Get)
-		api.POST("/orders", orderHandler.Create)
-		api.DELETE("/orders/:id", orderHandler.Delete)
-		api.POST("/orders/:id/paid", orderHandler.Paid)
-		api.POST("/orders/:id/ship", orderHandler.Ship)
-		api.POST("/orders/:id/complete", orderHandler.Complete)
-		api.POST("/orders/:id/cancel", orderHandler.Cancel)
+		protected.GET("/orders", orderHandler.List)
+		protected.GET("/orders/:id", orderHandler.Get)
+		protected.POST("/orders", orderHandler.Create)
+		protected.DELETE("/orders/:id", orderHandler.Delete)
+		protected.PUT("/orders/:id/staff", orderHandler.AssignStaff)
+		protected.POST("/orders/:id/paid", orderHandler.Paid)
+		protected.POST("/orders/:id/ship", orderHandler.Ship)
+		protected.POST("/orders/:id/complete", orderHandler.Complete)
+		protected.POST("/orders/:id/cancel", orderHandler.Cancel)
 
 		// Stats routes
-		statsHandler := handler.NewStatsHandler(orderSvc)
-		api.GET("/stats/orders", statsHandler.OrderStats)
-		api.GET("/stats/revenue", statsHandler.RevenueStats)
+		protected.GET("/stats/orders", statsHandler.OrderStats)
+		protected.GET("/stats/revenue", statsHandler.RevenueStats)
+
+		// Slot routes
+		protected.GET("/slots", slotHandler.List)
+
+		// Address routes
+		protected.GET("/addresses", addressHandler.ListByUserID)
+		protected.GET("/addresses/:id", addressHandler.Get)
+		protected.POST("/addresses", addressHandler.Create)
+		protected.PUT("/addresses/:id", addressHandler.Update)
+		protected.DELETE("/addresses/:id", addressHandler.Delete)
+		protected.PUT("/addresses/:id/default", addressHandler.SetDefault)
+
+		// Review routes
+		protected.GET("/reviews", reviewHandler.List)
+		protected.GET("/reviews/staff-summary", reviewHandler.StaffSummary)
+		protected.GET("/reviews/:id", reviewHandler.Get)
+		protected.POST("/reviews", reviewHandler.Create)
 	}
 }

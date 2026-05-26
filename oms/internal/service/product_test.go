@@ -163,7 +163,7 @@ func TestProductService_List(t *testing.T) {
 		})
 	}
 
-	products, total, err := svc.List(1, 10)
+	products, total, err := svc.List(1, 10, 0)
 	if err != nil {
 		t.Fatalf("failed to list products: %v", err)
 	}

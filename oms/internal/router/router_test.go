@@ -25,7 +25,7 @@ func TestSetup_WithDB(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	db := setupRouterTestDB(t)
 	r := gin.New()
-	Setup(r, db)
+	Setup(r, db, "test-secret")
 
 	// Test health endpoint
 	w := httptest.NewRecorder()
@@ -40,7 +40,7 @@ func TestSetup_WithDB(t *testing.T) {
 func TestSetup_WithoutDB(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	r := gin.New()
-	Setup(r, nil)
+	Setup(r, nil, "test-secret")
 
 	// Test health endpoint without DB
 	w := httptest.NewRecorder()

@@ -13,11 +13,23 @@
         <el-menu-item index="/users">
           <span>用户管理</span>
         </el-menu-item>
+        <el-menu-item index="/categories">
+          <span>品类管理</span>
+        </el-menu-item>
         <el-menu-item index="/products">
           <span>产品管理</span>
         </el-menu-item>
         <el-menu-item index="/orders">
           <span>订单管理</span>
+        </el-menu-item>
+        <el-menu-item index="/staff">
+          <span>服务人员</span>
+        </el-menu-item>
+        <el-menu-item index="/addresses">
+          <span>地址管理</span>
+        </el-menu-item>
+        <el-menu-item index="/reviews">
+          <span>评价管理</span>
         </el-menu-item>
         <el-menu-item index="/stats">
           <span>统计</span>
@@ -27,6 +39,9 @@
     <el-container>
       <el-header class="header">
         <h2>订单管理系统</h2>
+        <div class="header-actions">
+          <el-button type="danger" size="small" @click="handleLogout">退出登录</el-button>
+        </div>
       </el-header>
       <el-main class="main-content">
         <router-view />
@@ -36,11 +51,24 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { computed, ref, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { removeToken, getUserId } from '../api/auth'
 
 const route = useRoute()
+const router = useRouter()
 const currentRoute = computed(() => route.path)
+const currentUserId = ref(1)
+
+onMounted(async () => {
+  const uid = await getUserId()
+  if (uid) currentUserId.value = uid
+})
+
+const handleLogout = () => {
+  removeToken()
+  router.push('/login')
+}
 </script>
 
 <style scoped>
@@ -87,6 +115,7 @@ const currentRoute = computed(() => route.path)
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
   display: flex;
   align-items: center;
+  justify-content: space-between;
   padding: 0 20px;
 }
 
@@ -94,6 +123,11 @@ const currentRoute = computed(() => route.path)
   margin: 0;
   font-size: 18px;
   color: #303133;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
 }
 
 .main-content {

@@ -1,7 +1,40 @@
 import { test, expect } from '@playwright/test'
+import { testIdentity } from './test-data.js'
 
 test.describe('OMS Frontend E2E', () => {
-  test.beforeEach(async ({ page }) => {
+  // Setup: register and login before tests
+  test.beforeEach(async ({ page }, testInfo) => {
+    // Navigate to login page first to set up the context
+    await page.goto('/login')
+
+    // Register a test user
+    const identity = testIdentity(testInfo, 'oms', '138')
+    const registerRes = await page.request.post('http://localhost:8080/api/auth/register', {
+      data: {
+        username: identity.username,
+        password: 'password123',
+        email: identity.email,
+        phone: identity.phone,
+      },
+    })
+    expect(registerRes.ok()).toBeTruthy()
+    // Login
+    const loginRes = await page.request.post('http://localhost:8080/api/auth/login', {
+      data: {
+        username: identity.username,
+        password: 'password123',
+      },
+    })
+    // Set token in localStorage and navigate to dashboard
+    if (loginRes.ok()) {
+      const loginData = await loginRes.json()
+      const token = loginData?.data?.token
+      if (token) {
+        await page.evaluate((t) => {
+          localStorage.setItem('auth_token', t)
+        }, token)
+      }
+    }
     await page.goto('/dashboard')
   })
 
@@ -16,6 +49,15 @@ test.describe('OMS Frontend E2E', () => {
     await expect(page.locator('text=用户总数')).toBeVisible()
     await expect(page.locator('text=产品总数')).toBeVisible()
     await expect(page.locator('text=订单总数')).toBeVisible()
+  })
+
+  test('dashboard shows current time', async ({ page }) => {
+    // Check time card is visible
+    const timeCard = page.locator('.current-time')
+    await expect(timeCard).toBeVisible()
+    // Time format: YYYY/MM/DD HH:mm:ss
+    const timeRegex = /^\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}$/
+    await expect(timeCard).toHaveText(timeRegex)
   })
 
   test('navigation menu works', async ({ page }) => {
@@ -44,6 +86,12 @@ test.describe('OMS Frontend E2E', () => {
     await page.locator('.sidebar-menu').getByRole('menuitem', { name: '产品管理' }).click()
     await expect(page.locator('.el-table')).toBeVisible()
     await expect(page.locator('text=添加产品')).toBeVisible()
+  })
+
+  test('category list page loads', async ({ page }) => {
+    await page.locator('.sidebar-menu').getByRole('menuitem', { name: '品类管理' }).click()
+    await expect(page.locator('.el-table')).toBeVisible()
+    await expect(page.locator('text=添加品类')).toBeVisible()
   })
 
   test('order list page loads', async ({ page }) => {

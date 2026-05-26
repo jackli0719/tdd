@@ -6,6 +6,7 @@ import (
 	"oms/internal/model"
 	"oms/internal/repository"
 
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
@@ -52,6 +53,22 @@ func (s *userService) Create(req *model.CreateUserRequest) (*model.User, error) 
 		Username: req.Username,
 		Email:    req.Email,
 		Phone:    req.Phone,
+	}
+
+	// Handle password
+	if req.Password != nil && *req.Password != "" {
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(*req.Password), bcrypt.DefaultCost)
+		if err != nil {
+			return nil, errors.New("密码加密失败")
+		}
+		user.Password = string(hashedPassword)
+	} else {
+		// Generate a random password for admin-created users
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(""), bcrypt.DefaultCost)
+		if err != nil {
+			return nil, errors.New("密码加密失败")
+		}
+		user.Password = string(hashedPassword)
 	}
 
 	if err := s.repo.Create(user); err != nil {
