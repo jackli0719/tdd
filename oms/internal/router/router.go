@@ -47,6 +47,8 @@ func Setup(r *gin.Engine, db *gorm.DB, jwtSecret string) {
 	productSvc := service.NewProductService(productRepo)
 	orderSvc := service.NewOrderService(orderRepo, userRepo, productRepo, staffRepo)
 	slotSvc := service.NewSlotService(orderRepo)
+	addressRepo := repository.NewAddressRepository(db)
+	addressSvc := service.NewAddressService(addressRepo)
 
 	// Handlers
 	userHandler := handler.NewUserHandler(userSvc)
@@ -55,6 +57,7 @@ func Setup(r *gin.Engine, db *gorm.DB, jwtSecret string) {
 	orderHandler := handler.NewOrderHandler(orderSvc)
 	statsHandler := handler.NewStatsHandler(orderSvc)
 	slotHandler := handler.NewSlotHandler(slotSvc)
+	addressHandler := handler.NewAddressHandler(addressSvc)
 
 	// Auth middleware (for protected routes)
 	authMiddleware := middleware.AuthMiddleware(authSvc)
@@ -124,5 +127,13 @@ func Setup(r *gin.Engine, db *gorm.DB, jwtSecret string) {
 
 		// Slot routes
 		protected.GET("/slots", slotHandler.List)
+
+		// Address routes
+		protected.GET("/addresses", addressHandler.ListByUserID)
+		protected.GET("/addresses/:id", addressHandler.Get)
+		protected.POST("/addresses", addressHandler.Create)
+		protected.PUT("/addresses/:id", addressHandler.Update)
+		protected.DELETE("/addresses/:id", addressHandler.Delete)
+		protected.PUT("/addresses/:id/default", addressHandler.SetDefault)
 	}
 }

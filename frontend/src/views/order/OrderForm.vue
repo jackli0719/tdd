@@ -6,7 +6,7 @@
   >
     <el-form :model="form" label-width="80px">
       <el-form-item label="用户">
-        <el-select v-model="form.user_id" placeholder="请选择用户">
+        <el-select v-model="form.user_id" placeholder="请选择用户" @change="onUserChange">
           <el-option
             v-for="user in users"
             :key="user.id"
@@ -14,6 +14,29 @@
             :value="user.id"
           />
         </el-select>
+      </el-form-item>
+      <el-form-item label="服务地址">
+        <div class="address-row">
+          <el-select
+            v-if="!manualAddress"
+            v-model="selectedAddressId"
+            placeholder="选择地址"
+            @change="onAddressChange"
+          >
+            <el-option
+              v-for="addr in addresses"
+              :key="addr.id"
+              :label="formatAddress(addr)"
+              :value="addr.id"
+            />
+          </el-select>
+          <el-button @click="manualAddress = !manualAddress">
+            {{ manualAddress ? '选择已有地址' : '手动输入' }}
+          </el-button>
+        </div>
+        <div v-if="manualAddress" class="manual-address">
+          <el-input v-model="manualAddressText" type="textarea" placeholder="请输入服务地址" />
+        </div>
       </el-form-item>
       <el-form-item label="预约时间">
         <div class="appointment-row">
@@ -59,6 +82,7 @@ import { createOrder } from '../../api/order'
 import { getUsers } from '../../api/user'
 import { getProducts } from '../../api/product'
 import { getSlots } from '../../api/slot'
+import { getAddresses } from '../../api/address'
 import DatePicker from '../../components/DatePicker.vue'
 import TimeSlotPicker from '../../components/TimeSlotPicker.vue'
 import { ElMessage } from 'element-plus'
@@ -77,6 +101,10 @@ const appointmentDate = ref('')
 const appointmentTime = ref('')
 const slots = ref([])
 const slotsLoading = ref(false)
+const addresses = ref([])
+const selectedAddressId = ref(null)
+const manualAddress = ref(false)
+const manualAddressText = ref('')
 const form = ref({
   user_id: null,
   items: [{ product_id: null, quantity: 1 }],
@@ -90,6 +118,10 @@ watch(() => props.modelValue, async (val) => {
     appointmentDate.value = ''
     appointmentTime.value = ''
     slots.value = []
+    selectedAddressId.value = null
+    manualAddress.value = false
+    manualAddressText.value = ''
+    addresses.value = []
     form.value = { user_id: null, items: [{ product_id: null, quantity: 1 }] }
   }
 })
@@ -137,6 +169,36 @@ const onSlotsUpdated = (updatedSlots) => {
   slots.value = updatedSlots
 }
 
+const loadAddresses = async (userId) => {
+  try {
+    const res = await getAddresses(userId)
+    addresses.value = res.data?.addresses || []
+  } catch (error) {
+    console.error('Failed to load addresses:', error)
+  }
+}
+
+const onUserChange = (userId) => {
+  selectedAddressId.value = null
+  manualAddress.value = false
+  manualAddressText.value = ''
+  if (userId) {
+    loadAddresses(userId)
+  } else {
+    addresses.value = []
+  }
+}
+
+const onAddressChange = (addressId) => {
+  manualAddress.value = false
+  manualAddressText.value = ''
+}
+
+const formatAddress = (addr) => {
+  const parts = [addr.province, addr.city, addr.district, addr.detail].filter(Boolean)
+  return parts.join(' ') || addr.detail || ''
+}
+
 const onProductChange = (index) => {
   form.value.items[index].quantity = 1
 }
@@ -174,6 +236,15 @@ const handleSubmit = async () => {
     return
   }
 
+  if (manualAddress.value && !manualAddressText.value) {
+    ElMessage.warning('请输入服务地址')
+    return
+  }
+  if (!manualAddress.value && !selectedAddressId.value) {
+    ElMessage.warning('请选择服务地址')
+    return
+  }
+
   const appointmentTime = buildAppointmentTime()
   const orderData = {
     user_id: form.value.user_id,
@@ -181,6 +252,14 @@ const handleSubmit = async () => {
   }
   if (appointmentTime) {
     orderData.appointment_time = appointmentTime
+  }
+  if (manualAddress.value) {
+    orderData.address = manualAddressText.value
+  } else {
+    const addr = addresses.value.find(a => a.id === selectedAddressId.value)
+    if (addr) {
+      orderData.address_id = addr.id
+    }
   }
 
   loading.value = true

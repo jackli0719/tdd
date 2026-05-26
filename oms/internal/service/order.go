@@ -133,6 +133,8 @@ func (s *orderService) Create(req *model.CreateOrderRequest) (*model.Order, erro
 		OrderNo:         orderNo,
 		UserID:          req.UserID,
 		StaffID:         req.StaffID,
+		AddressID:       req.AddressID,
+		Address:         req.Address,
 		TotalAmount:     totalAmount,
 		Status:          model.OrderStatusPending,
 		AppointmentTime: req.AppointmentTime,

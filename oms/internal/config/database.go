@@ -62,7 +62,7 @@ func InitDB(dsn string) (*gorm.DB, error) {
 // autoMigrate runs database migrations for all models
 func autoMigrate(db *gorm.DB) error {
 	log.Println("Running database migrations...")
-	if err := db.AutoMigrate(&model.User{}, &model.Category{}, &model.Product{}, &model.Order{}, &model.OrderItem{}, &model.Staff{}); err != nil {
+	if err := db.AutoMigrate(&model.User{}, &model.Category{}, &model.Product{}, &model.Order{}, &model.OrderItem{}, &model.Staff{}, &model.Address{}); err != nil {
 		return err
 	}
 	log.Println("Database migrations completed successfully")
