@@ -25,8 +25,26 @@ func NewStaffHandler(svc *service.StaffService) *StaffHandler {
 func (h *StaffHandler) List(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "10"))
+	status := c.Query("status")
 
-	staffs, total, err := h.svc.List(page, pageSize)
+	var staffs []model.Staff
+	var total int64
+	var err error
+
+	if status != "" {
+		// Filter by status - only available staff
+		if status != string(model.StaffStatusAvailable) {
+			response.Error(c, http.StatusBadRequest, "only 'available' status is allowed for filtering")
+			return
+		}
+		staffs, err = h.svc.ListAvailable()
+		total = int64(len(staffs))
+	} else {
+		var staffList []model.Staff
+		staffList, total, err = h.svc.List(page, pageSize)
+		staffs = staffList
+	}
+
 	if err != nil {
 		response.Error(c, http.StatusInternalServerError, err.Error())
 		return
@@ -64,7 +82,21 @@ func (h *StaffHandler) Create(c *gin.Context) {
 		return
 	}
 
+	// Validate name
+	if req.Name == "" {
+		response.Error(c, http.StatusBadRequest, "name cannot be empty")
+		return
+	}
+
 	if err := h.svc.Create(&req); err != nil {
+		if err == service.ErrEmptyName {
+			response.Error(c, http.StatusBadRequest, "name cannot be empty")
+			return
+		}
+		if err == service.ErrInvalidStatus {
+			response.Error(c, http.StatusBadRequest, "invalid status: must be available, busy, or off")
+			return
+		}
 		response.Error(c, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -86,10 +118,24 @@ func (h *StaffHandler) Update(c *gin.Context) {
 		return
 	}
 
+	// Validate name
+	if req.Name == "" {
+		response.Error(c, http.StatusBadRequest, "name cannot be empty")
+		return
+	}
+
 	req.ID = id
 	if err := h.svc.Update(&req); err != nil {
 		if err == service.ErrStaffNotFound {
 			response.Error(c, http.StatusNotFound, "staff not found")
+			return
+		}
+		if err == service.ErrEmptyName {
+			response.Error(c, http.StatusBadRequest, "name cannot be empty")
+			return
+		}
+		if err == service.ErrInvalidStatus {
+			response.Error(c, http.StatusBadRequest, "invalid status: must be available, busy, or off")
 			return
 		}
 		response.Error(c, http.StatusInternalServerError, err.Error())

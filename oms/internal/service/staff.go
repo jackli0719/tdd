@@ -9,6 +9,8 @@ import (
 
 var (
 	ErrStaffNotFound = errors.New("staff not found")
+	ErrInvalidStatus = errors.New("invalid status: must be available, busy, or off")
+	ErrEmptyName     = errors.New("name cannot be empty")
 )
 
 // StaffService handles staff business logic
@@ -23,6 +25,18 @@ func NewStaffService(staffRepo repository.StaffRepository) *StaffService {
 
 // Create creates a new staff member
 func (s *StaffService) Create(staff *model.Staff) error {
+	// Validate name
+	if staff.Name == "" {
+		return ErrEmptyName
+	}
+	// Validate status if provided
+	if staff.Status != "" && staff.Status != model.StaffStatusAvailable && staff.Status != model.StaffStatusBusy && staff.Status != model.StaffStatusOff {
+		return ErrInvalidStatus
+	}
+	// Default status to available
+	if staff.Status == "" {
+		staff.Status = model.StaffStatusAvailable
+	}
 	return s.staffRepo.Create(staff)
 }
 
@@ -37,6 +51,14 @@ func (s *StaffService) GetByID(id int64) (*model.Staff, error) {
 
 // Update updates a staff member
 func (s *StaffService) Update(staff *model.Staff) error {
+	// Validate name
+	if staff.Name == "" {
+		return ErrEmptyName
+	}
+	// Validate status if provided
+	if staff.Status != "" && staff.Status != model.StaffStatusAvailable && staff.Status != model.StaffStatusBusy && staff.Status != model.StaffStatusOff {
+		return ErrInvalidStatus
+	}
 	existing, err := s.staffRepo.GetByID(staff.ID)
 	if err != nil {
 		return ErrStaffNotFound
@@ -71,7 +93,7 @@ func (s *StaffService) UpdateStatus(id int64, status model.StaffStatus) error {
 	case model.StaffStatusAvailable, model.StaffStatusBusy, model.StaffStatusOff:
 		// Valid status
 	default:
-		return errors.New("invalid status: must be available, busy, or off")
+		return ErrInvalidStatus
 	}
 
 	staff, err := s.staffRepo.GetByID(id)
