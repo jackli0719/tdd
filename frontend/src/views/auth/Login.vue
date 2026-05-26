@@ -49,7 +49,11 @@ const handleLogin = async () => {
   loading.value = true
   try {
     const res = await login(form.value)
-    setToken(res.data.token)
+    const token = res?.data?.token || res?.token
+    if (!token) {
+      throw new Error('登录响应缺少令牌')
+    }
+    setToken(token)
     ElMessage.success('登录成功')
     router.push('/dashboard')
   } catch (error) {
