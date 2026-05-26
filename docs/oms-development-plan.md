@@ -613,6 +613,7 @@ curl http://localhost:8080/api/orders
 | phase20 | 部署 | 20 | 3 | 12 |
 | phase21 | 仪表盘增强 | 21 | 1 | 6 |
 | phase22 | 品类管理 | 22 | 6 | 24 |
+| phase23 | 上门服务订单 | 23 | 9 | 36 |
 | **待开发** | | | | | |
 | phase24 | 登录认证 | 24 | 14 | 56 |
 | phase25 | 预约时间 | 25 | 12 | 48 |
@@ -892,6 +893,67 @@ cd frontend && npm run lint
 - [ ] 添加 `e2e/category.spec.js`
 - [ ] **测试**: `npx playwright test`
 - [ ] 提交
+
+---
+
+## 二十三、上门服务订单状态 (Phase 23) ✅ 完成
+
+> 订单状态从电商模式改为上门服务模式
+
+### Phase 23: 上门服务订单状态 ✅ 完成
+
+#### 契约定义 (23.0) ✅
+- [x] 23.0.1 **状态枚举**: pending(待确认), confirmed(已确认), in_service(服务中), completed(已完成), cancelled(已取消)
+- [x] 23.0.2 **状态流转**: pending → confirmed → in_service → completed; pending/confirmed → cancelled
+- [x] 23.0.3 **API 路径**: POST /orders/:id/confirm, /start, /complete, /cancel
+
+#### 后端 Model (23.1) ✅
+- [x] 23.1.1 **契约**: OrderStatus 常量修改
+- [x] 23.1.2 修改 `internal/model/order.go`
+- [x] **测试**: `go build ./...`
+- [x] 提交
+
+#### 后端 Service (23.2) ✅
+- [x] 23.2.1 **契约**: pending → confirmed → in_service → completed 状态转换
+- [x] 23.2.2 修改 `internal/service/order.go`
+- [x] **测试**: `go test ./...`
+- [x] 提交
+
+#### 后端 Handler (23.3) ✅
+- [x] 23.3.1 **契约**: `/orders/:id/confirm`, `/start`, `/complete`, `/cancel`
+- [x] 23.3.2 修改 `internal/handler/order.go`
+- [x] **测试**: `go test ./...`
+- [x] 提交
+
+#### 后端 统计 (23.4) ✅
+- [x] 23.4.1 **契约**: 统计按新状态分组
+- [x] 23.4.2 修改 `internal/handler/stats.go`
+- [x] **测试**: `go test ./...`
+- [x] 提交
+
+#### 前端 订单列表 (23.5) ✅
+- [x] 23.5.1 **契约**: 新状态映射 pending→待确认, confirmed→已确认, in_service→服务中
+- [x] 23.5.2 修改 `OrderList.vue`
+- [x] **测试**: `npm test`
+- [x] 提交
+
+#### 前端 订单表单 (23.6) ✅
+- [x] 23.6.1 **契约**: 确认、开始服务、完成操作按钮
+- [x] 23.6.2 修改 `OrderForm.vue`
+- [x] **测试**: `npm test`
+- [x] 提交
+
+#### 文档更新 (23.7) ✅
+- [x] 23.7.1 **契约**: 更新 `docs/api-contract.md`
+- [x] 23.7.2 更新订单状态说明和流转图
+- [x] 提交
+
+#### 验证 (23.8) ✅
+- [x] 23.8.1 `go test ./...` 通过
+- [x] 23.8.2 `npm run lint` 通过
+- [x] 23.8.3 E2E 测试通过
+- [x] 23.8.4 文档 checklist 同步
+- [x] 23.8.5 `git status` clean
 
 ---
 

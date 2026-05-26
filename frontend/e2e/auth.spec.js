@@ -1,10 +1,7 @@
 import { test, expect } from '@playwright/test'
+import { testIdentity } from './test-data.js'
 
 test.describe('Auth E2E', () => {
-  const timestamp = Date.now()
-  const testUsername = 'authuser_' + timestamp
-  const testEmail = 'auth' + timestamp + '@example.com'
-  const testPhone = '13800138000'
   const testPassword = 'password123'
 
   test('register page loads', async ({ page }) => {
@@ -23,13 +20,14 @@ test.describe('Auth E2E', () => {
     await expect(page.getByLabel('密码')).toBeVisible()
   })
 
-  test('register and login flow', async ({ page }) => {
+  test('register and login flow', async ({ page }, testInfo) => {
+    const identity = testIdentity(testInfo, 'auth', '138')
     // Register
     await page.goto('/register')
-    await page.getByLabel('用户名').fill(testUsername)
+    await page.getByLabel('用户名').fill(identity.username)
     await page.getByLabel('密码').fill(testPassword)
-    await page.getByLabel('邮箱').fill(testEmail)
-    await page.getByLabel('手机号').fill(testPhone)
+    await page.getByLabel('邮箱').fill(identity.email)
+    await page.getByLabel('手机号').fill(identity.phone)
     await page.getByRole('button', { name: '注册' }).click()
 
     // Should redirect to login after success
@@ -37,7 +35,7 @@ test.describe('Auth E2E', () => {
 
     // Login
     await page.goto('/login')
-    await page.getByLabel('用户名').fill(testUsername)
+    await page.getByLabel('用户名').fill(identity.username)
     await page.getByLabel('密码').fill(testPassword)
     await page.getByRole('button', { name: '登录' }).click()
 
@@ -45,18 +43,17 @@ test.describe('Auth E2E', () => {
     await expect(page).toHaveURL(/\/dashboard/)
   })
 
-  test('authenticated pages load protected module data', async ({ page }) => {
+  test('authenticated pages load protected module data', async ({ page }, testInfo) => {
+    const identity = testIdentity(testInfo, 'module', '138')
     await page.goto('/register')
-    const username = 'moduleuser_' + timestamp
-    const email = 'module' + timestamp + '@example.com'
-    await page.getByLabel('用户名').fill(username)
+    await page.getByLabel('用户名').fill(identity.username)
     await page.getByLabel('密码').fill(testPassword)
-    await page.getByLabel('邮箱').fill(email)
-    await page.getByLabel('手机号').fill(testPhone)
+    await page.getByLabel('邮箱').fill(identity.email)
+    await page.getByLabel('手机号').fill(identity.phone)
     await page.getByRole('button', { name: '注册' }).click()
     await expect(page).toHaveURL(/\/login/)
 
-    await page.getByLabel('用户名').fill(username)
+    await page.getByLabel('用户名').fill(identity.username)
     await page.getByLabel('密码').fill(testPassword)
     await page.getByRole('button', { name: '登录' }).click()
     await expect(page).toHaveURL(/\/dashboard/)
@@ -88,17 +85,18 @@ test.describe('Auth E2E', () => {
     await expect(loadingErrors).toHaveCount(0)
   })
 
-  test('login with wrong password fails', async ({ page }) => {
+  test('login with wrong password fails', async ({ page }, testInfo) => {
+    const identity = testIdentity(testInfo, 'wrong', '138')
     // Register first
     await page.goto('/register')
-    await page.getByLabel('用户名').fill('wrongtest_' + timestamp)
+    await page.getByLabel('用户名').fill(identity.username)
     await page.getByLabel('密码').fill(testPassword)
-    await page.getByLabel('邮箱').fill('wrong' + timestamp + '@example.com')
-    await page.getByLabel('手机号').fill(testPhone)
+    await page.getByLabel('邮箱').fill(identity.email)
+    await page.getByLabel('手机号').fill(identity.phone)
     await page.getByRole('button', { name: '注册' }).click()
 
     await page.goto('/login')
-    await page.getByLabel('用户名').fill('wrongtest_' + timestamp)
+    await page.getByLabel('用户名').fill(identity.username)
     await page.getByLabel('密码').fill('wrongpassword')
     await page.getByRole('button', { name: '登录' }).click()
 
@@ -115,18 +113,18 @@ test.describe('Auth E2E', () => {
     await expect(page).toHaveURL(/\/login/)
   })
 
-  test('logout clears token and redirects to login', async ({ page }) => {
+  test('logout clears token and redirects to login', async ({ page }, testInfo) => {
+    const identity = testIdentity(testInfo, 'logout', '138')
     // Register and login
     await page.goto('/register')
-    const username = 'logoutuser_' + timestamp
-    await page.getByLabel('用户名').fill(username)
+    await page.getByLabel('用户名').fill(identity.username)
     await page.getByLabel('密码').fill(testPassword)
-    await page.getByLabel('邮箱').fill('logout' + timestamp + '@example.com')
-    await page.getByLabel('手机号').fill(testPhone)
+    await page.getByLabel('邮箱').fill(identity.email)
+    await page.getByLabel('手机号').fill(identity.phone)
     await page.getByRole('button', { name: '注册' }).click()
     await expect(page).toHaveURL(/\/login/)
 
-    await page.getByLabel('用户名').fill(username)
+    await page.getByLabel('用户名').fill(identity.username)
     await page.getByLabel('密码').fill(testPassword)
     await page.getByRole('button', { name: '登录' }).click()
     await expect(page).toHaveURL(/\/dashboard/)

@@ -1,25 +1,21 @@
 import { test, expect } from '@playwright/test'
-
-let userId = 0
-const getNextUsername = () => `slot_${Date.now()}_${++userId}`
+import { testIdentity } from './test-data.js'
 
 test.describe('Slot E2E', () => {
   const testPassword = 'password123'
 
   test.beforeEach(async ({ page }, testInfo) => {
     // Register and login
-    const username = getNextUsername()
-    const phoneSuffix = `${String(testInfo.workerIndex).padStart(2, '0')}${String(Date.now()).slice(-3)}${String(Math.floor(Math.random() * 1000)).padStart(3, '0')}`
-    const phone = `138${phoneSuffix}`
+    const identity = testIdentity(testInfo, 'slot', '138')
     await page.goto('/register')
-    await page.getByLabel('用户名').fill(username)
+    await page.getByLabel('用户名').fill(identity.username)
     await page.getByLabel('密码').fill(testPassword)
-    await page.getByLabel('邮箱').fill(username + '@example.com')
-    await page.getByLabel('手机号').fill(phone)
+    await page.getByLabel('邮箱').fill(identity.email)
+    await page.getByLabel('手机号').fill(identity.phone)
     await page.getByRole('button', { name: '注册' }).click()
     await expect(page).toHaveURL(/\/login/)
 
-    await page.getByLabel('用户名').fill(username)
+    await page.getByLabel('用户名').fill(identity.username)
     await page.getByLabel('密码').fill(testPassword)
     await page.getByRole('button', { name: '登录' }).click()
     await expect(page).toHaveURL(/\/dashboard/)

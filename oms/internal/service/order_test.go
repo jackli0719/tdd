@@ -370,6 +370,42 @@ func TestOrderService_AssignStaffMarksStaffBusy(t *testing.T) {
 	}
 }
 
+func TestOrderService_CreateWithStaffMarksStaffBusy(t *testing.T) {
+	db := setupOrderTestDB(t)
+	userRepo := repository.NewUserRepository(db)
+	productRepo := repository.NewProductRepository(db)
+	orderRepo := repository.NewOrderRepository(db)
+	staffRepo := repository.NewStaffRepository(db)
+	svc := NewOrderService(orderRepo, userRepo, productRepo, staffRepo)
+
+	userRepo.Create(&model.User{Username: "testuser", Email: "test@example.com", Phone: "1234567890"})
+	productRepo.Create(&model.Product{Name: "Test Product", Price: 99.99, Stock: 100})
+	staffRepo.Create(&model.Staff{Name: "Staff A", Status: model.StaffStatusAvailable})
+
+	staffID := int64(1)
+	order, err := svc.Create(&model.CreateOrderRequest{
+		UserID:  1,
+		StaffID: &staffID,
+		Items: []model.CreateOrderItemRequest{
+			{ProductID: 1, Quantity: 1},
+		},
+	})
+	if err != nil {
+		t.Fatalf("failed to create order with staff: %v", err)
+	}
+	if order.StaffID == nil || *order.StaffID != staffID {
+		t.Fatalf("order staff_id = %v, want %d", order.StaffID, staffID)
+	}
+
+	staff, err := staffRepo.GetByID(staffID)
+	if err != nil {
+		t.Fatalf("failed to get staff: %v", err)
+	}
+	if staff.Status != model.StaffStatusBusy {
+		t.Fatalf("staff status = %s, want %s", staff.Status, model.StaffStatusBusy)
+	}
+}
+
 func TestOrderService_UnassignStaffMarksStaffAvailable(t *testing.T) {
 	db := setupOrderTestDB(t)
 	userRepo := repository.NewUserRepository(db)

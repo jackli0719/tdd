@@ -1,8 +1,7 @@
 import { test, expect } from '@playwright/test'
+import { testIdentity, uniquePhone } from './test-data.js'
 
-let userId = 0
 const apiBase = 'http://127.0.0.1:8080/api'
-const getNextUsername = () => `staff_${Date.now()}_${++userId}`
 
 const getToken = async (page) => page.evaluate(() => localStorage.getItem('auth_token'))
 
@@ -28,17 +27,16 @@ test.describe('Staff E2E', () => {
 
   test.beforeEach(async ({ page }, testInfo) => {
     // Register and login
-    const username = getNextUsername()
-    const phone = `138${String(testInfo.workerIndex).padStart(2, '0')}${String(Date.now()).slice(-6)}`
+    const identity = testIdentity(testInfo, 'staff', '138')
     await page.goto('/register')
-    await page.getByLabel('用户名').fill(username)
+    await page.getByLabel('用户名').fill(identity.username)
     await page.getByLabel('密码').fill(testPassword)
-    await page.getByLabel('邮箱').fill(username + '@example.com')
-    await page.getByLabel('手机号').fill(phone)
+    await page.getByLabel('邮箱').fill(identity.email)
+    await page.getByLabel('手机号').fill(identity.phone)
     await page.getByRole('button', { name: '注册' }).click()
     await expect(page).toHaveURL(/\/login/)
 
-    await page.getByLabel('用户名').fill(username)
+    await page.getByLabel('用户名').fill(identity.username)
     await page.getByLabel('密码').fill(testPassword)
     await page.getByRole('button', { name: '登录' }).click()
     await expect(page).toHaveURL(/\/dashboard/)
@@ -50,26 +48,26 @@ test.describe('Staff E2E', () => {
     await expect(page.getByRole('button', { name: '添加人员' })).toBeVisible()
   })
 
-  test('add new staff', async ({ page }) => {
+  test('add new staff', async ({ page }, testInfo) => {
     await page.goto('/staff')
     await page.getByRole('button', { name: '添加人员' }).click()
     await expect(page.locator('.el-dialog')).toBeVisible()
 
     await page.getByLabel('姓名').fill('张三')
-    await page.getByLabel('手机号').fill('13800138001')
+    await page.getByLabel('手机号').fill(uniquePhone(testInfo, '138'))
     await page.locator('.el-dialog__footer button').filter({ hasText: '确定' }).click()
 
     await expect(page.getByText('创建成功')).toBeVisible()
   })
 
-  test('edit staff', async ({ page }) => {
+  test('edit staff', async ({ page }, testInfo) => {
     const editName = 'edit_' + Date.now()
     await page.goto('/staff')
 
     // Add staff first
     await page.getByRole('button', { name: '添加人员' }).click()
     await page.getByLabel('姓名').fill('李四')
-    await page.getByLabel('手机号').fill('13800138002')
+    await page.getByLabel('手机号').fill(uniquePhone(testInfo, '138'))
     await page.locator('.el-dialog__footer button').filter({ hasText: '确定' }).click()
     await expect(page.getByText('创建成功')).toBeVisible()
 
@@ -84,13 +82,13 @@ test.describe('Staff E2E', () => {
     await expect(page.locator('.el-dialog')).not.toBeVisible({ timeout: 3000 })
   })
 
-  test('change staff status', async ({ page }) => {
+  test('change staff status', async ({ page }, testInfo) => {
     await page.goto('/staff')
 
     // Add staff first
     await page.getByRole('button', { name: '添加人员' }).click()
     await page.getByLabel('姓名').fill('王五')
-    await page.getByLabel('手机号').fill('13800138003')
+    await page.getByLabel('手机号').fill(uniquePhone(testInfo, '138'))
     await page.locator('.el-dialog__footer button').filter({ hasText: '确定' }).click()
     await expect(page.getByText('创建成功')).toBeVisible()
 
@@ -107,12 +105,12 @@ test.describe('Staff E2E', () => {
 
     await apiPost(page, token, '/staff', {
       name: availableName,
-      phone: `136${String(timestamp).slice(-8)}`,
+      phone: uniquePhone(testInfo, '136'),
       status: 'available',
     })
     await apiPost(page, token, '/staff', {
       name: busyName,
-      phone: `135${String(timestamp).slice(-8)}`,
+      phone: uniquePhone(testInfo, '135'),
       status: 'busy',
     })
 
@@ -143,7 +141,7 @@ test.describe('Staff E2E', () => {
     })
     const staff = await apiPost(page, token, '/staff', {
       name: `分配人员${timestamp}`,
-      phone: `134${String(timestamp).slice(-8)}`,
+      phone: uniquePhone(testInfo, '134'),
       status: 'available',
     })
     const order = await apiPost(page, token, '/orders', {
@@ -166,12 +164,12 @@ test.describe('Staff E2E', () => {
     await expect(targetRow).toContainText(String(staff.data.id))
   })
 
-  test('delete staff', async ({ page }) => {
+  test('delete staff', async ({ page }, testInfo) => {
     const delName = 'del_' + Date.now()
     await page.goto('/staff')
     await page.getByRole('button', { name: '添加人员' }).click()
     await page.getByLabel('姓名').fill(delName)
-    await page.getByLabel('手机号').fill('13800138004')
+    await page.getByLabel('手机号').fill(uniquePhone(testInfo, '138'))
     await page.locator('.el-dialog__footer button').filter({ hasText: '确定' }).click()
 
     // Wait for toast to appear then disappear before creating second staff
@@ -182,7 +180,7 @@ test.describe('Staff E2E', () => {
     const otherName = 'other_' + Date.now()
     await page.getByRole('button', { name: '添加人员' }).click()
     await page.getByLabel('姓名').fill(otherName)
-    await page.getByLabel('手机号').fill('13800138005')
+    await page.getByLabel('手机号').fill(uniquePhone(testInfo, '138'))
     await page.locator('.el-dialog__footer button').filter({ hasText: '确定' }).click()
 
     // Wait for toast to appear then disappear

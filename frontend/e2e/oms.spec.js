@@ -1,25 +1,27 @@
 import { test, expect } from '@playwright/test'
+import { testIdentity } from './test-data.js'
 
 test.describe('OMS Frontend E2E', () => {
   // Setup: register and login before tests
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page }, testInfo) => {
     // Navigate to login page first to set up the context
     await page.goto('/login')
 
     // Register a test user
-    const timestamp = Date.now()
+    const identity = testIdentity(testInfo, 'oms', '138')
     const registerRes = await page.request.post('http://localhost:8080/api/auth/register', {
       data: {
-        username: 'testuser_' + timestamp,
+        username: identity.username,
         password: 'password123',
-        email: 'test' + timestamp + '@example.com',
-        phone: '13800138000',
+        email: identity.email,
+        phone: identity.phone,
       },
     })
+    expect(registerRes.ok()).toBeTruthy()
     // Login
     const loginRes = await page.request.post('http://localhost:8080/api/auth/login', {
       data: {
-        username: 'testuser_' + timestamp,
+        username: identity.username,
         password: 'password123',
       },
     })

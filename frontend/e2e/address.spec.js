@@ -1,20 +1,20 @@
 import { test, expect } from '@playwright/test'
+import { testIdentity } from './test-data.js'
 
 test.describe('Address Management', () => {
   const testPassword = 'password123'
 
   test.beforeEach(async ({ page }, testInfo) => {
-    const username = 'addr_' + Date.now() + '_' + testInfo.workerIndex
-    const phone = '139' + String(Date.now()).slice(-8)
+    const identity = testIdentity(testInfo, 'addr', '139')
     await page.goto('/register')
-    await page.getByLabel('用户名').fill(username)
+    await page.getByLabel('用户名').fill(identity.username)
     await page.getByLabel('密码').fill(testPassword)
-    await page.getByLabel('邮箱').fill(username + '@example.com')
-    await page.getByLabel('手机号').fill(phone)
+    await page.getByLabel('邮箱').fill(identity.email)
+    await page.getByLabel('手机号').fill(identity.phone)
     await page.getByRole('button', { name: '注册' }).click()
     await expect(page).toHaveURL(/\/login/)
 
-    await page.getByPlaceholder('请输入用户名').fill(username)
+    await page.getByPlaceholder('请输入用户名').fill(identity.username)
     await page.getByPlaceholder('请输入密码').fill(testPassword)
     await page.getByRole('button', { name: '登录' }).click()
     await expect(page).toHaveURL(/\/dashboard/)

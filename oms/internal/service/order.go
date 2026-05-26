@@ -148,6 +148,20 @@ func (s *orderService) Create(req *model.CreateOrderRequest) (*model.Order, erro
 		return nil, err
 	}
 
+	if req.StaffID != nil {
+		result := tx.Model(&model.Staff{}).
+			Where("id = ? AND status = ?", *req.StaffID, model.StaffStatusAvailable).
+			Update("status", model.StaffStatusBusy)
+		if result.Error != nil {
+			tx.Rollback()
+			return nil, result.Error
+		}
+		if result.RowsAffected == 0 {
+			tx.Rollback()
+			return nil, ErrAssignedStaffInvalid
+		}
+	}
+
 	// Decrement stock for each item
 	for _, item := range req.Items {
 		_, err := s.productRepo.DecrementStockTx(tx, item.ProductID, item.Quantity)

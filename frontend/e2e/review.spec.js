@@ -1,24 +1,22 @@
 import { test, expect } from '@playwright/test'
+import { testIdentity, uniquePhone } from './test-data.js'
 
-let userId = 0
 const apiBase = 'http://127.0.0.1:8080/api'
-const getNextUsername = () => `review_${Date.now()}_${++userId}`
 
 const registerAndLogin = async (page, testInfo) => {
-  const username = getNextUsername()
-  const phone = `139${String(testInfo.workerIndex).padStart(2, '0')}${String(Date.now()).slice(-6)}`
+  const identity = testIdentity(testInfo, 'review', '139')
 
   await page.goto('/login')
   await page.request.post(`${apiBase}/auth/register`, {
     data: {
-      username,
+      username: identity.username,
       password: 'password123',
-      email: `${username}@example.com`,
-      phone,
+      email: identity.email,
+      phone: identity.phone,
     },
   })
   const loginRes = await page.request.post(`${apiBase}/auth/login`, {
-    data: { username, password: 'password123' },
+    data: { username: identity.username, password: 'password123' },
   })
   const loginData = await loginRes.json()
   const token = loginData.data.token
@@ -39,7 +37,7 @@ const apiPost = async (page, token, path, data) => {
   return res.json()
 }
 
-const createCompletedOrder = async (page, token, currentUserId) => {
+const createCompletedOrder = async (page, token, currentUserId, testInfo) => {
   const timestamp = Date.now()
   const category = await apiPost(page, token, '/categories', {
     name: `评价品类${timestamp}`,
@@ -53,7 +51,7 @@ const createCompletedOrder = async (page, token, currentUserId) => {
   })
   const staff = await apiPost(page, token, '/staff', {
     name: `评价人员${timestamp}`,
-    phone: `137${String(timestamp).slice(-8)}`,
+    phone: uniquePhone(testInfo, '137'),
   })
   const order = await apiPost(page, token, '/orders', {
     user_id: currentUserId,
@@ -72,7 +70,7 @@ const createCompletedOrder = async (page, token, currentUserId) => {
 test.describe('Review E2E', () => {
   test('completed order can be reviewed and listed', async ({ page }, testInfo) => {
     const session = await registerAndLogin(page, testInfo)
-    const data = await createCompletedOrder(page, session.token, session.userId)
+    const data = await createCompletedOrder(page, session.token, session.userId, testInfo)
 
     await page.goto('/orders')
     const targetRow = page.locator('.el-table__body tr').first()
