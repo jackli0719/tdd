@@ -9,7 +9,7 @@
         <el-input v-model="form.name" />
       </el-form-item>
       <el-form-item label="描述">
-        <el-input v-model="form.description" type="textarea" rows="3" />
+        <el-input v-model="form.description" type="textarea" :rows="3" />
       </el-form-item>
     </el-form>
     <template #footer>

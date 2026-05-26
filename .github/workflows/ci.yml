@@ -11,45 +11,9 @@ env:
   NODE_VERSION: '20'
 
 jobs:
-  # 依赖安装
-  deps:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: ${{ env.GO_VERSION }}
-          cache: true
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-          cache-dependency-path: frontend/package-lock.json
-
-      - name: Install Go dependencies
-        run: cd oms && go mod tidy
-
-      - name: Install frontend dependencies
-        run: cd frontend && npm install
-
-      - name: Upload cache
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: node_modules
-          path: |
-            frontend/node_modules/
-            !frontend/node_modules/.cache/
-          retention-days: 5
-
   # 编译检查
   build:
     runs-on: ubuntu-latest
-    needs: deps
     steps:
       - uses: actions/checkout@v4
 
@@ -78,7 +42,6 @@ jobs:
   # 单元测试
   test-unit:
     runs-on: ubuntu-latest
-    needs: deps
     steps:
       - uses: actions/checkout@v4
 
@@ -118,7 +81,6 @@ jobs:
   # Lint
   lint:
     runs-on: ubuntu-latest
-    needs: deps
     steps:
       - uses: actions/checkout@v4
 
@@ -151,7 +113,6 @@ jobs:
   # E2E 测试 (需要后端运行)
   test-e2e:
     runs-on: ubuntu-latest
-    needs: deps
     steps:
       - uses: actions/checkout@v4
 
@@ -194,7 +155,7 @@ jobs:
   # 预提交检查 (汇总)
   pre-commit:
     runs-on: ubuntu-latest
-    needs: [build, test-unit, lint]
+    needs: [build, test-unit, lint, test-e2e]
     steps:
       - name: All checks passed
         run: echo "All checks passed!"

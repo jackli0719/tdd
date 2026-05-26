@@ -354,7 +354,7 @@ GET /api/orders?page=1&page_size=10
         "order_no": "ORD1779708285563400000",
         "user_id": 1,
         "total_amount": 490,
-        "status": "paid",
+        "status": "confirmed",
         "created_at": "2026-05-25T19:24:45.563439+08:00",
         "updated_at": "2026-05-25T19:24:47.217833+08:00",
         "items": [
