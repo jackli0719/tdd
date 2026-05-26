@@ -70,6 +70,16 @@ func Setup(r *gin.Engine, db *gorm.DB, jwtSecret string) {
 			auth.GET("/me", authHandler.Me)
 		}
 
+		// Category routes (public for now - can be protected later)
+		categoryRepo := repository.NewCategoryRepository(db)
+		categorySvc := service.NewCategoryService(categoryRepo)
+		categoryHandler := handler.NewCategoryHandler(categorySvc)
+		api.GET("/categories", categoryHandler.List)
+		api.GET("/categories/:id", categoryHandler.Get)
+		api.POST("/categories", categoryHandler.Create)
+		api.PUT("/categories/:id", categoryHandler.Update)
+		api.DELETE("/categories/:id", categoryHandler.Delete)
+
 		// User routes (protected)
 		users := api.Group("/users")
 		users.Use(authMiddleware)
@@ -81,14 +91,14 @@ func Setup(r *gin.Engine, db *gorm.DB, jwtSecret string) {
 			users.DELETE("/:id", userHandler.Delete)
 		}
 
-		// Product routes
+		// Product routes (public for now)
 		api.GET("/products", productHandler.List)
 		api.GET("/products/:id", productHandler.Get)
 		api.POST("/products", productHandler.Create)
 		api.PUT("/products/:id", productHandler.Update)
 		api.DELETE("/products/:id", productHandler.Delete)
 
-		// Order routes
+		// Order routes (public for now)
 		api.GET("/orders", orderHandler.List)
 		api.GET("/orders/:id", orderHandler.Get)
 		api.POST("/orders", orderHandler.Create)
@@ -98,7 +108,7 @@ func Setup(r *gin.Engine, db *gorm.DB, jwtSecret string) {
 		api.POST("/orders/:id/complete", orderHandler.Complete)
 		api.POST("/orders/:id/cancel", orderHandler.Cancel)
 
-		// Stats routes
+		// Stats routes (public for now)
 		api.GET("/stats/orders", statsHandler.OrderStats)
 		api.GET("/stats/revenue", statsHandler.RevenueStats)
 	}

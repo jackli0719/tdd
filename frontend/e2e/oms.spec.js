@@ -49,6 +49,15 @@ test.describe('OMS Frontend E2E', () => {
     await expect(page.locator('text=订单总数')).toBeVisible()
   })
 
+  test('dashboard shows current time', async ({ page }) => {
+    // Check time card is visible
+    const timeCard = page.locator('.current-time')
+    await expect(timeCard).toBeVisible()
+    // Time format: YYYY/MM/DD HH:mm:ss
+    const timeRegex = /^\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}$/
+    await expect(timeCard).toHaveText(timeRegex)
+  })
+
   test('navigation menu works', async ({ page }) => {
     // Use sidebar menu for clicks to avoid matching page title
     const sidebar = page.locator('.sidebar-menu')
@@ -75,6 +84,12 @@ test.describe('OMS Frontend E2E', () => {
     await page.locator('.sidebar-menu').getByRole('menuitem', { name: '产品管理' }).click()
     await expect(page.locator('.el-table')).toBeVisible()
     await expect(page.locator('text=添加产品')).toBeVisible()
+  })
+
+  test('category list page loads', async ({ page }) => {
+    await page.locator('.sidebar-menu').getByRole('menuitem', { name: '品类管理' }).click()
+    await expect(page.locator('.el-table')).toBeVisible()
+    await expect(page.locator('text=添加品类')).toBeVisible()
   })
 
   test('order list page loads', async ({ page }) => {

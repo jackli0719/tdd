@@ -13,7 +13,7 @@ type ProductRepository interface {
 	GetByName(name string) (*model.Product, error)
 	Update(product *model.Product) error
 	Delete(id int64) error
-	List(offset, limit int) ([]*model.Product, int64, error)
+	List(offset, limit int, categoryID int64) ([]*model.Product, int64, error)
 	DecrementStockTx(tx *gorm.DB, id int64, quantity int) (int64, error)
 }
 
@@ -56,12 +56,17 @@ func (r *productRepository) Delete(id int64) error {
 	return r.db.Delete(&model.Product{}, id).Error
 }
 
-func (r *productRepository) List(offset, limit int) ([]*model.Product, int64, error) {
+func (r *productRepository) List(offset, limit int, categoryID int64) ([]*model.Product, int64, error) {
 	var products []*model.Product
 	var total int64
 
-	r.db.Model(&model.Product{}).Count(&total)
-	err := r.db.Offset(offset).Limit(limit).Order("id DESC").Find(&products).Error
+	query := r.db.Model(&model.Product{})
+	if categoryID > 0 {
+		query = query.Where("category_id = ?", categoryID)
+	}
+
+	query.Count(&total)
+	err := query.Offset(offset).Limit(limit).Order("id DESC").Find(&products).Error
 	if err != nil {
 		return nil, 0, err
 	}
